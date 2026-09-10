@@ -9,3 +9,6 @@ node_modules/
 # Python bytecode, left behind by running the tools in tools/
 __pycache__/
 *.pyc
+
+# Planning notes, kept locally rather than published
+docs/roadmap.html
