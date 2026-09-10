@@ -1,6 +1,16 @@
 [
  {
   "t": "h2",
+  "v": "0.2.3 \u2014 2026-09-10"
+ },
+ {
+  "t": "ul",
+  "v": [
+   "Switching Record a detailed log off now discards what it recorded, rather than leaving it in your profile until Clear log was pressed. Passwords, secrets and tokens were never recorded in the first place, but the log did hold email addresses and CRM URLs, and the switch implied it was gone."
+  ]
+ },
+ {
+  "t": "h2",
   "v": "0.2.2 \u2014 2026-09-10"
  },
  {

@@ -82,7 +82,7 @@ function optional(label, register) {
 (async () => {
   const prefs = await store.getPrefs();
   setLogLevel(prefs.logLevel);
-  diag.setEnabled(prefs.debugMode);
+  await diag.setEnabled(prefs.debugMode);
   if (prefs.debugMode) await diag.loadPersisted();
   await syncBannerScript();
   await syncComposeScript();
@@ -343,7 +343,7 @@ const handlers = {
     if ("showComposeStatus" in patch) await syncComposeScript();
     if ("debugMode" in patch) {
       if (patch.debugMode) await diag.loadPersisted();
-      diag.setEnabled(patch.debugMode);
+      await diag.setEnabled(patch.debugMode);
     }
     return store.getPrefs();
   },

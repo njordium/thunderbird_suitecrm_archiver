@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.3 — 2026-09-10
+
+- Switching **Record a detailed log** off now discards what it recorded, rather than
+  leaving it in your profile until *Clear log* was pressed. Passwords, secrets and tokens
+  were never recorded in the first place, but the log did hold email addresses and CRM
+  URLs, and the switch implied it was gone.
+
 ## 0.2.2 — 2026-09-10
 
 - Wording clarifications. No functional change.

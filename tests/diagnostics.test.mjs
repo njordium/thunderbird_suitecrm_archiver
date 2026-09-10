@@ -221,3 +221,54 @@ test("percent-encoding is decoded however deeply it was applied", async () => {
   assert.equal(decodePercent("a%2540b"), "a@b");
   assert.equal(decodePercent("a%25252540b"), "a@b");
 });
+
+// --- turning logging off must leave nothing behind ------------------------
+
+// Found while documenting what the add-on stores. setEnabled(false) stopped
+// recording but left up to MAX_EVENTS entries in the profile until someone
+// pressed Clear — so the switch implied more than it did. Nothing secret was in
+// there (secrets are never recorded), but email addresses and CRM URLs were.
+test("disabling detailed logging clears what was already recorded", async () => {
+  setEnabled(true);
+  clear();
+  record("debug", ["contacting crm.example for user@crm.example"]);
+  record("debug", ["a second entry"]);
+
+  const { size } = await import("../src/lib/diagnostics.js");
+  assert.ok(size() > 0, "precondition: something was recorded");
+
+  await setEnabled(false);
+  assert.equal(size(), 0, "the buffer must be empty after disabling");
+
+  const after = await buildReport({}, { includeHost: true, includeEmails: true });
+  assert.ok(!after.includes("user@crm.example"),
+    `a disabled log still carried its entries:\n${after}`);
+});
+
+test("disabling also removes the persisted copy, not just the buffer", async () => {
+  const removed = [];
+  const real = globalThis.browser;
+  globalThis.browser = {
+    storage: { local: {
+      get: async () => ({}),
+      set: async () => {},
+      remove: async (k) => { removed.push(k); },
+    } },
+  };
+  try {
+    setEnabled(true);
+    record("debug", ["something"]);
+    await setEnabled(false);
+    assert.ok(removed.includes("debugLog"),
+      `storage.local.remove was not called with debugLog (got ${JSON.stringify(removed)})`);
+  } finally {
+    globalThis.browser = real;
+  }
+});
+
+test("enabling still records that it was enabled", async () => {
+  await setEnabled(false);
+  await setEnabled(true);
+  const { size } = await import("../src/lib/diagnostics.js");
+  assert.ok(size() > 0, "enabling should leave its own marker so the log is never empty-looking");
+});

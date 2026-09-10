@@ -133,9 +133,16 @@ function scrub(text, { includeEmails, includeHost, baseUrl }) {
 // Capture
 // ---------------------------------------------------------------------------
 
-export function setEnabled(on) {
+export async function setEnabled(on) {
   enabled = Boolean(on);
-  if (!enabled) return;
+  if (!enabled) {
+    // Turning the switch off has to leave nothing behind. Someone who disables
+    // detailed logging reasonably believes the log is gone, and up to
+    // MAX_EVENTS entries — carrying email addresses and CRM URLs — would
+    // otherwise sit in the profile until they happened to press Clear.
+    await clear();
+    return;
+  }
   record("info", ["diagnostics: detailed logging enabled"]);
 }
 
@@ -198,6 +205,9 @@ export async function loadPersisted() {
 
 export async function clear() {
   buffer = [];
+  // A flush already scheduled would write the buffer back out after the
+  // removal, so cancel it rather than race it.
+  if (flushTimer) { clearTimeout(flushTimer); flushTimer = null; }
   try { await browser.storage.local.remove(STORAGE_KEY); } catch { /* ignore */ }
 }
 
