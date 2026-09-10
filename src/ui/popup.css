@@ -47,6 +47,12 @@
  */
 [hidden] { display: none !important; }
 
+/* Opened from the context menu, this is a real window rather than a panel
+   hanging off a toolbar button, so the fixed panel width and height would leave
+   dead space and a second scrollbar. */
+body.standalone { width: auto; max-height: none; height: 100vh; }
+
+
 body {
   margin: 0;
   width: 440px;

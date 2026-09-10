@@ -1,8 +1,20 @@
 # Changelog
 
+## 0.4.1 — 2026-09-10
+
+- **The context menu now works when the toolbar button has not been placed.** It opened the
+  window by asking the toolbar button to show its popup, which quietly declines when the
+  button is not on the toolbar, so the menu item appeared to do nothing at all. It now falls
+  back to a real window, with the right-clicked message named explicitly.
+- **Filing without a window says what happened.** Both the context menu's "File against"
+  entry and the keyboard shortcut archived silently, so success and failure looked identical.
+  They now report the record filed under, or the reason nothing was.
+
 ## 0.4.0 — 2026-09-10
 
-- **Right-click a message, or several, to file them.** Three entries: open the archiving
+- **Right-click a message, or several, to file them.** The window opens whether or not the
+  toolbar button has been placed, and filing without a window now says what happened, or
+  what went wrong, instead of leaving you to guess. Three entries: open the archiving
   window, file against the record that sender's mail went to last time, or create a record.
   The middle one names the actual record and hides itself when there is nothing remembered,
   rather than offering something that would do nothing.

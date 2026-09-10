@@ -105,6 +105,27 @@ browser.runtime.onMessage.addListener((m) => {
  * message selected" while a message was plainly selected.
  */
 async function getDisplayedMessage() {
+  // Opened from the context menu as a standalone window, the message is named in
+  // the URL. That is not a shortcut: a window of our own has no reader pane and
+  // is not the active mail tab, so none of the discovery below would find what
+  // the user actually right-clicked.
+  const params = new URLSearchParams(location.search);
+  const named = Number(params.get("messageId"));
+  if (params.has("messageId")) document.body.classList.add("standalone");
+  if (Number.isInteger(named) && named > 0) {
+    const ids = (params.get("ids") || "")
+      .split(",").map(Number).filter((n) => Number.isInteger(n) && n > 0);
+    try {
+      const header = await browser.messages.get(named);
+      if (header) {
+        report("debug", `popup: message ${named} named in the URL`);
+        return { message: header, ids: ids.length ? ids : [named], via: "url" };
+      }
+    } catch (e) {
+      report("warn", `popup: message ${named} from the URL could not be read: ${e.message}`);
+    }
+  }
+
   const attempts = [];
 
   const md = browser.messageDisplay;

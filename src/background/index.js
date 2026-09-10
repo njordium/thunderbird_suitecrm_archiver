@@ -1605,6 +1605,66 @@ optional("compose.onAfterSend", () =>
  * item that reads "file against the last record" and then does nothing is worse
  * than no item at all.
  */
+/**
+ * Say what happened, for actions with no window to say it in.
+ *
+ * Filing from the context menu without opening anything is the point of that
+ * entry, but it means success and failure both looked identical: nothing. A
+ * notification is the only surface available to a background page, and silence
+ * after an action the user asked for is worse than a notification they can
+ * dismiss.
+ *
+ * Never allowed to throw. If notifications are unavailable or refused, the log
+ * still has it, and a failed notification must not lose the archive that
+ * succeeded.
+ */
+async function notify(title, message) {
+  try {
+    await browser.notifications.create({
+      type: "basic",
+      iconUrl: browser.runtime.getURL("src/icons/icon-64.png"),
+      title,
+      message,
+    });
+  } catch (e) {
+    log.debug("could not show a notification:", e.message);
+  }
+}
+
+/**
+ * Show the archiving window for a right-clicked message.
+ *
+ * openPopup does not throw when it cannot work. Its own contract says it
+ * "returns false if the popup could not be opened because the action has no
+ * popup, is of type menu, is disabled or has been removed from the toolbar" —
+ * and the message-display button is on a customisable toolbar, so on a fresh
+ * profile where nobody has placed it, this quietly returns false. Ignoring that
+ * is why the menu item appeared to do nothing at all.
+ *
+ * So the boolean is honoured, and there is a fallback that does not depend on
+ * the toolbar: the same window opened as a real window, with the message named
+ * in the URL rather than left to be discovered. That also means the menu works
+ * from the message list whether or not anything is showing in a reader pane.
+ */
+async function openArchiveWindow(headers) {
+  try {
+    if (await browser.messageDisplayAction.openPopup()) return;
+    log.info("openPopup declined; the toolbar button is probably not placed. Opening a window.");
+  } catch (e) {
+    log.info("openPopup failed; opening a window instead:", e.message);
+  }
+
+  const ids = headers.map((h) => h.id).filter((n) => Number.isInteger(n));
+  const query = ids.length ? `?messageId=${ids[0]}&ids=${ids.join(",")}` : "";
+
+  await browser.windows.create({
+    url: browser.runtime.getURL(`src/ui/popup.html${query}`),
+    type: "popup",
+    width: 480,
+    height: 700,
+  });
+}
+
 const MENU_OPEN = "suitecrm-menu-open";
 const MENU_LAST = "suitecrm-menu-last";
 const MENU_CREATE = "suitecrm-menu-create";
@@ -1672,9 +1732,7 @@ optional("menus.create", () => {
 
     try {
       if (info.menuItemId === MENU_OPEN || info.menuItemId === MENU_CREATE) {
-        // The window needs a displayed message to work on, so select the first
-        // of them and let it open on that.
-        await browser.messageDisplayAction.openPopup();
+        await openArchiveWindow(headers);
         return;
       }
       if (info.menuItemId !== MENU_LAST) return;
@@ -1702,9 +1760,22 @@ optional("menus.create", () => {
         rememberArchive(done, target);
         senderCache.invalidate(); domainCache.invalidate(); searchCache.clear();
         log.info(`menu: filed ${done.length} message(s) under ${target.type}/${target.id}`);
+        await notify(
+          done.length > 1 ? `${done.length} messages archived` : "Message archived",
+          `Filed under ${target.label}.`
+        );
+      } else {
+        // Every message was in an account the user turned off. Saying so beats
+        // leaving them to wonder whether the click registered.
+        await notify(
+          "Nothing archived",
+          "Those messages are in mail accounts this add-on is turned off for. " +
+          "Check Mail accounts in the add-on's settings."
+        );
       }
     } catch (e) {
       log.warn(`menu ${info.menuItemId} failed:`, e.message);
+      await notify("Could not archive", e.message);
     }
   });
 });
@@ -1740,6 +1811,10 @@ optional("commands.onCommand", () =>
       const scope = await accountScope(msg.header);
       if (!scope.allowed) {
         log.info(`archive-last: ${scope.accountName} is not enabled; ignoring.`);
+        await notify(
+          "Nothing archived",
+          `${scope.accountName} is a mail account this add-on is turned off for.`
+        );
         return;
       }
 
@@ -1761,8 +1836,10 @@ optional("commands.onCommand", () =>
       rememberArchive([{ res, messageId: msgHeader.id }], target);
       senderCache.invalidate(primary.email);
       log.info(`archive-last: filed under ${target.type}/${target.id}`);
+      await notify("Message archived", `Filed under ${target.label}.`);
     } catch (e) {
       log.warn(`shortcut ${name} failed:`, e.message);
+      await notify("Could not archive", e.message);
     }
   }));
 
