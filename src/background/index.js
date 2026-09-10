@@ -24,7 +24,7 @@ import { parseContact } from "../lib/signature.js";
 import { readMessage, archiveMessage } from "../lib/archive.js";
 import { findThread } from "../lib/thread.js";
 import { findCaseNumber } from "../lib/caseRef.js";
-import { unwrapMessageList } from "../lib/tbcompat.js";
+import { unwrapMessageList, unwrapMessageListAll } from "../lib/tbcompat.js";
 import { tagMessage, untagMessage } from "../lib/tagging.js";
 import { buildRecord, defaultsFor, CREATABLE, dateTimeInDays } from "../lib/createFromEmail.js";
 import { recordToVCard, usableForAddressBook } from "../lib/vcard.js";
@@ -662,10 +662,10 @@ const handlers = {
     const tabId = sender?.tab?.id;
     let header = null;
     try {
-      // The same unwrapping the shortcut handler needs, so both use one helper.
+      // One header is what the banner needs, which is what this helper returns.
       header = unwrapMessageList(
         await browser.messageDisplay.getDisplayedMessages(tabId)
-      )[0] || null;
+      );
     } catch (e) {
       log.debug("banner: could not read the displayed message:", e.message);
     }
@@ -1707,7 +1707,7 @@ optional("menus.create", () => {
   });
 
   browser.menus.onShown.addListener(async (info) => {
-    const headers = unwrapMessageList(info.selectedMessages);
+    const headers = unwrapMessageListAll(info.selectedMessages);
     let title = null;
 
     if (headers.length) {
@@ -1727,7 +1727,7 @@ optional("menus.create", () => {
   });
 
   browser.menus.onClicked.addListener(async (info) => {
-    const headers = unwrapMessageList(info.selectedMessages);
+    const headers = unwrapMessageListAll(info.selectedMessages);
     if (!headers.length) return;
 
     try {
@@ -1802,9 +1802,9 @@ optional("commands.onCommand", () =>
       }
       if (name !== "archive-last") return;
 
-      const [msgHeader] = unwrapMessageList(
+      const [msgHeader] = unwrapMessageListAll(
         await browser.messageDisplay.getDisplayedMessages()
-      ) || [];
+      );
       if (!msgHeader) return;
 
       const msg = messageCache.get(msgHeader.id) || (await readMessage(msgHeader.id));

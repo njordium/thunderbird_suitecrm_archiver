@@ -19,6 +19,26 @@
  *
  * @returns {object|null}
  */
+/**
+ * Reduce the same shapes to an *array* of MessageHeaders.
+ *
+ * A separate function rather than a flag, because the two callers want genuinely
+ * different things and confusing them is not a hypothetical: unwrapMessageList
+ * returns one header, and using it where an array was meant made `.length`
+ * undefined, `[0]` undefined and destructuring throw. That silently disabled a
+ * context menu, two of its entries, a keyboard shortcut and the in-message
+ * banner, all without a single error surfacing. Distinct names make the mistake
+ * unavailable.
+ *
+ * @returns {object[]} possibly empty, never null
+ */
+export function unwrapMessageListAll(result) {
+  if (!result) return [];
+  if (Array.isArray(result)) return result.filter(Boolean);
+  if (Array.isArray(result.messages)) return result.messages.filter(Boolean);
+  return result.id !== undefined ? [result] : [];
+}
+
 export function unwrapMessageList(result) {
   if (!result) return null;
   if (Array.isArray(result)) return result[0] || null;

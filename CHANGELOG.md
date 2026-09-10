@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.2 — 2026-09-10
+
+- **Fixed the context menu doing nothing.** It read the selected messages with a helper that
+  returns one message rather than a list, so the click handler saw no messages and stopped,
+  two of the three menu entries hid themselves, the keyboard shortcut failed, and the
+  in-message CRM strip stopped appearing. All four are the same mistake, introduced in 0.4.0.
+
 ## 0.4.1 — 2026-09-10
 
 - **The context menu now works when the toolbar button has not been placed.** It opened the
