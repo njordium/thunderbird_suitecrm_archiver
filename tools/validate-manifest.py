@@ -7,12 +7,14 @@ import json, pathlib, re, sys
 
 root = pathlib.Path(__file__).resolve().parent.parent
 errors, checked = [], 0
+referenced = set()
 
 manifest = json.loads((root / "manifest.json").read_text())
 
 def check(path, origin):
     global checked
     checked += 1
+    referenced.add(pathlib.PurePosixPath(path).as_posix())
     if not (root / path).is_file():
         errors.append(f"{origin} references missing file: {path}")
 
@@ -149,6 +151,26 @@ for key in ("action", "message_display_action", "compose_action"):
 loc = manifest.get("default_locale")
 if loc and not (root / "_locales" / loc / "messages.json").is_file():
     errors.append(f"default_locale '{loc}' has no _locales/{loc}/messages.json")
+
+# Paths reached only at runtime, through browser.runtime.getURL() or fetch(),
+# are invisible to the reference walk above.
+for js in root.glob("src/**/*.js"):
+    for ref in re.findall(r'["\'`](src/[^"\'`${]+)["\'`${]', js.read_text()):
+        check(ref, js.name)
+
+# And the other direction: build.sh packages everything under src/, so a file
+# nothing reaches is dead weight in the .xpi. ATN rejects a release over it —
+# unused files complicate review, can leak build-machine details, and inflate
+# the download. Design sources and build intermediates belong outside src/.
+for path in sorted(root.glob("src/**/*")):
+    if not path.is_file():
+        continue
+    rel = path.relative_to(root).as_posix()
+    if rel not in referenced:
+        errors.append(
+            f"{rel} would be packaged but nothing references it — "
+            f"move it out of src/, or reference it"
+        )
 
 if errors:
     print("Manifest validation FAILED:", file=sys.stderr)

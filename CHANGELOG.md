@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.4.3 — 2026-09-10
+
+- **Two files no longer ship inside the add-on.** The icon's SVG drawing and a generated HTML
+  copy of these release notes sat in `src/`, which is packaged wholesale, so both travelled in
+  the .xpi without anything ever loading them. ATN's reviewers turned down 0.2.2 over exactly
+  that: unused files make a review harder, can reveal details of the machine the package was
+  built on, and pad the download. The drawing now lives in `img/`, the settings page keeps
+  reading the JSON it always read, and the build fails if anything unreferenced appears in
+  `src/` again.
+
 ## 0.4.2 — 2026-09-10
 
 - **Fixed the context menu doing nothing.** It read the selected messages with a helper that

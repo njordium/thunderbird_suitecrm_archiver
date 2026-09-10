@@ -17,7 +17,7 @@ import math, struct, zlib, pathlib
 SS = 4                       # supersampling factor
 OUT = pathlib.Path(__file__).resolve().parent.parent / "src/icons"
 
-# Palette, matching icon.svg.
+# Palette, matching img/icon.svg.
 BLUE  = (0x1a, 0x6e, 0xa8)
 GREEN = (0x20, 0xa0, 0x5a)
 WHITE = (0xff, 0xff, 0xff)

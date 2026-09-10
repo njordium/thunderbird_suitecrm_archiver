@@ -1,6 +1,16 @@
 [
  {
   "t": "h2",
+  "v": "0.4.3 \u2014 2026-09-10"
+ },
+ {
+  "t": "ul",
+  "v": [
+   "Two files no longer ship inside the add-on. The icon's SVG drawing and a generated HTML copy of these release notes sat in src/, which is packaged wholesale, so both travelled in the .xpi without anything ever loading them. ATN's reviewers turned down 0.2.2 over exactly that: unused files make a review harder, can reveal details of the machine the package was built on, and pad the download. The drawing now lives in img/, the settings page keeps reading the JSON it always read, and the build fails if anything unreferenced appears in src/ again."
+  ]
+ },
+ {
+  "t": "h2",
   "v": "0.4.2 \u2014 2026-09-10"
  },
  {

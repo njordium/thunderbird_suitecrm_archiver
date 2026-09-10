@@ -30,14 +30,26 @@ fi
 echo "Reviewing $XPI"
 OUT=$(cd "$LINTER" && node verify.js "$OLDPWD/$XPI" 2>&1)
 
-# Only the automated findings; the manual-review checklist is for a human
-# submitting to ATN, not for a build gate.
 echo "$OUT" | grep -E "\[fail\]" | sed 's/^/  /' || true
 
 ERRORS=$(echo "$OUT" | grep -cE "\[fail\]" || true)
 echo
 echo "$OUT" | grep -E "^[0-9]+ error|── Summary ──" -A 2 | tail -2
 [ "$ERRORS" -eq 0 ] && echo "  no automated findings" || true
+
+# The escalations matter as much as the failures. A check that cannot decide by
+# itself reports [unsure] and defers to the extended manual review, and the
+# reviewer resolves it with --llm-review — which is how 0.2.2 was turned down:
+# two unreferenced files in src/ escalated here and never appeared as a [fail].
+# The ten standard steps are about the ATN listing, not the code, so they stay
+# out; this section is our own code and belongs in the gate.
+EXTENDED=$(echo "$OUT" | sed -n '/── Extended manual review ──/,/── Standard manual review ──/p' \
+  | grep -vE "── (Extended|Standard) manual review ──|^Continue manual review|^$" || true)
+if [ -n "$EXTENDED" ]; then
+  echo
+  echo "Escalated to the reviewer's judgement (--llm-review resolves these)"
+  echo "$EXTENDED" | sed 's/^/  /'
+fi
 
 # The reviewers' own linter. It normalises formatting and strips unused function
 # parameters, so anything it reports is a real finding rather than a style

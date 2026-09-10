@@ -2,11 +2,13 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
-"""Render CHANGELOG.md into an HTML fragment.
+"""Render CHANGELOG.md into the add-on's release notes.
 
-One source of truth: the fragment is bundled for the add-on's About panel and is
-also what `update_info_url` points at, which is what fills the Add-ons Manager's
-Release Notes tab for a self-hosted add-on.
+One source of truth, two outputs, neither of them inside src/ as HTML: the
+settings page reads src/ui/release-notes.json, and dist/release-notes.html is
+the standalone page `update_info_url` points at, which fills the Add-ons
+Manager's Release Notes tab for a self-hosted add-on. An HTML fragment left in
+src/ would ship in the .xpi unreferenced, which ATN's reviewers reject.
 """
 import html, pathlib, re, sys
 
@@ -52,7 +54,6 @@ for raw in md.splitlines():
 close_list()
 
 body = "\n".join(out)
-(root / "src/ui/release-notes.html").write_text(body + "\n")
 
 # Also emit the same content as structured data. The settings page builds its
 # "What's new" panel from this rather than assigning HTML to innerHTML, which
