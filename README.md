@@ -4,6 +4,9 @@
 [![Thunderbird 140+](https://img.shields.io/badge/thunderbird-140%20ESR%2B-informational.svg)](https://www.thunderbird.net/)
 [![Manifest V3](https://img.shields.io/badge/manifest-v3-informational.svg)](https://developer.thunderbird.net/add-ons/mailextensions)
 [![Dependencies: none](https://img.shields.io/badge/dependencies-none-success.svg)](package.json)
+<!-- Uncomment when the ATN listing is approved and live:
+[![addons.thunderbird.net](https://img.shields.io/badge/addons.thunderbird.net-install-2b5797.svg)](https://addons.thunderbird.net/en-US/thunderbird/addon/suitecrm-email-archiver/)
+-->
 
 > Njordium-authored Thunderbird MailExtension for **SuiteCRM 7 and 8**. Thunderbird **140 ESR
 > to 155**, Manifest V3, OAuth2 against the **V8 REST API** with a rotating refresh token,
@@ -206,17 +209,37 @@ read -rs CRM_PASSWORD && export CRM_PASSWORD
 node tools/verify-crm.mjs --write
 ```
 
-## Build and install
+## Install
+
+Requires Thunderbird **140 ESR or newer**. 140 is the current ESR; 128 reached end of life.
+
+<!-- Uncomment when the ATN listing is approved and live:
+**From addons.thunderbird.net** (recommended): install from
+[the listing](https://addons.thunderbird.net/en-US/thunderbird/addon/suitecrm-email-archiver/).
+Updates arrive automatically.
+-->
+
+**From a release**: download the `.xpi` from
+[Releases](https://github.com/njordium/thunderbird_suitecrm_archiver/releases), then in
+Thunderbird go to **Add-ons and Themes**, the gear icon, **Install Add-on From File**.
+Checksums are published alongside each release. Installs made this way do not update
+themselves.
+
+Setting up the SuiteCRM side takes one action by an administrator: see
+**[docs/SETUP.md](docs/SETUP.md)**, or the add-on's own Preferences tab, which walks through
+it and generates the client secret for you.
+
+## Build from source
 
 ```bash
 ./tools/build.sh          # validate, test, package to dist/*.xpi
-npm test                  # 27 unit tests, no CRM required
+npm test                  # 266 unit tests, no CRM required
+./tools/review.sh         # Thunderbird's API linter, the reviewers' linter, and the store validator
 ```
 
-Load it in Thunderbird via **Tools → Developer Tools → Debug Add-ons → Load Temporary
-Add-on**, pointing at `manifest.json`.
-
-Requires Thunderbird 140 ESR or newer (Manifest V3). 140 is the current ESR; 128 reached end of life.
+There is no build step in the usual sense: the files in `src/` are the files that ship. To run
+it without packaging, use **Tools → Developer Tools → Debug Add-ons → Load Temporary Add-on**
+and point at `manifest.json`.
 
 ## Why the password grant, and not a redirect flow
 
