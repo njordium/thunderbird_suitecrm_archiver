@@ -1,0 +1,91 @@
+THE TWO FILES FLAGGED IN 0.2.2
+
+Both are gone from the package, and both findings were correct.
+
+src/icons/icon.svg was the drawing the icon generator was written from, not an
+input it reads: tools/make-icons.py renders the PNGs analytically in pure
+Python and never opens the SVG. It now lives in img/, outside the packaged
+directory.
+
+src/ui/release-notes.html was a build intermediate. It stopped being loaded
+when the settings page moved to reading src/ui/release-notes.json instead of
+assigning HTML, and it is no longer generated at all. The standalone page that
+update_info_url serves is written to dist/, which is not packaged.
+
+The packaging step includes everything under src/, which is how both travelled.
+tools/validate-manifest.py now walks the reference graph in reverse and fails
+the build on any file under src/ that is unreachable from the manifest, an
+import, an HTML reference or a getURL() path. Putting the two files back
+reproduces exactly the two lines of your report and stops the build. 43 files
+ship now, down from 45.
+
+Thank you for the pointer to --llm-review. We were already running
+webext-linter, but our script filtered its output down to failures, which
+discarded the two [unsure] escalations this finding came from. It now prints
+the extended manual review section too.
+
+TESTING REQUIRES A SUITECRM INSTANCE
+
+The add-on cannot be exercised without one. You will need:
+
+- SuiteCRM 7 or 8 with the V8 REST API enabled.
+- An OAuth2 Password client, created under Admin > OAuth2 Clients and Tokens >
+  New Password Client. Only that grant type issues a refresh token, which is
+  what the add-on relies on.
+- Setup steps are in the add-on's own Preferences tab under "How to set this
+  up", and in docs/SETUP.md in the repository.
+
+I can provide a test instance with synthetic data, plus credentials, on
+request. Please ask and I will supply them.
+
+SOURCE AND BUILD
+
+Source: https://github.com/njordium/thunderbird_suitecrm_archiver
+Licence: MPL-2.0, the same as Thunderbird. LICENSE is inside the package.
+
+There is no build step in the usual sense: the files in src/ are the files that
+ship, no dependencies, no bundler, nothing minified. Manifest V3, Thunderbird
+140 ESR or newer.
+
+WHY THE STORE VALIDATOR SHOWS WARNINGS
+
+addons-linter validates against Firefox's schema, and Firefox has no mail.
+Every Thunderbird-only permission and API it flags is valid: messagesRead,
+accountsRead, messagesUpdate, addressBooks, messagesTags, messagesTagsList and
+compose are all in Thunderbird's permission list, and messages.*, accounts.*,
+messageDisplay.*, compose.* and addressBooks.provider are documented
+Thunderbird APIs. It reports 0 errors.
+
+The Android warning is inherent: data_collection_permissions needs Firefox for
+Android 142 while we declare desktop 140 and no gecko_android. Silencing it
+would mean claiming Android compatibility for a mail extension that cannot run
+there.
+
+VERIFICATION
+
+- 301 unit tests, and 51 end-to-end steps across two scripts run against a live
+  SuiteCRM instance.
+- Zero eslint errors. The build fails on a deprecated manifest key, an unknown
+  permission, a CSP regression, or an unreferenced file under src/.
+- webext-linter: 0 errors, 0 warnings, 0 info. The reviewers' linter: no
+  findings and no unused parameters.
+- All of it runs from tools/ via `npm test`, `./tools/build.sh` and
+  `./tools/review.sh`.
+
+The one substantive manual-review item webext-linter leaves is user-data
+exfiltration, naming three fetch() sites. Those are the CRM requests
+themselves: they go only to the host the user enters in Preferences, only after
+that user signs in there, and that is what the two declared
+data_collection_permissions describe.
+
+DATA HANDLING
+
+The add-on talks only to the CRM address the user configures, and holds one
+optional host permission for that host alone. No third-party site is contacted,
+there is no telemetry, and no remote code is loaded. The user's CRM password is
+exchanged once for tokens and never stored. A full account, verifiable against
+the source, is in docs/PRIVACY.md.
+
+CONTACT
+
+Issues and questions: https://github.com/njordium/thunderbird_suitecrm_archiver/issues
