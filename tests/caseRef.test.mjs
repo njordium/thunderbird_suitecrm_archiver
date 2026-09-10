@@ -3,7 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 import test from "node:test";
 import assert from "node:assert/strict";
-import { findCaseNumber, caseRefPattern, looksLikeReply, DEFAULT_CASE_MACRO } from "../src/lib/caseRef.js";
+import { findCaseNumber, caseRefPattern, looksLikeReply, normaliseMacro, DEFAULT_CASE_MACRO } from "../src/lib/caseRef.js";
 
 test("SuiteCRM's own default macro is matched", () => {
   assert.equal(DEFAULT_CASE_MACRO, "[CASE:%1]");
@@ -78,9 +78,43 @@ test("a macro with no %1 placeholder is refused", () => {
   assert.equal(findCaseNumber("[CASE:5] x"), "5");
 });
 
-test("an absurdly long digit run is not treated as a case number", () => {
-  assert.equal(findCaseNumber("[CASE:1234567890123456789] x"), null,
-    "a 19-digit run is not a case number and must not be queried");
+// SuiteCRM declares case_number as int with len 11, and a signed MySQL int stops
+// at 2147483647. Anything longer cannot be a case number, and without a bound a
+// loose macro would capture order or tracking numbers out of unrelated subjects.
+test("a digit run longer than a case number can be is not matched", () => {
+  assert.equal(findCaseNumber("[CASE:1234567890123456789] x"), null, "19 digits");
+  assert.equal(findCaseNumber("[CASE:123456789012] x"), null, "12 digits is over the limit");
+  assert.equal(findCaseNumber("[CASE:12345678901] x"), "12345678901", "11 digits is the limit");
+  assert.equal(findCaseNumber("Ref #1234567890123456789 x", "#%1"), null,
+    "a loose macro must not capture a tracking number");
+});
+
+test("whitespace tolerance is horizontal and bounded", () => {
+  assert.equal(findCaseNumber("[CASE: 42] x"), "42", "one space");
+  assert.equal(findCaseNumber("[CASE:    42] x"), "42", "four spaces");
+  assert.equal(findCaseNumber("[CASE:\t42] x"), "42", "a tab");
+  assert.equal(findCaseNumber("[CASE:         42] x"), null, "nine spaces is not a real subject");
+  assert.equal(findCaseNumber("[CASE:\n42] x"), null, "a newline is not a real subject");
+});
+
+// The value lives in config.php, so it gets pasted from there.
+test("a macro pasted from config.php is cleaned up", () => {
+  assert.equal(normaliseMacro("'[CASE:%1]'"), "[CASE:%1]", "single quotes");
+  assert.equal(normaliseMacro('"[CASE:%1]"'), "[CASE:%1]", "double quotes");
+  assert.equal(normaliseMacro("  [CASE:%1]  "), "[CASE:%1]", "surrounding space");
+  assert.equal(normaliseMacro("[CASE:%1];"), "[CASE:%1]", "a trailing semicolon");
+  assert.equal(
+    normaliseMacro("$sugar_config['inbound_email_case_subject_macro'] = '[CASE:%1]';"),
+    "[CASE:%1]", "the whole assignment line");
+  assert.equal(normaliseMacro("\u2018[CASE:%1]\u2019"), "[CASE:%1]", "smart quotes");
+});
+
+test("a pasted macro still matches after cleaning", () => {
+  assert.equal(findCaseNumber("Re: [CASE:77] x", "'[CASE:%1]'"), "77");
+  assert.equal(
+    findCaseNumber("Re: [CASE:77] x",
+      "$sugar_config['inbound_email_case_subject_macro'] = '[CASE:%1]';"),
+    "77");
 });
 
 test("looksLikeReply recognises the prefixes that actually occur", () => {

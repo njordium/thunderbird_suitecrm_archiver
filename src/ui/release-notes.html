@@ -3,6 +3,7 @@
 <li><strong>A reply to case mail is now filed against the Case.</strong> SuiteCRM stamps the case number into the subject of email it sends about a Case, so the reply comes back carrying it. When the subject contains one, that Case is offered first and pre-selected, ahead of anything inferred from the sender. It works even when the sender matches no CRM record, which is the situation an address lookup handles worst.</li>
 <li>The subject macro is configurable in settings for instances where an administrator changed <code>inbound_email_case_subject_macro</code>. It must contain <code>%1</code>, and a macro without it is not saved, since it could never identify a case.</li>
 <li>Matching can be switched off entirely.</li>
+<li><strong>The subject the CRM stores can be edited</strong> before archiving. Click it in the archiving window, and <em>Strip Re:</em> removes stacked reply and forward prefixes in one go, in any of the languages the add-on already handles. The message in Thunderbird is never modified, and an edited subject applies to that one email rather than to a whole thread.</li>
 </ul>
 <h2>0.2.3 — 2026-09-10</h2>
 <ul>

@@ -71,6 +71,19 @@ body {
 .subject { font-weight: 600; font-size: 13.5px; overflow-wrap: anywhere; }
 
 /* ---- address bar ---- */
+/* The editable subject. Hidden until the heading is clicked, so the ordinary
+   case stays a heading rather than a form. */
+.subject-edit { display: flex; gap: 6px; align-items: center; margin: 0 0 2px; }
+.subject-edit input {
+  flex: 1; min-width: 0; font: inherit; font-weight: 600;
+  padding: 3px 6px; border: 1px solid var(--accent); border-radius: 3px;
+  background: var(--bg-raised); color: var(--fg);
+}
+.subject.is-edited::after {
+  content: " (edited)"; color: var(--fg-muted); font-weight: 400; font-size: 11px;
+}
+#msg-subject { cursor: text; }
+
 .addr-bar {
   display: flex; align-items: center; gap: 10px;
   padding: 10px 13px;

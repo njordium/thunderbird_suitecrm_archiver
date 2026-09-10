@@ -11,6 +11,10 @@
   `inbound_email_case_subject_macro`. It must contain `%1`, and a macro without it is not
   saved, since it could never identify a case.
 - Matching can be switched off entirely.
+- **The subject the CRM stores can be edited** before archiving. Click it in the archiving
+  window, and *Strip Re:* removes stacked reply and forward prefixes in one go, in any of
+  the languages the add-on already handles. The message in Thunderbird is never modified,
+  and an edited subject applies to that one email rather than to a whole thread.
 
 ## 0.2.3 — 2026-09-10
 

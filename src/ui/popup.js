@@ -39,6 +39,7 @@ const state = {
   pickerFilter: "",
   lastTarget: null,
   caseHit: null,        // a Case named in the subject, if any
+  subjectOverride: null, // an edited subject, for this archive only
   confirmedBulk: false,
   recordKind: "Cases",
   followUp: false,
@@ -252,6 +253,10 @@ function showAuthPromptCustom(title, text) {
 
 function renderMessageHeader() {
   const p = state.prepared;
+  state.subjectOverride = null;
+  $("subject-edit").hidden = true;
+  $("msg-subject").hidden = false;
+  $("msg-subject").classList.remove("is-edited");
   $("msg-subject").textContent = p.subject || "(no subject)";
   const when = p.date ? new Date(p.date).toLocaleString() : "";
   const bits = [when];
@@ -1035,6 +1040,7 @@ async function doArchive() {
       messageIds: state.archiveSelection ? state.selectedIds : null,
       useOriginalDate: state.useOriginalDate,
       followUpDays: state.followUp ? Number($("followup-days").value) || 3 : null,
+      subject: state.subjectOverride,
     });
     renderDone(res);
   } catch (e) {
@@ -1142,6 +1148,52 @@ $("btn-change-addr").addEventListener("click", async () => {
 });
 $("btn-close-picker").addEventListener("click", () => { $("addr-picker").hidden = true; });
 $("chk-other-domains").addEventListener("change", () => { renderAddressPicker(); annotatePickerCounts(); });
+
+// Editing the subject changes only what the CRM stores. The message in
+// Thunderbird is never modified: this is for tidying "Re: Re: FW:" out of a
+// record title, not for rewriting mail.
+function showSubjectEditor() {
+  $("in-subject").value = state.subjectOverride ?? state.prepared?.subject ?? "";
+  $("msg-subject").hidden = true;
+  $("subject-edit").hidden = false;
+  $("in-subject").focus();
+  $("in-subject").select();
+}
+
+function hideSubjectEditor() {
+  $("subject-edit").hidden = true;
+  $("msg-subject").hidden = false;
+}
+
+function commitSubject() {
+  const typed = $("in-subject").value.trim();
+  const original = (state.prepared?.subject || "").trim();
+
+  // Only an actual change counts as an override, so clearing the field or
+  // typing the original back restores the message's own subject.
+  state.subjectOverride = typed && typed !== original ? typed : null;
+
+  $("msg-subject").textContent = state.subjectOverride || original || "(no subject)";
+  $("msg-subject").classList.toggle("is-edited", Boolean(state.subjectOverride));
+  hideSubjectEditor();
+}
+
+$("msg-subject").addEventListener("click", showSubjectEditor);
+$("btn-subject-done").addEventListener("click", commitSubject);
+$("in-subject").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") { e.preventDefault(); commitSubject(); }
+  if (e.key === "Escape") { e.preventDefault(); hideSubjectEditor(); }
+});
+
+// Strips the prefixes mail clients stack up, in any of the languages this
+// add-on already handles and any number of times, so
+// "Re: Sv: FW: Re: Quarterly review" becomes "Quarterly review".
+$("btn-strip-re").addEventListener("click", () => {
+  $("in-subject").value = $("in-subject").value
+    .replace(/^(\s*(re|aw|sv|vs|fwd?|vb|antw|tr|rif)\s*:\s*)+/i, "")
+    .trim();
+  $("in-subject").focus();
+});
 
 $("btn-archive").addEventListener("click", doArchive);
 $("btn-create").addEventListener("click", doCreate);

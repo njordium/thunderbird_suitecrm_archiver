@@ -33,6 +33,31 @@ export const DEFAULT_CASE_MACRO = "[CASE:%1]";
 const escapeRe = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 /**
+ * Clean up a macro as a person is likely to supply it.
+ *
+ * The value lives in the CRM's config.php, so it gets copied from there, which
+ * means it arrives wrapped in PHP quoting or as the whole assignment line. The
+ * metacharacters inside it are escaped rather than removed, because they are
+ * literal parts of the macro: stripping the brackets and colon from [CASE:%1]
+ * would leave a pattern that no longer matches [CASE:1234] at all.
+ */
+export function normaliseMacro(input) {
+  let t = String(input ?? "").trim();
+
+  // $sugar_config['inbound_email_case_subject_macro'] = '[CASE:%1]';
+  const assigned = t.match(/=\s*(.+?)\s*;?\s*$/);
+  if (assigned && /\$?sugar_config|=/.test(t)) t = assigned[1].trim();
+
+  t = t.replace(/;+\s*$/, "").trim();
+
+  // Matching quotes, including the smart quotes a document or email adds.
+  const quoted = t.match(/^(['"\u2018\u201c\u00ab])(.*)(['"\u2019\u201d\u00bb])$/);
+  if (quoted) t = quoted[2].trim();
+
+  return t;
+}
+
+/**
  * A pattern matching the macro with its number captured.
  *
  * Returns null for a template with no `%1`, because such a macro cannot
@@ -40,16 +65,32 @@ const escapeRe = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
  * every reply in a thread.
  */
 export function caseRefPattern(macro = DEFAULT_CASE_MACRO) {
-  const template = String(macro || "").trim();
+  const template = normaliseMacro(macro);
   if (!template || !template.includes("%1")) return null;
 
   // Tolerate whitespace where the template has none: subjects get re-wrapped and
   // re-encoded by intermediate mail systems, and "[CASE: 1234]" should still
   // match a "[CASE:%1]" macro.
+  // 11 digits, because SuiteCRM declares case_number as int with len 11, and a
+  // signed MySQL int cannot exceed 2147483647 anyway. Without a bound, a loose
+  // macro such as "#%1" would capture an order or tracking number out of an
+  // unrelated subject and send it to the CRM as a case lookup.
+  //
+  // The trailing lookahead is what makes the bound mean "reject" rather than
+  // "truncate". Bounded capture alone matched the first 11 digits of a 19-digit
+  // number and produced a plausible but wrong case number, which is worse than
+  // no match at all. There is no matching lookbehind: the macro's own literal
+  // always sits immediately before the digits, so nothing can precede them, and
+  // asserting it would break a macro whose literal part ends in a digit.
+  //
+  // Horizontal whitespace only, and bounded: a subject reaches us as one
+  // unfolded line, so a newline here is not a real case, and \s* is looser than
+  // anything that actually occurs. This absorbs a stray space from a mail
+  // system without absorbing anything strange.
   const pattern = template
     .split("%1")
     .map(escapeRe)
-    .join("\\s*(\\d{1,12})\\s*");
+    .join("[ \\t]{0,4}(\\d{1,11})(?!\\d)[ \\t]{0,4}");
 
   try {
     return new RegExp(pattern, "i");

@@ -101,10 +101,13 @@ export async function readMessage(messageId) {
  *   without this an older message shows up under today's date. The V8 API
  *   honours an explicit `date_entered`, which is verified in tools/e2e.mjs.
  */
-export function buildEmailAttributes(msg, { parentType, parentId, assignedUserId, backdate = false }) {
+export function buildEmailAttributes(msg, { parentType, parentId, assignedUserId, backdate = false, subject = null }) {
   const h = msg.header;
+  const chosen = typeof subject === "string" ? subject.trim() : "";
   const attrs = {
-    name: h.subject || "(no subject)",
+    // An overridden subject is what the user typed in the archiving window. It
+    // changes the CRM record only; the message in Thunderbird is untouched.
+    name: chosen || h.subject || "(no subject)",
     message_id: msg.rfcMessageId,
     from_addr: h.author || "",
     to_addrs: joinAddresses(h.recipients),
@@ -260,7 +263,7 @@ const isInline = (att) =>
  * @param {{type,id,label}} parent  the record to file the email under
  * @param {Array}  alsoLink         extra {module,id} records to relate
  */
-export async function archiveMessage(client, msg, parent, { alsoLink = [], onProgress = () => {} } = {}) {
+export async function archiveMessage(client, msg, parent, { alsoLink = [], onProgress = () => {}, subject = null } = {}) {
   if (!parent || !parent.type || !parent.id) {
     throw new Error("No CRM record was chosen to file this email against.");
   }
@@ -309,6 +312,7 @@ export async function archiveMessage(client, msg, parent, { alsoLink = [], onPro
     parentId: parent.id,
     assignedUserId,
     backdate: prefs.useOriginalDate,
+    subject,
   });
 
   if (existing) {

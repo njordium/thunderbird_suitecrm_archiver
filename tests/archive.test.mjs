@@ -123,3 +123,44 @@ test("an unknown setting falls back to the sensible default", () => {
   assert.equal(shouldBeDocument("contract.pdf", undefined), true);
   assert.equal(shouldBeDocument("screenshot.png", undefined), false);
 });
+
+// --- the subject the CRM stores -------------------------------------------
+
+// Editing the subject in the archiving window changes the CRM record's name and
+// nothing else. Worth testing because it decides what a record is called, and a
+// blank or whitespace-only override must fall back rather than produce a record
+// named "".
+test("an edited subject becomes the record name", () => {
+  const msg = { header: { subject: "Re: Re: FW: Quarterly review", date: new Date() }, bodyText: "x" };
+  const a = buildEmailAttributes(msg, { parentType: "Contacts", parentId: "c1", subject: "Quarterly review" });
+  assert.equal(a.name, "Quarterly review");
+});
+
+test("no override leaves the message's own subject", () => {
+  const msg = { header: { subject: "Quarterly review", date: new Date() }, bodyText: "x" };
+  for (const subject of [null, undefined, "", "   "]) {
+    const a = buildEmailAttributes(msg, { parentType: "Contacts", parentId: "c1", subject });
+    assert.equal(a.name, "Quarterly review", `override ${JSON.stringify(subject)} should not apply`);
+  }
+});
+
+test("an override is trimmed, and never yields an empty record name", () => {
+  const msg = { header: { subject: "", date: new Date() }, bodyText: "x" };
+  const a = buildEmailAttributes(msg, { parentType: "Contacts", parentId: "c1", subject: "  Tidied  " });
+  assert.equal(a.name, "Tidied");
+  const b = buildEmailAttributes(msg, { parentType: "Contacts", parentId: "c1", subject: "   " });
+  assert.equal(b.name, "(no subject)", "a blank override with no subject must not name the record ''");
+});
+
+test("overriding the subject does not touch anything else on the record", () => {
+  const msg = {
+    header: { subject: "Original", date: new Date("2026-06-01T10:00:00Z"), author: "a@b.se" },
+    bodyText: "body", rfcMessageId: "<m1@x>",
+  };
+  const plain = buildEmailAttributes(msg, { parentType: "Contacts", parentId: "c1" });
+  const edited = buildEmailAttributes(msg, { parentType: "Contacts", parentId: "c1", subject: "Tidied" });
+  for (const key of Object.keys(plain)) {
+    if (key === "name") continue;
+    assert.deepEqual(edited[key], plain[key], `${key} changed, and only name should`);
+  }
+});

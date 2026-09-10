@@ -1038,7 +1038,7 @@ const handlers = {
    * @param {boolean}  [wholeThread] archive everything in this conversation
    */
   async archive({ messageId, parent, alsoLink, wholeThread = false, messageIds = null,
-                  useOriginalDate = null, followUpDays = null }) {
+                  useOriginalDate = null, followUpDays = null, subject = null }) {
     // The popup can override the stored preference for this archive only.
     if (useOriginalDate !== null) await store.setPrefs({ useOriginalDate });
 
@@ -1052,7 +1052,13 @@ const handlers = {
 
     if (!wholeThread && !explicit) {
       const msg = messageCache.get(messageId) || (await readMessage(messageId));
-      const res = await archiveMessage(client, msg, parent, { alsoLink: alsoLink || [], onProgress });
+      // The subject override applies to a single message only. A thread or a
+      // hand-picked selection each carry their own subjects, and forcing one
+      // edited line onto all of them would lose information rather than tidy it,
+      // so the loop below deliberately does not pass it.
+      const res = await archiveMessage(client, msg, parent, {
+        alsoLink: alsoLink || [], onProgress, subject,
+      });
       if (prefs.tagArchivedMessages) res.tagged = await tagMessage(messageId);
       rememberArchive([{ res, messageId }], parent);
       await noteRecent(msg, parent);

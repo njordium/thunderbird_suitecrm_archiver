@@ -23,7 +23,12 @@
 <!-- Main flow -->
 <section id="view-main" class="view" hidden>
   <header class="msg-head">
-    <div class="subject" id="msg-subject"></div>
+    <div class="subject" id="msg-subject" title="Click to edit the subject the CRM will store"></div>
+    <div class="subject-edit" id="subject-edit" hidden>
+      <input type="text" id="in-subject" spellcheck="false">
+      <button type="button" id="btn-strip-re" class="btn btn-quiet btn-xs">Strip Re:</button>
+      <button type="button" id="btn-subject-done" class="btn btn-quiet btn-xs">Done</button>
+    </div>
     <div class="muted small" id="msg-meta"></div>
   </header>
 
