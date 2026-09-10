@@ -58,8 +58,8 @@ Six entries in Thunderbird's extension storage, inside your Thunderbird profile
 | `connection` | Your CRM address and API path, your CRM username, the OAuth2 client id and the client secret |
 | `tokens` | The refresh token and the current access token, with their expiry |
 | `prefs` | Your settings, including which mail accounts the add-on may act in and which modules it searches |
-| `lastTargets` | Where mail from an address was filed last time: the address, and the module, id and name of that record. Up to 400 addresses, oldest dropped first. This is what lets the right-click menu and `Alt+Shift+A` file against a remembered record |
-| `recentArchives` | The popup's *Recent* list: the subject of each of the last 30 emails you filed, with the record it went to and when |
+| `lastTargets` | Where mail from an address was filed last time: the address, and the module, id and name of that record. Up to 400 addresses, oldest dropped first. This is what lets the right-click menu and `Alt+Shift+A` file against a remembered record. Clearable |
+| `recentArchives` | The popup's *Recent* list: the subject of each of the last 30 emails you filed, with the record it went to and when. Clearable |
 | `debugLog` | Only present while detailed logging is on — see below |
 
 Extension storage is a plain file on disk. A WebExtension has no access to the operating
@@ -82,7 +82,9 @@ Subjects are the one exception, and worth being plain about: the popup's *Recent
 the subject of the last 30 emails you filed, so you can see what you just did (`noteRecent`
 in `src/background/index.js`). Along with `lastTargets`, that means your profile holds a
 short local record of who you have filed mail from and what those emails were called. Both
-are bounded, neither is sent anywhere, and both go when the add-on is uninstalled.
+are bounded, neither is sent anywhere, and both can be deleted at any time with *Clear what
+is remembered* under Behaviour in the settings, which is also what the table below means by
+clearable.
 
 ## Signature parsing happens on your machine
 
@@ -150,10 +152,13 @@ describe. Declaring `none` would have been the convenient answer and a false one
 ## Removing your data
 
 - **From this add-on:** *Sign out* deletes the stored tokens, and *Sign out & forget settings*
-  also deletes the CRM address, client id and secret. Neither clears `lastTargets` or
-  `recentArchives`, so the local record of what you filed and where survives signing out —
-  uninstalling the add-on is what removes everything listed above, the debug log included.
-  None of it touches what is already in your CRM.
+  also deletes the CRM address, client id and secret. *Clear what is remembered*, under
+  Behaviour, deletes `lastTargets` and `recentArchives` — the local record of which records
+  you filed mail against and what those emails were called. It reports how many of each are
+  there before you press it, and it takes nothing else: you stay signed in and your settings
+  are untouched (`clearHistory` in `src/background/index.js`, covered by
+  `tests/history.test.mjs`). *Clear log* does the same for the debug log. Uninstalling the
+  add-on removes everything listed above. None of it touches what is already in your CRM.
 - **From your CRM:** archived emails and created records are ordinary CRM records. Delete
   them there as you would any other.
 - **Revoking access:** a SuiteCRM administrator can delete the add-on's tokens under

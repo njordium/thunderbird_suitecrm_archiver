@@ -511,6 +511,25 @@ const handlers = {
   },
 
   /**
+   * What the profile is holding on to, for the settings page to report.
+   *
+   * Both keys exist to offer something back — a remembered record to file
+   * against, a Recent list — so the count is the honest way to show what that
+   * costs: how many addresses, and how many subjects.
+   */
+  async historySize() {
+    const map = await store.get("lastTargets", {});
+    const entries = await store.get("recentArchives", []);
+    return { targets: Object.keys(map).length, recents: entries.length };
+  },
+
+  async clearHistory() {
+    await store.remove("lastTargets");
+    await store.remove("recentArchives");
+    return { targets: 0, recents: 0 };
+  },
+
+  /**
    * Gather the environment and render a shareable report. Secrets are never in
    * the buffer to begin with; addresses and the CRM host are masked unless the
    * user explicitly opts to include them.

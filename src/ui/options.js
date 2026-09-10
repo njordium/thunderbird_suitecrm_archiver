@@ -781,6 +781,45 @@ $("btn-debug-copy").addEventListener("click", async () => {
   }
 });
 
+// ---------------------------------------------------------------------------
+// What is remembered on this computer
+// ---------------------------------------------------------------------------
+
+/** Say what is actually there, so the button is not a leap of faith. */
+async function refreshHistoryState() {
+  const line = $("history-state");
+  try {
+    const { targets, recents } = await call("historySize");
+    const btn = $("btn-clear-history");
+    if (!targets && !recents) {
+      line.textContent = "Nothing is remembered yet.";
+      btn.disabled = true;
+      return;
+    }
+    btn.disabled = false;
+    const parts = [];
+    if (targets) parts.push(`${targets} ${targets === 1 ? "address" : "addresses"} with a remembered record`);
+    if (recents) parts.push(`${recents} ${recents === 1 ? "subject" : "subjects"} in the Recent list`);
+    line.textContent = `${parts.join(", ")}.`;
+  } catch (e) {
+    line.textContent = `Could not read what is stored (${e.message}).`;
+  }
+}
+
+$("btn-clear-history").addEventListener("click", async () => {
+  const line = $("history-state");
+  try {
+    await call("clearHistory");
+    line.textContent = "Cleared.";
+    $("btn-clear-history").disabled = true;
+  } catch (e) {
+    line.textContent = `Could not clear it (${e.message}).`;
+  }
+});
+
+refreshHistoryState();
+
+
 $("btn-debug-clear").addEventListener("click", async () => {
   await call("clearDiagnostics");
   debugReportText = "";

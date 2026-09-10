@@ -335,6 +335,25 @@
       To: recipients are always offered. Turn this off to leave people who were merely copied
       in out of the list.
     </p>
+
+    <div class="group-title" style="margin-top:16px">What is remembered on this computer</div>
+    <p class="muted small">
+      Two things are kept in your Thunderbird profile so they can be offered back to you:
+      where mail from an address was filed last time, which is what the right-click menu and
+      <code>Alt+Shift+A</code> file against, and the subject of each of the last 30 emails you
+      filed, for the <b>Recent</b> list. Neither is sent anywhere. Both are bounded, and both
+      go when the add-on is uninstalled.
+    </p>
+
+    <div id="history-state" class="debug-state muted small"></div>
+
+    <div class="actions">
+      <button type="button" id="btn-clear-history" class="btn">Clear what is remembered</button>
+    </div>
+    <p class="muted small indent">
+      Clearing costs you only the convenience: the menu stops naming a record until you file
+      the next email from that address. Nothing in your CRM is touched.
+    </p>
   </section>
 
   <section class="card">
