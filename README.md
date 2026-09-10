@@ -238,9 +238,16 @@ it and generates the client secret for you.
 
 ```bash
 ./tools/build.sh          # validate, test, package to dist/*.xpi
-npm test                  # 266 unit tests, no CRM required
+npm test                  # 301 unit tests, no CRM required
 ./tools/review.sh         # Thunderbird's API linter, the reviewers' linter, and the store validator
+git config core.hooksPath tools/hooks   # once per clone, see below
 ```
+
+`tools/build.sh` refuses to package an add-on carrying a tool-attribution marker — in the
+tree, in a commit message, in commit authorship, or inside the `.xpi`. By the time the build
+says so a bad commit message is already in history and only a rewrite gets it out, so the
+`commit-msg` hook in `tools/hooks` checks the message you are writing instead. Setting
+`core.hooksPath` once per clone turns it on.
 
 There is no build step in the usual sense: the files in `src/` are the files that ship. To run
 it without packaging, use **Tools → Developer Tools → Debug Add-ons → Load Temporary Add-on**

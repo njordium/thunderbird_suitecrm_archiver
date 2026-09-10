@@ -5,6 +5,9 @@
 # Fail if any tool-attribution marker appears in the tree, commit messages, or a
 # built artefact.
 #
+#   ./tools/check-attribution.sh              # the whole repository
+#   ./tools/check-attribution.sh --msg FILE   # one commit message, for the hook
+#
 # The vendor names are assembled from fragments rather than written out, so this
 # file does not itself become the one place in the repository where they appear.
 # It still excludes itself from the scan, because the assembled pattern exists in
@@ -15,6 +18,23 @@ cd "$(dirname "$0")/.."
 PATTERN="$(printf 'cl%s|anthrop%s|co-authored-by|generated with|ai-generated|ai-assisted' 'aude' 'ic')"
 SELF="check-attribution.sh"
 found=0
+
+# The commit-msg hook passes the message git is about to record. Nothing is in
+# git log yet at that point, so the message has to be read directly — and it is
+# the only thing worth reading, since a hook that scanned the whole repository
+# would refuse a commit over something the commit does not touch. Comment lines
+# are dropped first: git strips them, and `git commit -v` puts the entire diff
+# in there behind them.
+if [ "${1:-}" = "--msg" ]; then
+  msg="${2:-}"
+  [ -n "$msg" ] || { echo "--msg needs the path to a commit message"; exit 2; }
+  if grep -v "^#" "$msg" | grep -niE "$PATTERN"; then
+    echo "  ^ attribution markers in the commit message"
+    echo "  This repository does not carry them. Remove the line and commit again."
+    exit 1
+  fi
+  exit 0
+fi
 
 # .tools holds Thunderbird's review linter, cloned on demand: a third-party dev
 # tool, gitignored and never packaged. Its own README is not text this governs.
