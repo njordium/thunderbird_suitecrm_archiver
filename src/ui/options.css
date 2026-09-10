@@ -115,6 +115,10 @@ h2.with-toggle { display: flex; align-items: center; justify-content: space-betw
 .perm-text b { display: block; font-size: 12.5px; }
 .perm-text span { display: block; margin-top: 2px; overflow-wrap: anywhere; }
 
+.module-list { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 4px 0 8px; }
+.module-list label { display: flex; gap: 5px; align-items: center; color: var(--fg); }
+.module-list .is-extra { color: var(--accent); }
+
 .probe {
   margin: 10px 0 0; padding: 10px 12px;
   background: var(--bg-sunken); border: 1px solid var(--border);

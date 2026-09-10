@@ -24,6 +24,9 @@ const DEFAULT_PREFS = {
   includeCcRecipients: true,
   showOtherDomainRecipients: false,
   autoSearchOnOpen: true,
+  // null means the built-in four. An array replaces them, which is how a site
+  // stops searching a module it never uses, or adds a custom one.
+  searchModules: null,
   /**
    * Which accounts the archiving button works in.
    *

@@ -76,6 +76,12 @@
         <label class="field"><span>CRM password</span><input type="password" id="in-password" autocomplete="current-password" required></label>
       </div>
       <p class="muted small">Used once to obtain a token, then discarded. It is never written to disk.</p>
+      <p class="muted small">
+        One OAuth2 client serves everyone in an organisation, so <b>Export settings</b> writes the
+        CRM address, client id and secret to a file an administrator can hand to colleagues. Each
+        person still signs in with their own CRM username and password. The file deliberately
+        contains no token and no username, since a token would let whoever opened it act as you.
+      </p>
 
       <div id="perm-row" class="perm-row" hidden>
         <div class="perm-text">
@@ -90,6 +96,9 @@
       <div class="actions">
         <button type="submit" id="btn-signin" class="btn btn-primary">Sign in</button>
         <button type="button" id="btn-probe" class="btn">Test connection</button>
+        <button type="button" id="btn-export-conn" class="btn">Export settings</button>
+        <button type="button" id="btn-import-conn" class="btn">Import settings</button>
+        <input type="file" id="in-import-conn" accept=".json,application/json" hidden>
       </div>
     </form>
   </section>
@@ -265,6 +274,17 @@
       and Leads from the CRM. It queries live and keeps no local copy, so nothing goes stale
       and nothing is stored on disk — but autocomplete needs the CRM to be reachable.
     </p>
+
+    <div class="group-title" style="margin-top:16px">Modules searched</div>
+    <p class="muted small indent">
+      Which modules are searched for a sender's address. Fewer means faster lookups; a
+      customised SuiteCRM may keep the people you care about somewhere else entirely.
+    </p>
+    <div id="module-list" class="module-list muted small indent">Loading…</div>
+    <div class="actions indent">
+      <button type="button" id="btn-refresh-modules" class="btn">Find more modules</button>
+      <span class="muted small" id="module-note"></span>
+    </div>
 
     <div class="group-title" style="margin-top:16px">Case references</div>
     <label class="toggle">

@@ -385,6 +385,47 @@ function extractSocial(block) {
   return m ? (m[0].startsWith("http") ? m[0] : "https://" + m[0]) : null;
 }
 
+/**
+ * Hosts whose registrable domain is two labels deep, so the label before them is
+ * part of the domain rather than a subdomain. Not exhaustive, and does not need
+ * to be: a miss leaves the address as it was rather than making it wrong.
+ */
+const TWO_PART_SUFFIXES = new Set([
+  "co.uk", "org.uk", "ac.uk", "gov.uk", "me.uk", "ltd.uk", "plc.uk",
+  "com.au", "net.au", "org.au", "edu.au", "gov.au",
+  "co.nz", "org.nz", "net.nz", "co.za", "org.za",
+  "com.br", "com.mx", "com.ar", "com.tr", "com.cn", "com.sg", "com.hk",
+  "co.jp", "or.jp", "ne.jp", "ac.jp", "co.in", "co.il", "co.kr",
+]);
+
+/**
+ * A homepage guessed from an email domain.
+ *
+ * Companies overwhelmingly serve their site at www, so www.example.com is the
+ * better guess for a bare domain and the one a person would type. But the prefix
+ * only makes sense on a registrable domain: mail from a subdomained host such as
+ * oe.example.com would become www.oe.example.com, which is almost certainly
+ * nothing at all. So www is added only where no subdomain is present already,
+ * counting a two-part suffix as one label.
+ *
+ * Guessed either way, so the form marks it and the user confirms before saving.
+ */
+export function homepageFromDomain(domain) {
+  const host = String(domain || "").trim().toLowerCase().replace(/\.+$/, "");
+  if (!host || !host.includes(".")) return null;
+
+  if (host.startsWith("www.")) return `https://${host}`;
+
+  const labels = host.split(".");
+  const registrableLabels = TWO_PART_SUFFIXES.has(labels.slice(-2).join(".")) ? 3 : 2;
+
+  // More labels than the registrable domain needs means a subdomain is already
+  // there, and prefixing www would invent a host nobody serves.
+  if (labels.length > registrableLabels) return `https://${host}`;
+
+  return `https://www.${host}`;
+}
+
 /** Turn a domain into a plausible company name when nothing better exists. */
 function companyFromDomain(domain) {
   if (!domain || isConsumerDomain(domain)) return null;
@@ -647,7 +688,8 @@ export function parseContact({ author, bodyText = "", vcard = null, isAuthor = t
   //     always the company's site. Derive it — low confidence, so the form
   //     highlights it, and the user can have it checked before saving.
   if (!fields.website && domain && !isConsumerDomain(domain)) {
-    put("website", `https://${domain.replace(/^www\./, "")}`, LOW);
+    const guessed = homepageFromDomain(domain);
+    if (guessed) put("website", guessed, LOW);
   }
 
   // 6. Last resort for the company: derive it from the domain.

@@ -24,6 +24,7 @@ import { parseContact } from "../lib/signature.js";
 import { readMessage, archiveMessage } from "../lib/archive.js";
 import { findThread } from "../lib/thread.js";
 import { findCaseNumber } from "../lib/caseRef.js";
+import { unwrapMessageList } from "../lib/tbcompat.js";
 import { tagMessage, untagMessage } from "../lib/tagging.js";
 import { buildRecord, defaultsFor, CREATABLE, dateTimeInDays } from "../lib/createFromEmail.js";
 import { recordToVCard, usableForAddressBook } from "../lib/vcard.js";
@@ -221,6 +222,141 @@ function cacheMessage(id, value) {
 // ---------------------------------------------------------------------------
 
 const handlers = {
+  /**
+   * The connection settings an administrator can hand to colleagues.
+   *
+   * One OAuth2 client serves a whole organisation, so the address, client id and
+   * secret are identical for everyone, and without this each person types all
+   * three by hand. Everyone's own username and password stay their own.
+   *
+   * The refresh token is deliberately absent, and so is the username. A token
+   * identifies one person's session and would let whoever opened the file act as
+   * them; sharing it would be worse than sharing the password it replaced.
+   */
+  async exportConnection() {
+    const conn = await store.getConnection();
+    if (!conn?.baseUrl) throw new Error("There is nothing to export until you have signed in.");
+    return {
+      settings: {
+        format: "suitecrm-archiver-connection",
+        version: 1,
+        baseUrl: conn.baseUrl,
+        clientId: conn.clientId || "",
+        clientSecret: conn.clientSecret || "",
+      },
+    };
+  },
+
+  /**
+   * Read settings back in, without signing anyone in.
+   *
+   * Returns the values for the form rather than storing them, so the user sees
+   * what arrived and still has to press Sign in. Importing straight into storage
+   * would mean a file could silently repoint the add-on at another server.
+   */
+  async importConnection({ text }) {
+    let parsed;
+    try {
+      parsed = JSON.parse(String(text || ""));
+    } catch {
+      throw new Error("That file is not valid JSON.");
+    }
+    if (!parsed || parsed.format !== "suitecrm-archiver-connection") {
+      throw new Error("That file was not written by this add-on.");
+    }
+    if (!parsed.baseUrl) throw new Error("That file has no CRM address in it.");
+
+    // Refuse anything that is not http(s), so a file cannot point the add-on at
+    // a scheme the rest of the code does not expect.
+    //
+    // The scheme is checked on the raw value, before normalising. normaliseBaseUrl
+    // prepends https:// to anything whose scheme it does not recognise, which
+    // turns "file:///etc/passwd" into "https://file:///etc/passwd" — a URL that
+    // then passes a protocol check while meaning nothing. Rejecting first gives
+    // the user a clear answer instead of a puzzling address.
+    const raw = String(parsed.baseUrl).trim();
+    const scheme = raw.match(/^([a-z][a-z0-9+.-]*):/i);
+    if (scheme && !/^https?$/i.test(scheme[1])) {
+      throw new Error(`"${raw}" uses ${scheme[1]}:, and only http and https are supported.`);
+    }
+
+    let baseUrl;
+    try {
+      baseUrl = auth.normaliseBaseUrl(raw);
+      const { protocol, hostname } = new URL(baseUrl);
+      if (protocol !== "http:" && protocol !== "https:") throw new Error("scheme");
+      if (!hostname || hostname.includes(":")) throw new Error("host");
+
+      // Strip any userinfo. "http://evil.com@crm.local/" reaches crm.local, but
+      // it reads as evil.com to whoever glances at the field, and this value may
+      // have come from a file someone else prepared.
+      const u = new URL(baseUrl);
+      if (u.username || u.password) {
+        u.username = "";
+        u.password = "";
+        baseUrl = auth.normaliseBaseUrl(u.toString());
+      }
+    } catch {
+      throw new Error(`"${raw}" is not a usable http or https address.`);
+    }
+
+    return {
+      baseUrl,
+      clientId: String(parsed.clientId || ""),
+      clientSecret: String(parsed.clientSecret || ""),
+    };
+  },
+
+  /**
+   * Modules that could be searched by email address.
+   *
+   * Discovery is additive, not a replacement. /meta/modules on a stock instance
+   * returns 27 modules and does not include Prospects, which this add-on
+   * searches successfully — so treating that list as authoritative would make
+   * Targets vanish from the settings while still working. The built-in four are
+   * always offered, and anything discovered is offered alongside them.
+   *
+   * Each candidate is checked for an email1 field, because a module without one
+   * cannot be searched by address and offering it would only produce failures.
+   */
+  async listCrmModules() {
+    const client = await CrmClient.create();
+    const chosen = (await store.getPrefs()).searchModules;
+
+    let discovered = [];
+    try {
+      const res = await client.getModuleList();
+      const data = res?.data?.attributes || res?.data || {};
+      discovered = Array.isArray(data) ? data : Object.keys(data);
+    } catch (e) {
+      log.warn("Could not list CRM modules:", e.message);
+      return {
+        builtIn: DIRECT_MODULES, extra: [], selected: chosen, error: e.message,
+      };
+    }
+
+    const extras = discovered
+      .filter((m) => typeof m === "string" && !DIRECT_MODULES.includes(m))
+      .sort();
+
+    // Checked in parallel, but only for modules the user might actually pick.
+    // A per-module failure means "cannot search this", not a broken lookup.
+    const searchable = await Promise.all(extras.map(async (m) => {
+      try {
+        const fields = await client.getFieldNames(m);
+        return fields.includes("email1") ? m : null;
+      } catch {
+        return null;
+      }
+    }));
+
+    return {
+      builtIn: DIRECT_MODULES,
+      extra: searchable.filter(Boolean),
+      selected: chosen,
+    };
+  },
+
   async getStatus() {
     return auth.getStatus();
   },
@@ -510,8 +646,10 @@ const handlers = {
     const tabId = sender?.tab?.id;
     let header = null;
     try {
-      const shown = await browser.messageDisplay.getDisplayedMessages(tabId);
-      header = (Array.isArray(shown) ? shown : shown?.messages || [])[0] || null;
+      // The same unwrapping the shortcut handler needs, so both use one helper.
+      header = unwrapMessageList(
+        await browser.messageDisplay.getDisplayedMessages(tabId)
+      )[0] || null;
     } catch (e) {
       log.debug("banner: could not read the displayed message:", e.message);
     }
@@ -583,9 +721,11 @@ const handlers = {
 
   async lookupAddress({ email }) {
     const client = await CrmClient.create();
+    // Read once, outside the .then, so the arrow stays synchronous.
+    const modules = await effectiveModules();
     const [resolved, accounts] = await Promise.all([
       // Usually already answered by the badge a moment ago.
-      resolveCached(email).then((r) => r ?? resolveAddress(client, email)),
+      resolveCached(email).then((r) => r ?? resolveAddress(client, email, { modules })),
       accountsForDomain(client, email),
     ]);
     return { ...resolved, accountsByDomain: accounts };
@@ -882,7 +1022,7 @@ const handlers = {
 
   /** Free-text search, for when the sender's address matches nothing. */
   async searchCrm({ text }) {
-    return cachedSearch(String(text || "").trim(), DIRECT_MODULES, 10);
+    return cachedSearch(String(text || "").trim(), await effectiveModules(), 10);
   },
 
   /** Which of the other people on this message are already known to the CRM. */
@@ -1226,6 +1366,24 @@ const senderCache = new LookupCache();
 const searchCache = new SearchCache();
 const AB_PAGE = 25;
 
+/**
+ * Which modules to search for an address.
+ *
+ * DIRECT_MODULES is the default rather than the rule. A site that never uses
+ * Targets should not pay for searching them, and a site whose business lives in
+ * a custom module has no route at all without this.
+ *
+ * Anything the user chose is trusted as a module name and passed to the API. A
+ * name that is wrong comes back as a per-module failure, which resolveAddress
+ * already reports without taking down the rest of the lookup.
+ */
+async function effectiveModules() {
+  const chosen = (await store.getPrefs()).searchModules;
+  if (!Array.isArray(chosen)) return DIRECT_MODULES;
+  const clean = chosen.filter((m) => typeof m === "string" && /^[A-Za-z][A-Za-z0-9_]*$/.test(m));
+  return clean.length ? clean : DIRECT_MODULES;
+}
+
 async function cachedSearch(term, modules, size) {
   const exact = searchCache.get(term);
   if (exact) return exact;
@@ -1267,7 +1425,7 @@ async function resolveCached(email) {
 
   try {
     const client = await CrmClient.create();
-    return senderCache.set(email, await resolveAddress(client, email));
+    return senderCache.set(email, await resolveAddress(client, email, { modules: await effectiveModules() }));
   } catch (e) {
     log.debug(`lookup failed for ${email}:`, e.message);
     return senderCache.set(email, null);
@@ -1415,6 +1573,181 @@ optional("compose.onAfterSend", () =>
     // Never let this surface as an error during sending — the mail has gone.
     log.warn("archive-on-send failed:", e.message);
   }
+  }));
+
+/**
+ * Context menu on the message list.
+ *
+ * The toolbar button and its window are right for one message you are reading
+ * and wrong for a folder you are tidying, which is where a right-click belongs.
+ * Three entries, deliberately: opening the window, filing against the remembered
+ * record, and creating. Any more and a menu becomes a form, which is what the
+ * window is for.
+ *
+ * "File against the last record" is rewritten on every open to name the actual
+ * record, and hidden when there is nothing remembered for that sender. A menu
+ * item that reads "file against the last record" and then does nothing is worse
+ * than no item at all.
+ */
+const MENU_OPEN = "suitecrm-menu-open";
+const MENU_LAST = "suitecrm-menu-last";
+const MENU_CREATE = "suitecrm-menu-create";
+
+/** The remembered target for a selection, but only when they all agree. */
+async function rememberedFor(headers) {
+  if (!headers.length) return null;
+
+  const own = await getOwnAddresses();
+  const map = await store.get("lastTargets", {});
+  let agreed = null;
+
+  for (const header of headers) {
+    const [primary] = buildCandidates(header, { ownAddresses: own, includeCc: false });
+    const target = primary?.email ? map[primary.email.toLowerCase()] : null;
+    if (!target?.id) return null;
+    const key = `${target.type}:${target.id}`;
+    if (agreed && agreed.key !== key) return null;   // a mixed selection has no one answer
+    agreed = { key, target };
+  }
+  return agreed?.target || null;
+}
+
+optional("menus.create", () => {
+  browser.menus.create({
+    id: MENU_OPEN,
+    title: "Archive to SuiteCRM…",
+    contexts: ["message_list"],
+  });
+  browser.menus.create({
+    id: MENU_LAST,
+    title: "File against the last record",
+    contexts: ["message_list"],
+    visible: false,
+  });
+  browser.menus.create({
+    id: MENU_CREATE,
+    title: "Create a record from this email…",
+    contexts: ["message_list"],
+  });
+
+  browser.menus.onShown.addListener(async (info) => {
+    const headers = unwrapMessageList(info.selectedMessages);
+    let title = null;
+
+    if (headers.length) {
+      const target = await rememberedFor(headers);
+      if (target) {
+        title = headers.length > 1
+          ? `File ${headers.length} messages against ${target.label}`
+          : `File against ${target.label}`;
+      }
+    }
+
+    await browser.menus.update(MENU_LAST, { visible: Boolean(title), title: title || " " });
+    // Creating from several messages at once has no sensible meaning: each would
+    // need its own confirmation of the guessed fields.
+    await browser.menus.update(MENU_CREATE, { visible: headers.length === 1 });
+    browser.menus.refresh();
+  });
+
+  browser.menus.onClicked.addListener(async (info) => {
+    const headers = unwrapMessageList(info.selectedMessages);
+    if (!headers.length) return;
+
+    try {
+      if (info.menuItemId === MENU_OPEN || info.menuItemId === MENU_CREATE) {
+        // The window needs a displayed message to work on, so select the first
+        // of them and let it open on that.
+        await browser.messageDisplayAction.openPopup();
+        return;
+      }
+      if (info.menuItemId !== MENU_LAST) return;
+
+      const target = await rememberedFor(headers);
+      if (!target) return;
+
+      const client = await CrmClient.create();
+      const prefs = await store.getPrefs();
+      const done = [];
+
+      for (const header of headers) {
+        const scope = await accountScope(header);
+        if (!scope.allowed) {
+          log.info(`menu: ${scope.accountName} is not enabled; skipping a message.`);
+          continue;
+        }
+        const msg = messageCache.get(header.id) || (await readMessage(header.id));
+        const res = await archiveMessage(client, msg, target);
+        if (prefs.tagArchivedMessages) await tagMessage(header.id);
+        done.push({ res, messageId: header.id });
+      }
+
+      if (done.length) {
+        rememberArchive(done, target);
+        senderCache.invalidate(); domainCache.invalidate(); searchCache.clear();
+        log.info(`menu: filed ${done.length} message(s) under ${target.type}/${target.id}`);
+      }
+    } catch (e) {
+      log.warn(`menu ${info.menuItemId} failed:`, e.message);
+    }
+  });
+});
+
+/**
+ * Keyboard shortcuts.
+ *
+ * Two, because filing is either a decision or a repetition. archive-open is the
+ * decision: it opens the window on the displayed message. archive-last is the
+ * repetition: it files against whatever that sender's mail went to last time,
+ * with no window at all, which is the case that actually happens twenty times
+ * in a row.
+ *
+ * archive-last deliberately does nothing when there is no remembered record.
+ * Guessing a destination without showing anything would file mail somewhere the
+ * user never chose, and the undo only helps if they notice.
+ */
+optional("commands.onCommand", () =>
+  browser.commands.onCommand.addListener(async (name) => {
+    try {
+      if (name === "archive-open") {
+        await browser.messageDisplayAction.openPopup();
+        return;
+      }
+      if (name !== "archive-last") return;
+
+      const [msgHeader] = unwrapMessageList(
+        await browser.messageDisplay.getDisplayedMessages()
+      ) || [];
+      if (!msgHeader) return;
+
+      const msg = messageCache.get(msgHeader.id) || (await readMessage(msgHeader.id));
+      const scope = await accountScope(msg.header);
+      if (!scope.allowed) {
+        log.info(`archive-last: ${scope.accountName} is not enabled; ignoring.`);
+        return;
+      }
+
+      const own = await getOwnAddresses();
+      const [primary] = buildCandidates(msg.header, { ownAddresses: own, includeCc: false });
+      if (!primary?.email) return;
+
+      const map = await store.get("lastTargets", {});
+      const target = map[primary.email.toLowerCase()];
+      if (!target?.id) {
+        log.info(`archive-last: nothing remembered for ${primary.email}; opening the window instead.`);
+        await browser.messageDisplayAction.openPopup();
+        return;
+      }
+
+      const client = await CrmClient.create();
+      const res = await archiveMessage(client, msg, target);
+      if ((await store.getPrefs()).tagArchivedMessages) await tagMessage(msgHeader.id);
+      rememberArchive([{ res, messageId: msgHeader.id }], target);
+      senderCache.invalidate(primary.email);
+      log.info(`archive-last: filed under ${target.type}/${target.id}`);
+    } catch (e) {
+      log.warn(`shortcut ${name} failed:`, e.message);
+    }
   }));
 
 log.info("SuiteCRM Email Archiver background page ready.");

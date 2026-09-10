@@ -67,6 +67,11 @@ does as you read and compose; and which mail accounts it acts in.
   found by a name-LIKE guess that rarely matches.
 - **It remembers.** Where you last filed mail from an address is pre-selected next time, and
   a *Recently archived* list is one click away.
+- **Right-click, or use the keyboard.** A context menu files one message or twenty against
+  the record that sender's mail went to last time. `Alt+Shift+S` opens the window,
+  `Alt+Shift+A` files without one, and both are re-bindable in Thunderbird's own settings.
+- **Search only the modules you use**, and add ones you do. A customised SuiteCRM can keep
+  the people who matter in a module this add-on would otherwise never look at.
 
 ### Archiving
 

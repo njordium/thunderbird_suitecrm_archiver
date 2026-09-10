@@ -112,9 +112,10 @@ test("a LinkedIn URL is not mistaken for the company website", () => {
   const r = parseContact({ author: "Jane Doe <jane@acme.se>", bodyText: body });
   assert.ok(!/linkedin/i.test(r.fields.website || ""), `LinkedIn became the website: ${r.fields.website}`);
   assert.match(r.fields.linkedin_c, /linkedin\.com\/in\/janedoe/);
-  // With no website in the signature, the email domain is the next best guess —
-  // offered at low confidence so the form highlights it for checking.
-  assert.equal(r.fields.website, "https://acme.se");
+  // With no website in the signature, the email domain is the next best guess,
+  // offered at low confidence so the form highlights it for checking. www is
+  // added because that is where a company of this shape serves its site.
+  assert.equal(r.fields.website, "https://www.acme.se");
   assert.equal(r.confidence.website, "low");
 });
 
@@ -311,4 +312,45 @@ test("a normal vCard URL is still taken", () => {
                  "URL:https://acme.se/team", "END:VCARD"].join("\r\n");
   const r = parseContact({ author: "Jane <jane@acme.se>", bodyText: "Hi", vcard });
   assert.equal(r.fields.website, "https://acme.se/team");
+});
+
+// --- guessing a homepage from an email domain -----------------------------
+
+// www is the better guess for a bare domain: it is where companies serve their
+// site and what a person would type. It is the wrong guess for a host that
+// already has a subdomain, where it would invent a name nobody serves.
+test("www is added to a bare registrable domain", async () => {
+  const { homepageFromDomain } = await import("../src/lib/signature.js");
+  assert.equal(homepageFromDomain("g2.com"), "https://www.g2.com");
+  assert.equal(homepageFromDomain("njordium.com"), "https://www.njordium.com");
+  assert.equal(homepageFromDomain("leedflow.se"), "https://www.leedflow.se");
+});
+
+test("www is not added to a host that already has a subdomain", async () => {
+  const { homepageFromDomain } = await import("../src/lib/signature.js");
+  assert.equal(homepageFromDomain("oe.arizent.com"), "https://oe.arizent.com");
+  assert.equal(homepageFromDomain("post.leedflow.se"), "https://post.leedflow.se");
+  assert.equal(homepageFromDomain("a.b.example.com"), "https://a.b.example.com");
+});
+
+test("a two-part suffix counts as one label, not a subdomain", async () => {
+  const { homepageFromDomain } = await import("../src/lib/signature.js");
+  assert.equal(homepageFromDomain("example.co.uk"), "https://www.example.co.uk");
+  assert.equal(homepageFromDomain("example.com.au"), "https://www.example.com.au");
+  // ...but a real subdomain under one is still a subdomain.
+  assert.equal(homepageFromDomain("mail.example.co.uk"), "https://mail.example.co.uk");
+});
+
+test("an existing www is kept, not doubled", async () => {
+  const { homepageFromDomain } = await import("../src/lib/signature.js");
+  assert.equal(homepageFromDomain("www.g2.com"), "https://www.g2.com");
+});
+
+test("nothing that is not a domain yields a homepage", async () => {
+  const { homepageFromDomain } = await import("../src/lib/signature.js");
+  for (const bad of ["", null, undefined, "localhost", "   ", "."]) {
+    assert.equal(homepageFromDomain(bad), null, `${JSON.stringify(bad)} is not a domain`);
+  }
+  assert.equal(homepageFromDomain("G2.COM"), "https://www.g2.com", "case is normalised");
+  assert.equal(homepageFromDomain("g2.com."), "https://www.g2.com", "a trailing dot is dropped");
 });

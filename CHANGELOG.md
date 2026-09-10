@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.4.0 — 2026-09-10
+
+- **Right-click a message, or several, to file them.** Three entries: open the archiving
+  window, file against the record that sender's mail went to last time, or create a record.
+  The middle one names the actual record and hides itself when there is nothing remembered,
+  rather than offering something that would do nothing.
+- **Keyboard shortcuts.** `Alt+Shift+S` opens the archiving window; `Alt+Shift+A` files
+  against the remembered record with no window at all. Both re-bindable in Thunderbird's own
+  add-on shortcut settings. The second opens the window instead of guessing when there is
+  nothing remembered.
+- **Choose which modules are searched**, and find more. Fewer modules means faster lookups,
+  and a customised SuiteCRM can add its own. Only modules that actually have an email
+  address field are offered, since the others could never be searched by one.
+- **Share the connection settings.** One OAuth2 client serves a whole organisation, so an
+  administrator can export the CRM address, client id and secret to a file for colleagues.
+  Each person still signs in with their own username and password. The file contains no
+  token and no username, and importing fills the form rather than connecting, so nothing can
+  silently repoint the add-on at another server.
+- A website guessed from an email domain now includes **www**, which is where a company of
+  that shape serves its site. Not added when the mail host already has a subdomain, where it
+  would invent an address nobody serves.
+
 ## 0.3.0 — 2026-09-10
 
 - **A reply to case mail is now filed against the Case.** SuiteCRM stamps the case number

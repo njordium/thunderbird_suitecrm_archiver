@@ -216,6 +216,7 @@ checkScheme();
 collapseSetupWhenConnected();
 refreshConnection();
 refreshPrefs();
+refreshModules().catch(() => {});
 
 // --- About -----------------------------------------------------------------
 
@@ -606,6 +607,140 @@ $("btn-debug-report").addEventListener("click", async () => {
     debugReportText = "";
   }
   await refreshDebugState();
+});
+
+// --- Which modules are searched ----------------------------------------------
+
+const MODULE_TITLES = {
+  Contacts: "Contacts", Leads: "Leads", Accounts: "Accounts", Prospects: "Targets",
+};
+
+// Rendered from whatever the last discovery found, so the built-in four are
+// always present even before anyone presses the button, and even if the CRM is
+// unreachable.
+let moduleState = { builtIn: [], extra: [], selected: null };
+
+function renderModules() {
+  const box = $("module-list");
+  box.textContent = "";
+
+  const all = [...moduleState.builtIn, ...moduleState.extra];
+  if (!all.length) { box.textContent = "Sign in to choose modules."; return; }
+
+  const selected = Array.isArray(moduleState.selected) ? moduleState.selected : moduleState.builtIn;
+
+  for (const name of all) {
+    const label = document.createElement("label");
+    if (!moduleState.builtIn.includes(name)) label.className = "is-extra";
+
+    const tick = document.createElement("input");
+    tick.type = "checkbox";
+    tick.checked = selected.includes(name);
+    tick.dataset.module = name;
+    tick.addEventListener("change", saveModules);
+
+    label.append(tick, document.createTextNode(MODULE_TITLES[name] || name));
+    box.appendChild(label);
+  }
+}
+
+function saveModules() {
+  const picked = [...$("module-list").querySelectorAll("input:checked")]
+    .map((i) => i.dataset.module);
+
+  // Storing null rather than the same four keeps "the default" distinguishable
+  // from "someone chose exactly the default", so a later change to the default
+  // still reaches them. Nothing ticked also falls back, since searching no
+  // module at all would look like a broken add-on rather than a choice.
+  const isDefault = picked.length === moduleState.builtIn.length &&
+    moduleState.builtIn.every((m) => picked.includes(m));
+
+  moduleState.selected = isDefault || !picked.length ? null : picked;
+  call("setPrefs", { searchModules: moduleState.selected });
+
+  $("module-note").textContent = picked.length
+    ? ""
+    : "Nothing ticked, so the four built-in modules are used.";
+}
+
+async function refreshModules({ discover = false } = {}) {
+  const note = $("module-note");
+  if (discover) note.textContent = "Asking the CRM…";
+  try {
+    const res = await call("listCrmModules");
+    moduleState = { builtIn: res.builtIn, extra: res.extra || [], selected: res.selected };
+    renderModules();
+    note.textContent = res.error
+      ? `Could not ask the CRM for more modules (${res.error}).`
+      : discover
+        ? (moduleState.extra.length
+            ? `Found ${moduleState.extra.length} more module(s) that can be searched by address.`
+            : "No other module in this CRM has an email address field.")
+        : "";
+  } catch (e) {
+    $("module-list").textContent = "Sign in to choose modules.";
+    note.textContent = discover ? e.message : "";
+  }
+}
+
+$("btn-refresh-modules").addEventListener("click", () => refreshModules({ discover: true }));
+
+// --- Sharing the connection settings ----------------------------------------
+
+$("btn-export-conn").addEventListener("click", async () => {
+  const status = $("login-status");
+  status.hidden = false;
+  try {
+    const { settings } = await call("exportConnection");
+    const text = JSON.stringify(settings, null, 2) + "\n";
+    const filename = "suitecrm-archiver-connection.json";
+
+    // A blob URL plus the downloads API, for the same reason the debug report
+    // uses it: a plain <a download> is unreliable from an embedded options page.
+    const url = URL.createObjectURL(new Blob([text], { type: "application/json" }));
+    try {
+      await browser.downloads.download({ url, filename, saveAs: true });
+      status.className = "status is-info";
+      status.textContent =
+        `Saved ${filename}. It holds the CRM address, client id and secret, and no token. ` +
+        `Treat it as you would the secret itself.`;
+    } finally {
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    }
+  } catch (e) {
+    status.className = "status is-error";
+    status.textContent = e.message;
+  }
+});
+
+$("btn-import-conn").addEventListener("click", () => $("in-import-conn").click());
+
+$("in-import-conn").addEventListener("change", async (e) => {
+  const file = e.target.files?.[0];
+  e.target.value = "";                 // so the same file can be picked twice
+  if (!file) return;
+
+  const status = $("login-status");
+  status.hidden = false;
+  try {
+    const conn = await call("importConnection", { text: await file.text() });
+
+    // Filled into the form rather than stored, so the values are visible and
+    // signing in stays a deliberate act. A file must not be able to repoint the
+    // add-on at another server on its own.
+    $("in-url").value = conn.baseUrl;
+    $("in-client-id").value = conn.clientId;
+    $("in-client-secret").value = conn.clientSecret;
+    await refreshPermissionRow();
+
+    status.className = "status is-info";
+    status.textContent =
+      "Settings loaded into the form. Add your own CRM username and password, then Sign in.";
+    $("in-username").focus();
+  } catch (err) {
+    status.className = "status is-error";
+    status.textContent = err.message;
+  }
 });
 
 $("btn-debug-save").addEventListener("click", async () => {

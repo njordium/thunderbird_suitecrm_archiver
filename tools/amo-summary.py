@@ -19,6 +19,8 @@ from collections import Counter
 # on them again.
 INHERENT = {
     "MANIFEST_PERMISSIONS": "Thunderbird-only permissions, unknown to a Firefox linter",
+    # The count tracks how much of Thunderbird the add-on uses, so it rises with
+    # each feature. A jump is expected after new APIs, not a regression.
     "UNSUPPORTED_API": "Thunderbird-only APIs, unknown to a Firefox linter",
     "MISSING_DATA_COLLECTION_PERMISSIONS":
         "the data_collection_permissions key; needs Firefox 140+, so it can only "
