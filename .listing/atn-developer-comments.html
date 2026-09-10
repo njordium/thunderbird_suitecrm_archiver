@@ -1,0 +1,30 @@
+<b>The two files flagged in 0.2.2</b>
+
+<code>src/icons/icon.svg</code> and <code>src/ui/release-notes.html</code> are gone from the package. Both were genuinely unused: the SVG is the drawing the icon generator was written from rather than an input it reads, and the HTML fragment stopped being loaded when the settings page moved to reading <code>release-notes.json</code> instead of assigning HTML. The packaging step includes everything under <code>src/</code>, which is how they travelled. The drawing now lives outside <code>src/</code>, the fragment is no longer generated, and the build fails if any file under <code>src/</code> is unreachable from the manifest, an import, an HTML reference or a <code>getURL()</code> path — the check reproduces exactly those two lines when the files are put back. 43 files ship now, down from 45.
+
+Thank you for the pointer to <code>--llm-review</code>. Our own use of <code>webext-linter</code> had been filtering its output down to failures, which discarded the two <code>[unsure]</code> escalations that this finding came from. It now shows the extended manual review section as well.
+
+<b>Source and build</b>
+
+<ul>
+<li>There is no build step. What is in the repository is what ships in the .xpi, file for file.</li>
+<li>No dependencies, no bundler, nothing minified or generated. Every line is readable as written.</li>
+<li>Released under the <strong>Mozilla Public License 2.0</strong>, the same licence as Thunderbird. <code>LICENSE</code> is included inside the package.</li>
+<li>Manifest V3. Requires Thunderbird 140 ESR or newer.</li>
+</ul>
+
+<b>Why the validation report shows warnings</b>
+
+The store's validator checks against Firefox's schema, and Firefox has no mail. Every Thunderbird-only permission and API it flags is valid: <code>messagesRead</code>, <code>accountsRead</code>, <code>messagesUpdate</code>, <code>addressBooks</code>, <code>messagesTags</code>, <code>messagesTagsList</code> and <code>compose</code> are all in Thunderbird's own permission list, and <code>messages.*</code>, <code>accounts.*</code>, <code>messageDisplay.*</code>, <code>compose.*</code> and <code>addressBooks.provider</code> are all documented Thunderbird APIs. Thunderbird's own <code>webext-linter</code> reports no errors, warnings or info findings. What it does leave is manual-review items, and the substantive one is the three <code>fetch()</code> call sites it lists under user-data exfiltration: they are the CRM requests themselves, addressed to the host the user enters in Preferences and reached only after that user signs in there, which is also what the two <code>data_collection_permissions</code> declare.
+
+<b>Verification</b>
+
+<ul>
+<li>296 unit tests, and 51 end-to-end steps across two scripts that run against a live SuiteCRM instance.</li>
+<li>Zero eslint errors, and a manifest validator that fails the build if the content security policy override or a deprecated key regresses.</li>
+<li>All of it is in <code>tools/</code> and runs with <code>npm test</code> and <code>./tools/review.sh</code>.</li>
+</ul>
+
+<b>Reporting a problem</b>
+
+Issues and questions: <a href="https://github.com/njordium/thunderbird_suitecrm_archiver/issues">github.com/njordium/thunderbird_suitecrm_archiver/issues</a>. Settings has a <em>Create debug report</em> button that produces a shareable file with secrets removed and addresses and hostnames masked by default, which is the fastest way to get a connection problem diagnosed.

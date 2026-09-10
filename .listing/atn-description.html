@@ -1,0 +1,74 @@
+Archive an email into a SuiteCRM Lead, Contact, Account or related record, without choosing a module or typing a search first. The sender's address is already in the message, so the add-on uses it.
+
+<b>Finding the record</b>
+
+<ul>
+<li>One click searches <strong>Leads, Contacts, Accounts and Targets at the same time</strong>, then groups what it finds by module. A single match is pre-selected, so archiving takes one further click.</li>
+<li><strong>A reply to case mail is matched by its case number.</strong> SuiteCRM stamps that number into the subject of email it sends about a Case, so the reply comes back carrying it. That Case is then offered first and pre-selected — even when the sender matches no CRM record at all, which is where an address lookup is weakest.</li>
+<li>Wrong person? <em>Change</em> lists the others on the message, To: before Cc:. Each one shows how many CRM records they already have. Your own addresses are never offered.</li>
+<li>On a message <strong>you sent</strong>, the first To: recipient is the default instead of the sender, who is you and of no use to the CRM.</li>
+<li>Contacts and Accounts expand in place, so you can file the email against a linked Opportunity, Quote, Case or Project instead.</li>
+<li>Where you last filed mail from an address is pre-selected next time.</li>
+<li><strong>Choose which modules are searched.</strong> Fewer means faster lookups, and a customised SuiteCRM can add its own. What is offered depends on your own access: SuiteCRM reports the modules you may list and view, so you are never offered one you would be refused, and the CRM's own labels are used so a custom module reads properly.</li>
+</ul>
+
+<b>Archiving</b>
+
+<ul>
+<li>Attachments are stored as Notes, or as Documents if you prefer. Images embedded in the message body are skipped by default.</li>
+<li><strong>The record carries the message's own sent date.</strong> An older message lands at the date it was written rather than the day you filed it, so the activity timeline stays in order.</li>
+<li><strong>Archive a whole conversation</strong> in one action. The thread is rebuilt from the message's own References chain, so mail that merely shares a subject is left out.</li>
+<li>Filing the same email twice re-files it rather than duplicating it. Matching is on message id.</li>
+<li><strong>The subject the CRM stores can be edited</strong> before filing, and <em>Strip Re:</em> clears stacked reply and forward prefixes in one go. The message in Thunderbird is never modified.</li>
+<li>Archived mail is tagged in Thunderbird, and a badge on the toolbar button counts the sender's CRM records.</li>
+</ul>
+
+<b>Ways in</b>
+
+<ul>
+<li>The toolbar button, or <strong>right-click</strong> a message or a whole selection of them.</li>
+<li>The menu can open the archiving window, file straight against the record that sender's mail went to last time, or create a record. The middle entry names the actual record, and hides itself when there is nothing remembered rather than offering something that would do nothing.</li>
+<li><strong>Keyboard shortcuts.</strong> <code>Alt+Shift+S</code> opens the archiving window; <code>Alt+Shift+A</code> files against the remembered record without opening anything. Both re-bindable in Thunderbird's own add-on shortcut settings.</li>
+<li>Filing without a window still reports what happened — the record filed under, or the reason nothing was filed.</li>
+</ul>
+
+<b>When the sender is not in the CRM yet</b>
+
+<ul>
+<li>Create a <strong>Lead</strong>, or a <strong>Contact under an Account</strong>. The form is filled in from the signature block, the message headers and any attached vCard, all of it parsed on your own machine.</li>
+<li>The signature is found by its sign-off rather than by guessing at the last few lines, so a greeting or a paragraph of the body is never mistaken for contact details.</li>
+<li><strong>Anything guessed is marked, never saved quietly.</strong> You get a count of the guessed fields before you save.</li>
+<li>Swedish, Norwegian and Danish signatures are handled, including compound job titles and labelled phone numbers. <code>M:</code>, <code>Mobil:</code>, <code>Tel:</code>, <code>Direkt:</code> and <code>Fax:</code> each land in the right field.</li>
+<li>Possible duplicates are shown first, so a second record for someone who already exists takes a deliberate click.</li>
+<li><em>Create record</em> turns the email into a Case, Opportunity, Meeting or follow-up Task linked to the selected record. Only the kinds SuiteCRM will actually link are offered.</li>
+</ul>
+
+<b>Signing in</b>
+
+<ul>
+<li>OAuth2 against the <strong>SuiteCRM V8 REST API</strong>, not the legacy <code>v4_1</code> endpoint.</li>
+<li><strong>Your CRM password is never stored.</strong> It is exchanged once for tokens and then discarded. Only a refresh token is kept, and it is replaced every time it is used.</li>
+<li><strong>A Thunderbird upgrade does not sign you out.</strong> Access tokens renew silently, and the sign-in window resets on every use.</li>
+<li>An administrator can revoke access by deleting that one token in SuiteCRM. No password change, and nothing else is disturbed.</li>
+<li>The API path is detected automatically, whether it sits at <code>/Api</code> or <code>/legacy/Api</code>.</li>
+<li><strong>One client serves a whole organisation.</strong> An administrator can export the CRM address, client id and secret to a file for colleagues; each person still signs in with their own username and password. The file holds no token and no username, and importing fills the form rather than connecting, so nothing can silently repoint the add-on at another server.</li>
+</ul>
+
+<b>What it will not do</b>
+
+<ul>
+<li><strong>No third-party site is ever contacted.</strong> The add-on asks for one host permission, your CRM, and no other. A website guessed from the sender's domain is filled in for you to check, never fetched.</li>
+<li><strong>No telemetry, analytics or crash reporting.</strong> None exists in the code.</li>
+<li>No dependencies and no remote code. Nothing is downloaded and run.</li>
+<li>Debug reports are opt-in and written to a file you choose. Secrets are never recorded, and addresses and hostnames are masked unless you say otherwise.</li>
+</ul>
+
+<b>What you need</b>
+
+<ul>
+<li>Thunderbird <strong>140 ESR or newer</strong>.</li>
+<li>SuiteCRM <strong>7 or 8</strong> with the V8 REST API enabled.</li>
+<li>A one-time <strong>OAuth2 Password client</strong>, created by a SuiteCRM administrator under Admin, then OAuth2 Clients and Tokens. Only that kind of client issues the refresh token. The add-on's Preferences tab walks through the steps and includes a generator for the client secret.</li>
+</ul>
+
+Source, setup notes and issue tracker: <a href="https://github.com/njordium/thunderbird_suitecrm_archiver">github.com/njordium/thunderbird_suitecrm_archiver</a>. Released under the Mozilla Public License 2.0.

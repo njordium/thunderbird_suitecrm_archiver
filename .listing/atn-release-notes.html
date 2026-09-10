@@ -1,0 +1,40 @@
+First public release.
+
+<b>What it does</b>
+
+<ul>
+<li>Files an email into an existing SuiteCRM <strong>Lead, Contact, Account or Target</strong>. One click searches all four at the same time for the sender's address, so there is no module to pick and no search to type.</li>
+<li>Files a reply to case mail against the <strong>Case</strong> it belongs to. SuiteCRM stamps the case number into the subject of email it sends about a Case, so the reply comes back carrying it — and that works even when the sender matches no CRM record at all, which is where an address lookup is weakest.</li>
+<li>Creates a <strong>Lead, or a Contact under an Account</strong>, when the sender is not in the CRM yet. The form is filled in from their signature block, the message headers and any attached vCard, all parsed locally. Guessed fields are marked for you to confirm.</li>
+<li>Stores attachments as Notes or Documents, archives a whole conversation in one action, and dates the CRM record by when the message was sent so the activity timeline stays in order.</li>
+<li>Turns an email into a <strong>Case, Opportunity, Meeting or follow-up Task</strong> linked to the record, offering only the kinds SuiteCRM will actually link.</li>
+<li>Shows whether a correspondent is in the CRM while you read and while you compose, and tags archived mail in Thunderbird.</li>
+</ul>
+
+<b>Ways in</b>
+
+<ul>
+<li>The toolbar button, or <strong>right-click</strong> a message or a selection of them. The menu can open the archiving window, file straight against the record that sender's mail went to last time, or create a record. The middle entry names the actual record and hides itself when there is nothing remembered.</li>
+<li><strong>Keyboard shortcuts</strong>: <code>Alt+Shift+S</code> opens the archiving window, <code>Alt+Shift+A</code> files against the remembered record without opening anything. Both re-bindable in Thunderbird's own add-on shortcut settings.</li>
+<li>The subject the CRM stores can be <strong>edited before filing</strong>, and <em>Strip Re:</em> removes stacked reply and forward prefixes in one go. The message in Thunderbird is never modified.</li>
+</ul>
+
+<b>Signing in</b>
+
+Uses the SuiteCRM <strong>V8 REST API</strong> with OAuth2. Your CRM password is exchanged once for tokens and never stored. Only a rotating refresh token is kept, so a Thunderbird upgrade does not sign you out, and an administrator can revoke access by deleting a single token.
+
+One OAuth2 client serves a whole organisation, so an administrator can <strong>export the connection settings</strong> — CRM address, client id and secret — to a file for colleagues. Each person still signs in with their own username and password. The file holds no token and no username, and importing fills the form rather than connecting, so nothing can silently repoint the add-on at another server.
+
+<b>Fits your CRM and your role</b>
+
+You can choose which modules are searched: fewer means faster lookups, and a customised SuiteCRM can add its own. What is offered depends on <strong>your own access</strong> — SuiteCRM reports the modules you may list and view, so you are never offered one you would be refused, and a colleague with a different role sees a different list. The CRM's own labels are used, so a custom module reads properly.
+
+<b>What you need</b>
+
+<ul>
+<li>Thunderbird <strong>140 ESR or newer</strong>.</li>
+<li>SuiteCRM <strong>7 or 8</strong> with the V8 REST API enabled.</li>
+<li>A one-time <strong>OAuth2 Password client</strong>, created by a SuiteCRM administrator. The Preferences tab walks through it and includes a generator for the client secret.</li>
+</ul>
+
+Known limitation: this uses OAuth2's password grant rather than a browser redirect flow, because SuiteCRM registers an authorization-code grant but ships no <code>/authorize</code> endpoint. Your password therefore passes through the add-on once. It is not kept.
