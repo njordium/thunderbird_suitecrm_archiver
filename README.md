@@ -24,18 +24,26 @@ for you to confirm.
 
 ## Screenshots
 
-<!-- Uncomment once the PNGs are in img/ — see img/README.md for the conventions.
+The archiving window when the sender is not in the CRM yet — the address is already
+resolved, so the only decision left is Lead or Contact.
 
-![The archiving window](img/archive-window.png)
+![The archiving window](img/sea_create_lead.png)
+
+Creating the record. Anything the parser inferred rather than read is marked **GUESSED**,
+with a count in the footer, so nothing uncertain is saved without being seen.
 
 | | |
 | --- | --- |
-| ![Create a Lead](img/create-lead.png) | ![Create a Contact](img/create-contact.png) |
-| ![Connection settings](img/settings-connection.png) | ![Behaviour settings](img/settings-behaviour.png) |
+| ![Creating a Lead](img/sea_create_lead_details.png) | ![Creating a Contact](img/sea_create_contact_details.png) |
 
-![Mail accounts](img/settings-accounts.png)
+Settings — the connection, with a generator for the OAuth2 client secret; what the add-on
+does as you read and compose; and which mail accounts it acts in.
 
--->
+| | |
+| --- | --- |
+| ![Connection settings](img/sea_preferences_connection.png) | ![Mail account scoping](img/sea_preferences_mail_accounts.png) |
+
+![Behaviour settings](img/sea_preferences_behaviour.png)
 
 ---
 
