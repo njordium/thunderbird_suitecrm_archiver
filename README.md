@@ -70,9 +70,9 @@ does as you read and compose; and which mail accounts it acts in.
 - **Attachments become Notes**, with inline images skipped by default. When SuiteCRM's own
   `upload_badext` policy rejects a file, you are told which one and why rather than left with
   a silent gap; renaming blocked extensions so they upload is an opt-in setting.
-- **The record carries the message's own sent date**, so an email from June sits under June
-  in the activity timeline rather than under the day you filed it. Switchable globally or per
-  message.
+- **The record carries the message's own sent date**, so an older message lands at the date
+  it was written rather than the day you filed it, and the activity timeline stays in order.
+  Switchable globally or per message.
 - **Whole conversations in one action.** The thread is rebuilt from the message's own
   `References` chain, so messages that merely share a subject are excluded.
 - **Archived twice is re-filed, not duplicated.** Matching is on `message_id`, so filing the

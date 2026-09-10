@@ -45,7 +45,7 @@
    "Contacts and Accounts expand in place, so the email can be filed against a linked Opportunity, Quote, Case or Project instead.",
    "Create record\u2026 turns the email into a Case, Opportunity, Meeting or follow-up Task linked to the selected record, filing the email against it at the same time. Only the kinds SuiteCRM will actually link are offered \u2014 a Case needs an Account behind it, so it is not offered for a Target or an unconverted Lead, and the picker says why rather than quietly leaving them out.",
    "An email already archived is re-filed against the new record rather than duplicated.",
-   "The record carries the message's own date, so an email from June sits under June in the CRM's activity timeline rather than under the day you archived it. This can be switched off in settings, or per message from the archiving window.",
+   "The record carries the message's own date, so an older message lands at the date it was written rather than the day you archived it, and the CRM's activity timeline stays in order. This can be switched off in settings, or per message from the archiving window.",
    "Attachments are stored as Notes. Inline images embedded in the body are skipped by default.",
    "Archive the whole conversation in one go. The thread is rebuilt from the message's own References chain, and messages that merely share a subject are excluded.",
    "Archive several messages you picked by hand, when more than one is selected in the message list."

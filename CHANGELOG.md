@@ -37,9 +37,9 @@ First release.
   is not offered for a Target or an unconverted Lead, and the picker says why rather than
   quietly leaving them out.
 - An email already archived is re-filed against the new record rather than duplicated.
-- **The record carries the message's own date**, so an email from June sits under June in
-  the CRM's activity timeline rather than under the day you archived it. This can be
-  switched off in settings, or per message from the archiving window.
+- **The record carries the message's own date**, so an older message lands at the date it
+  was written rather than the day you archived it, and the CRM's activity timeline stays in
+  order. This can be switched off in settings, or per message from the archiving window.
 - Attachments are stored as Notes. Inline images embedded in the body are skipped by
   default.
 - **Archive the whole conversation** in one go. The thread is rebuilt from the message's

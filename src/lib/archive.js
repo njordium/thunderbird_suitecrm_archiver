@@ -98,7 +98,7 @@ export async function readMessage(messageId) {
 /**
  * @param {boolean} [opts.backdate] Set the record's creation date to the message's
  *   own send time. SuiteCRM orders activity timelines by `date_entered`, so
- *   without this an email from June shows up under today's date. The V8 API
+ *   without this an older message shows up under today's date. The V8 API
  *   honours an explicit `date_entered`, which is verified in tools/e2e.mjs.
  */
 export function buildEmailAttributes(msg, { parentType, parentId, assignedUserId, backdate = false }) {
