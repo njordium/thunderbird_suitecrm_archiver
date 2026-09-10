@@ -497,6 +497,39 @@ for (const kind of ["Cases", "Opportunities", "Meetings", "Tasks"]) {
 // The one Case-like link SuiteCRM grants a Lead. It was missing until the module
 // metadata was read properly, so it is proved here against the real server
 // rather than trusted to a unit test's idea of the payload.
+// The subject-reference path, end to end: SuiteCRM's own macro in a subject,
+// through the parser, to the Case the number belongs to.
+await step("a case reference in a subject resolves to the right Case", async () => {
+  const { findCaseNumber } = await import("../src/lib/caseRef.js");
+  const { CASE_FIELDS } = await import("../src/lib/modules.js");
+
+  const created = await client.createRecord("Cases", {
+    name: `E2E case reference ${STAMP}`,
+    status: "Open_New",
+    priority: "P2",
+  });
+  cleanup.push({ module: "Cases", id: created.id });
+
+  const back = await client.getRecord("Cases", created.id, ["id", "name", "case_number"]);
+  const number = String(back.case_number);
+  assert.ok(number && number !== "undefined", "SuiteCRM did not assign a case number");
+
+  // The subject exactly as SuiteCRM composes it: macro, then the original.
+  const subject = `Re: [CASE:${number}] ${back.name}`;
+  assert.equal(findCaseNumber(subject), number, "the parser did not read the number back");
+
+  const found = await client.getCaseByNumber(number, CASE_FIELDS);
+  assert.ok(found, `case_number ${number} did not resolve`);
+  assert.equal(found.id, created.id, "resolved to a different Case");
+  return `subject "[CASE:${number}]" -> Cases/${found.id.slice(0, 8)}…`;
+});
+
+await step("a case number nobody has used resolves to nothing, not an error", async () => {
+  const found = await client.getCaseByNumber("99999999", ["id", "name"]);
+  assert.equal(found, null, "an unused case number must be absent, not a failure");
+  return "absent, as it should be";
+});
+
 await step("an Opportunity created from a Lead is related to that Lead", async () => {
   const lead = await client.createRecord("Leads", {
     last_name: `E2E Lead ${STAMP}`, account_name: "E2E Lead Co",

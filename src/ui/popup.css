@@ -118,6 +118,12 @@ body {
 .results { padding: 4px 13px 10px; min-height: 60px; }
 
 .mod-group { margin-top: 10px; }
+/* A Case matched from the subject line. Marked out from the address results
+   because it was found a different way, and the user should be able to see that
+   at a glance rather than wonder why a Case appeared for a sender who has none. */
+.case-ref .mod-head { color: var(--accent); }
+.case-ref .rec { border-color: var(--accent); }
+
 .mod-head {
   display: flex; align-items: baseline; gap: 6px;
   font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em;

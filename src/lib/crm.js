@@ -152,6 +152,22 @@ export class CrmClient {
     }
   }
 
+  /**
+   * The Case with this case_number, or null.
+   *
+   * case_number is an int in SuiteCRM and filterable, verified against a live
+   * instance. A number nobody has used is an empty result rather than an error,
+   * so a stale reference degrades to "not found" instead of a failure.
+   */
+  async getCaseByNumber(number, fields = null) {
+    const rows = await this.getRecords("Cases", {
+      filter: { case_number: { eq: String(number) } },
+      fields,
+      size: 1,
+    });
+    return rows[0] || null;
+  }
+
   async getRecord(module, id, fields = null) {
     const query = fields ? { fields: { [module]: fields } } : null;
     const res = await this.request("GET", `/module/${encodeURIComponent(module)}/${encodeURIComponent(id)}`, { query });

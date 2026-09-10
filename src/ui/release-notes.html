@@ -1,3 +1,9 @@
+<h2>0.3.0 — 2026-09-10</h2>
+<ul>
+<li><strong>A reply to case mail is now filed against the Case.</strong> SuiteCRM stamps the case number into the subject of email it sends about a Case, so the reply comes back carrying it. When the subject contains one, that Case is offered first and pre-selected, ahead of anything inferred from the sender. It works even when the sender matches no CRM record, which is the situation an address lookup handles worst.</li>
+<li>The subject macro is configurable in settings for instances where an administrator changed <code>inbound_email_case_subject_macro</code>. It must contain <code>%1</code>, and a macro without it is not saved, since it could never identify a case.</li>
+<li>Matching can be switched off entirely.</li>
+</ul>
 <h2>0.2.3 — 2026-09-10</h2>
 <ul>
 <li>Switching <strong>Record a detailed log</strong> off now discards what it recorded, rather than leaving it in your profile until <em>Clear log</em> was pressed. Passwords, secrets and tokens were never recorded in the first place, but the log did hold email addresses and CRM URLs, and the switch implied it was gone.</li>

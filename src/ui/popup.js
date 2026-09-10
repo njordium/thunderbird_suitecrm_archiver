@@ -38,6 +38,7 @@ const state = {
   searchTerm: "",
   pickerFilter: "",
   lastTarget: null,
+  caseHit: null,        // a Case named in the subject, if any
   confirmedBulk: false,
   recordKind: "Cases",
   followUp: false,
@@ -435,12 +436,18 @@ async function selectAddress(email, name) {
   setSearching(`Searching SuiteCRM for ${email}…`);
 
   try {
-    const [lookup, memory] = await Promise.all([
+    // Both are CRM requests and neither answer depends on the other, so
+    // serialising them would show a slower window for no reason.
+    const [lookup, memory, caseHit] = await Promise.all([
       call("lookupAddress", { email }),
       call("recallTarget", { email }).catch(() => null),
+      state.prepared?.caseRef
+        ? call("lookupCase", { number: state.prepared.caseRef }).catch(() => null)
+        : Promise.resolve(null),
     ]);
     state.lookup = lookup;
     state.lastTarget = memory?.target || null;
+    state.caseHit = caseHit?.found || null;
     renderResults();
   } catch (e) {
     $("results").textContent = "";
@@ -453,10 +460,41 @@ async function selectAddress(email, name) {
 // Results
 // ---------------------------------------------------------------------------
 
+/**
+ * The Case the subject referred to.
+ *
+ * Its own group rather than mixed into the address hits, and labelled with
+ * where it came from. The user needs to know this was matched on the subject
+ * line and not on who wrote the message, because that is what makes it
+ * trustworthy on a reply and worth ignoring on a forwarded thread.
+ */
+function renderCaseRef(rec) {
+  const wrap = el("div", "mod-group case-ref");
+  const head = el("div", "mod-head");
+  head.textContent = `Case #${rec.case_number}, from the subject line`;
+  wrap.appendChild(head);
+
+  const card = el("div", "rec");
+  card.dataset.key = `Cases:${rec.id}`;
+  card.appendChild(el("div", "rec-name", rec.name || `Case ${rec.case_number}`));
+
+  const bits = [rec.status, rec.priority, rec.account_name].filter(Boolean);
+  if (bits.length) card.appendChild(el("div", "rec-sub", bits.join(" \u00b7 ")));
+
+  card.addEventListener("click", () => selectRecord({ ...rec, module: "Cases" }));
+  wrap.appendChild(card);
+  return wrap;
+}
+
 function renderResults() {
   const box = $("results");
   box.textContent = "";
   const r = state.lookup;
+
+  // A Case named in the subject goes first and is pre-selected. For a reply to
+  // case mail this is the answer, and it is available even when the sender
+  // matches no CRM record at all.
+  if (state.caseHit) box.appendChild(renderCaseRef(state.caseHit));
 
   if (r.failures.length) {
     const names = r.failures.map((f) => f.module).join(", ");
@@ -481,6 +519,16 @@ function renderResults() {
 
   const flat = Object.entries(r.hits).flatMap(([m, recs]) => recs.map((x) => ({ ...x, module: m })));
   if (state.searchTerm) return;
+
+  // A Case named in the subject outranks both rules below. Those infer a
+  // destination from who sent the message; this one reads it off the message
+  // itself, which is stronger evidence and the whole point of matching it.
+  if (state.caseHit) {
+    selectRecord({ ...state.caseHit, module: "Cases" });
+    setStatus($("status"),
+      `Pre-selected Case #${state.caseHit.case_number}, referenced in the subject.`, "info");
+    return;
+  }
 
   // Mail from the same person usually goes to the same record. Prefer what was
   // chosen last time over the first match, and say so rather than silently

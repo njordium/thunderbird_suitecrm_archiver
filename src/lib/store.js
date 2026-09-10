@@ -39,6 +39,11 @@ const DEFAULT_PREFS = {
   requireHttps: false,
   archiveWholeThread: false,
   useOriginalDate: true,
+  // A reply to case mail carries SuiteCRM's own subject macro, which names
+  // exactly one Case. See src/lib/caseRef.js for why that beats an address
+  // lookup for those messages.
+  matchCaseReferences: true,
+  caseSubjectMacro: "[CASE:%1]",
   showSenderBadge: true,
   showMessageBanner: true,
   tagArchivedMessages: true,

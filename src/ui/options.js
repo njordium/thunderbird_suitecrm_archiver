@@ -4,6 +4,7 @@
 import { generateSecret, assessSecret } from "../lib/secret.js";
 import { originPatternFor } from "../lib/url.js";
 import { describeProbe } from "../lib/probe.js";
+import { DEFAULT_CASE_MACRO, caseRefPattern } from "../lib/caseRef.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -22,6 +23,7 @@ const PREF_KEYS = [
   "debugMode",
   "requireHttps",
   "useOriginalDate",
+  "matchCaseReferences",
   "showSenderBadge",
   "showMessageBanner",
   "tagArchivedMessages",
@@ -66,6 +68,27 @@ async function refreshPrefs() {
   }
   $("p-logLevel").value = prefs.logLevel || "info";
   $("p-attachmentDestination").value = prefs.attachmentDestination || "smart";
+  $("p-caseSubjectMacro").value = prefs.caseSubjectMacro || "";
+  describeCaseMacro();
+}
+
+/** Say whether the macro can identify a case, and show what it will match. */
+function describeCaseMacro() {
+  const note = $("case-macro-note");
+  const macro = $("p-caseSubjectMacro").value.trim();
+
+  if (!macro) {
+    note.className = "field-note";
+    note.textContent = `Empty, so the default ${DEFAULT_CASE_MACRO} is used.`;
+    return;
+  }
+  if (!caseRefPattern(macro)) {
+    note.className = "field-note is-warn";
+    note.textContent = "Must contain %1, where the case number appears. Not saved until it does.";
+    return;
+  }
+  note.className = "field-note is-ok";
+  note.textContent = `Matches a subject containing ${macro.replace("%1", "1234")}.`;
 }
 
 function bindPrefs() {
@@ -76,6 +99,16 @@ function bindPrefs() {
   $("p-logLevel").addEventListener("change", (e) => call("setPrefs", { logLevel: e.target.value }));
   $("p-attachmentDestination").addEventListener("change",
     (e) => call("setPrefs", { attachmentDestination: e.target.value }));
+
+  // A macro without %1 cannot identify a case, and one saved silently would
+  // simply stop the feature working with no indication why. Say so, and do not
+  // save it.
+  $("p-caseSubjectMacro").addEventListener("input", describeCaseMacro);
+  $("p-caseSubjectMacro").addEventListener("change", (e) => {
+    const macro = e.target.value.trim();
+    if (macro && !macro.includes("%1")) return;
+    call("setPrefs", { caseSubjectMacro: macro || DEFAULT_CASE_MACRO });
+  });
 }
 
 $("login-form").addEventListener("submit", async (e) => {

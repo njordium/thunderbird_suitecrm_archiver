@@ -45,6 +45,18 @@ export const MODULE_FIELDS = {
              "email1", "assigned_user_name", "date_modified"],
 };
 
+/**
+ * Fields worth reading for a Case resolved from a subject reference.
+ *
+ * Deliberately not a MODULE_FIELDS entry: that map is indexed by module name
+ * when searching by email address, and a Case has no address of its own.
+ * Verified against a live instance.
+ */
+export const CASE_FIELDS = [
+  "id", "name", "case_number", "status", "priority",
+  "account_name", "account_id", "assigned_user_name", "date_modified",
+];
+
 /** How a matched record reaches further records worth offering. */
 export const RELATED_LINKS = {
   Contacts: [

@@ -18,11 +18,12 @@ import { CrmClient, CrmError } from "../lib/crm.js";
 import { buildCandidates, allAddresses, parseMailbox, domainOf, isConsumerDomain } from "../lib/addresses.js";
 import { originPatternFor, isMixedContentRisk } from "../lib/url.js";
 import { API_SUFFIXES, classifyAttempt } from "../lib/probe.js";
-import { accountAllowed, MODULE_LABEL, recordLabel, MODULE_FIELDS, DIRECT_MODULES } from "../lib/modules.js";
+import { accountAllowed, MODULE_LABEL, recordLabel, MODULE_FIELDS, DIRECT_MODULES, CASE_FIELDS } from "../lib/modules.js";
 import { resolveAddress, findAccountsByDomain, expandRelated, searchRecords } from "../lib/resolver.js";
 import { parseContact } from "../lib/signature.js";
 import { readMessage, archiveMessage } from "../lib/archive.js";
 import { findThread } from "../lib/thread.js";
+import { findCaseNumber } from "../lib/caseRef.js";
 import { tagMessage, untagMessage } from "../lib/tagging.js";
 import { buildRecord, defaultsFor, CREATABLE, dateTimeInDays } from "../lib/createFromEmail.js";
 import { recordToVCard, usableForAddressBook } from "../lib/vcard.js";
@@ -448,11 +449,19 @@ const handlers = {
       };
     }
 
+    const prefs = await store.getPrefs();
     const own = await getOwnAddresses();
     const candidates = buildCandidates(msg.header, {
       ownAddresses: own,
-      includeCc: (await store.getPrefs()).includeCcRecipients,
+      includeCc: prefs.includeCcRecipients,
     });
+
+    // Parsing the subject costs nothing, so it belongs here on the fast path.
+    // Turning the number into a record is a CRM request, so the popup asks for
+    // that separately, in parallel with the address lookup.
+    const caseRef = prefs.matchCaseReferences
+      ? findCaseNumber(msg.header.subject, prefs.caseSubjectMacro)
+      : null;
 
     const timings = { readMessage: tRead - t0, total: Date.now() - t0 };
     log.debug(`prepareMessage: read ${timings.readMessage}ms, total ${timings.total}ms`);
@@ -465,6 +474,7 @@ const handlers = {
       messageId,
       subject: msg.header.subject,
       date: msg.header.date,
+      caseRef,
       candidates,
       attachmentCount: msg.attachments.filter((a) => !a.contentId).length,
       hasVCard: Boolean(msg.vcard),
@@ -550,6 +560,27 @@ const handlers = {
   },
 
   /** Fan out across all address-bearing modules for one address. */
+  /**
+   * Turn a case number from a subject into its Case record.
+   *
+   * Separate from lookupAddress so the popup can run both at once: the subject
+   * names a Case, the sender names people, and neither answer depends on the
+   * other. A number that no longer resolves returns null rather than throwing,
+   * because a reference to a deleted Case is an ordinary thing to find in old
+   * mail and must not stop the window working.
+   */
+  async lookupCase({ number }) {
+    if (!number) return { found: null };
+    try {
+      const client = await CrmClient.create();
+      const rec = await client.getCaseByNumber(number, CASE_FIELDS);
+      return { number, found: rec ? { ...rec, module: "Cases" } : null };
+    } catch (e) {
+      log.warn(`Could not resolve case ${number}:`, e.message);
+      return { number, found: null, error: e.message };
+    }
+  },
+
   async lookupAddress({ email }) {
     const client = await CrmClient.create();
     const [resolved, accounts] = await Promise.all([
