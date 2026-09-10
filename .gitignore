@@ -1,0 +1,11 @@
+dist/
+node_modules/
+*.log
+.env
+
+# Thunderbird review linter, fetched on demand by tools/review.sh
+.tools/
+
+# Python bytecode, left behind by running the tools in tools/
+__pycache__/
+*.pyc

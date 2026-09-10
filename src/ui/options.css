@@ -1,0 +1,187 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+body.options {
+  width: auto;
+  max-height: none;
+  padding: 22px;
+  background: var(--bg-sunken);
+}
+main { max-width: 660px; margin: 0 auto; }
+h1 { font-size: 18px; margin: 0 0 16px; }
+h2 { font-size: 13px; margin: 0 0 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--fg-muted); }
+
+.card {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  margin-bottom: 14px;
+}
+
+.kv { display: flex; gap: 10px; padding: 4px 0; font-size: 12.5px; }
+.kv span { color: var(--fg-muted); min-width: 150px; }
+.kv b { font-weight: 600; overflow-wrap: anywhere; }
+
+.actions { display: flex; gap: 8px; margin-top: 14px; }
+.options .toggle { padding: 5px 0; }
+.indent { margin: 0 0 10px 22px; }
+.field.inline { display: flex; align-items: center; gap: 10px; }
+.field.inline > span { margin: 0; }
+.field.inline select {
+  padding: 5px 8px; border-radius: 5px; font: inherit;
+  border: 1px solid var(--border); background: var(--bg-raised); color: var(--fg);
+}
+code {
+  font: 11.5px ui-monospace, SFMono-Regular, Menlo, monospace;
+  background: var(--bg-sunken); padding: 1px 4px; border-radius: 3px;
+}
+.options .status { margin: 10px 0 0; }
+
+.perms { margin: 0; }
+.perms dt {
+  font-weight: 600; font-size: 12.5px; margin-top: 9px;
+  display: flex; align-items: baseline; gap: 7px;
+}
+.perms dt:first-child { margin-top: 0; }
+.perm-id {
+  font: 10.5px ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--fg-muted); background: var(--bg-sunken);
+  border: 1px solid var(--border); border-radius: 3px; padding: 0 4px;
+}
+.perms dd { margin: 2px 0 0; color: var(--fg-muted); font-size: 12px; }
+
+.notes {
+  margin-top: 12px; padding: 12px 14px; max-height: 320px; overflow-y: auto;
+  background: var(--bg-sunken); border: 1px solid var(--border); border-radius: var(--radius);
+  font-size: 12.5px;
+}
+.notes h3, .notes h4 { font-size: 12.5px; margin: 12px 0 5px; }
+.notes h3:first-child { margin-top: 0; }
+.notes ul { margin: 0 0 8px; padding-left: 18px; }
+.notes li { margin-bottom: 3px; color: var(--fg-muted); }
+
+.steps { margin: 4px 0 0; padding-left: 20px; }
+.steps > li { margin-bottom: 12px; font-size: 12.5px; }
+.steps b { font-weight: 600; }
+.steps em { font-style: normal; color: var(--accent); }
+.note {
+  margin-top: 5px; padding: 7px 9px;
+  background: var(--warn-soft); border-left: 2px solid var(--warn);
+  border-radius: 0 4px 4px 0; font-size: 11.5px; color: var(--fg-muted);
+}
+
+.oauth { padding-top: 6px; }
+.oauth p { margin: 0 0 9px; font-size: 12.5px; }
+.cmp { border-collapse: collapse; width: 100%; margin: 4px 0 12px; font-size: 11.5px; }
+.cmp th, .cmp td { text-align: left; padding: 5px 7px; border-bottom: 1px solid var(--border); }
+.cmp th { color: var(--fg-muted); font-weight: 600; font-size: 10.5px;
+          text-transform: uppercase; letter-spacing: .04em; }
+.cmp td:first-child { color: var(--fg-muted); }
+.cmp .bad { color: var(--danger); }
+.cmp .good { color: var(--ok); font-weight: 600; }
+
+/* Once connected the setup guide steps out of the way but stays available. */
+#setup-card.is-collapsed .steps,
+#setup-card.is-collapsed > p.muted { display: none; }
+#setup-card.is-collapsed h2::after {
+  content: " — already done"; color: var(--ok); text-transform: none; letter-spacing: 0;
+}
+
+h2.with-toggle { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+#setup-card.is-hidden #setup-body { display: none; }
+
+.acct-list { margin: 4px 0 8px; }
+.acct-row {
+  display: flex; align-items: center; gap: 9px;
+  padding: 7px 9px; margin-bottom: 4px;
+  border: 1px solid var(--border); border-radius: 5px;
+  background: var(--bg-raised); cursor: pointer;
+}
+.acct-row:hover { border-color: var(--accent); }
+.acct-row input { margin: 0; flex: none; }
+.acct-row .acct-body { flex: 1; min-width: 0; }
+.acct-row .acct-name { font-weight: 600; font-size: 12.5px; }
+.acct-row .acct-mail { color: var(--fg-muted); font-size: 11.5px; overflow-wrap: anywhere; }
+
+.perm-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px; margin: 10px 0 4px;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--bg-sunken);
+}
+.perm-row.is-missing { border-color: var(--warn); background: var(--warn-soft); }
+.perm-text { flex: 1; min-width: 0; }
+.perm-text b { display: block; font-size: 12.5px; }
+.perm-text span { display: block; margin-top: 2px; overflow-wrap: anywhere; }
+
+.probe {
+  margin: 10px 0 0; padding: 10px 12px;
+  background: var(--bg-sunken); border: 1px solid var(--border);
+  border-radius: var(--radius); font-size: 12px;
+}
+.probe h4 { margin: 0 0 6px; font-size: 12px; }
+.probe .verdict { font-weight: 600; margin-bottom: 8px; }
+.probe .verdict.ok { color: var(--ok); }
+.probe .verdict.bad { color: var(--danger); }
+.probe .verdict.warn { color: var(--warn); }
+.probe .rows {
+  display: grid; grid-template-columns: max-content minmax(0, 1fr);
+  gap: 3px 12px; margin: 0 0 8px;
+}
+.probe .rows dt { color: var(--fg-muted); }
+.probe .rows dd { margin: 0; }
+.probe .rows dd.ok { color: var(--ok); }
+.probe .rows dd.warn { color: var(--warn); }
+.probe pre.attempt.is-live { border-left: 2px solid var(--ok); }
+.probe pre {
+  margin: 6px 0 0; padding: 7px 9px; overflow-x: auto;
+  background: var(--bg-raised); border: 1px solid var(--border); border-radius: 4px;
+  font: 11px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--fg-muted); white-space: pre-wrap; overflow-wrap: anywhere;
+}
+.probe .fix { margin-top: 8px; padding-left: 18px; }
+.probe .fix li { margin-bottom: 4px; color: var(--fg-muted); }
+
+.debug-state { margin: 6px 0 2px; }
+.debug-state .dot {
+  display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--border-strong); margin-right: 6px; vertical-align: middle;
+}
+.debug-state.is-on .dot { background: var(--ok); }
+#debug-text { max-height: 300px; overflow: auto; }
+
+.acct-toolbar {
+  display: flex; align-items: center; gap: 8px;
+  margin: 6px 0 8px; flex-wrap: wrap;
+}
+.acct-toolbar .btn-xs { padding: 3px 9px; font-size: 11.5px; }
+.acct-toolbar #account-hint { margin-left: auto; text-align: right; }
+
+/* Capped so a mailbox with many accounts does not push everything else away. */
+.acct-list { max-height: 300px; overflow-y: auto; padding-right: 2px; }
+.acct-row.is-on { border-color: var(--accent); background: var(--accent-soft); }
+
+.stray {
+  margin-top: 14px; padding: 12px 14px;
+  border: 1px solid var(--warn); border-left-width: 3px; border-radius: var(--radius);
+  background: var(--warn-soft);
+}
+.stray-head { font-weight: 600; font-size: 12.5px; color: var(--warn); margin-bottom: 6px; }
+.stray-list {
+  margin: 8px 0; padding-left: 18px;
+  font: 11.5px ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--fg-muted);
+  max-height: 140px; overflow-y: auto;
+}
+.stray-list li { margin-bottom: 2px; overflow-wrap: anywhere; }
+
+.inline-action {
+  border: 0; background: none; margin: 0; padding: 0 0 0 8px;
+  font: inherit; font-size: 11px; color: var(--accent);
+  cursor: pointer; text-decoration: underline;
+}
+.inline-action:disabled { color: var(--fg-muted); cursor: default; text-decoration: none; }
+.field-note { display: block; margin-top: 3px; font-size: 11px; color: var(--fg-muted); }
+.field-note.is-ok { color: var(--ok); }
+.field-note.is-warn { color: var(--warn); }

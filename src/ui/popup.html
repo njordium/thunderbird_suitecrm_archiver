@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at https://mozilla.org/MPL/2.0/. -->
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; img-src 'self' data:;">
+  <link rel="stylesheet" href="popup.css">
+  <title>Archive to SuiteCRM</title>
+</head>
+<body>
+
+<!-- Not configured / signed out -->
+<section id="view-auth" class="view" hidden>
+  <div class="empty">
+    <h2 id="auth-title">Connect to SuiteCRM</h2>
+    <p id="auth-text" class="muted"></p>
+    <button id="btn-open-options" class="btn btn-primary">Open settings</button>
+  </div>
+</section>
+
+<!-- Main flow -->
+<section id="view-main" class="view" hidden>
+  <header class="msg-head">
+    <div class="subject" id="msg-subject"></div>
+    <div class="muted small" id="msg-meta"></div>
+  </header>
+
+  <div class="addr-bar">
+    <div class="addr-current">
+      <span class="label">Archiving for</span>
+      <div class="addr-name" id="addr-name"></div>
+      <div class="addr-email" id="addr-email"></div>
+    </div>
+    <button id="btn-change-addr" class="btn btn-quiet" hidden>Change</button>
+  </div>
+
+  <div id="addr-picker" class="addr-picker" hidden>
+    <div class="picker-head">
+      <span id="picker-hint" class="muted small"></span>
+      <button id="btn-close-picker" class="btn btn-quiet btn-xs">Done</button>
+    </div>
+    <div id="addr-options"></div>
+    <label class="toggle small" id="other-domain-toggle" hidden>
+      <input type="checkbox" id="chk-other-domains"> Also show recipients on other domains
+    </label>
+  </div>
+
+  <div class="search-bar">
+    <input type="search" id="crm-search" placeholder="Search SuiteCRM by name or company…"
+           autocomplete="off" spellcheck="false">
+    <button id="btn-search-clear" class="btn btn-quiet btn-xs" hidden>Clear</button>
+  </div>
+
+  <div id="results" class="results"></div>
+
+  <div class="recent-bar">
+    <button id="btn-recent" class="btn btn-quiet btn-xs">Recently archived</button>
+  </div>
+  <div id="recent" class="recent" hidden>
+    <div id="recent-list"></div>
+  </div>
+
+  <div id="status" class="status" hidden></div>
+
+  <footer class="foot">
+    <div class="foot-opts">
+      <label class="toggle small">
+        <input type="checkbox" id="chk-attachments"> Include attachments
+        <span id="att-count" class="muted"></span>
+      </label>
+      <label class="toggle small">
+        <input type="checkbox" id="chk-date"> Use the message's date
+        <span id="date-hint" class="muted"></span>
+      </label>
+      <label class="toggle small">
+        <input type="checkbox" id="chk-followup"> Follow up in
+        <input type="number" id="followup-days" value="3" min="1" max="90" class="mini-num">
+        days
+      </label>
+      <label class="toggle small" id="selection-opt" hidden>
+        <input type="checkbox" id="chk-selection"> Archive all selected messages
+        <span id="selection-count" class="muted"></span>
+      </label>
+      <label class="toggle small" id="thread-opt" hidden>
+        <input type="checkbox" id="chk-thread"> Archive the whole conversation
+        <span id="thread-count" class="muted"></span>
+      </label>
+    </div>
+    <div class="foot-actions">
+      <button id="btn-create-record" class="btn" disabled>Create record…</button>
+      <button id="btn-archive" class="btn btn-primary" disabled>Archive</button>
+    </div>
+  </footer>
+</section>
+
+<!-- Create a Case / Opportunity / Meeting / Task from this email -->
+<section id="view-record" class="view" hidden>
+  <header class="msg-head">
+    <button id="btn-record-back" class="btn btn-quiet btn-xs">← Back</button>
+    <div class="subject" id="record-title">New record</div>
+    <div class="muted small" id="record-target"></div>
+  </header>
+
+  <div class="seg" id="record-kind">
+    <button data-kind="Cases" class="seg-btn is-active">Case</button>
+    <button data-kind="Opportunities" class="seg-btn">Opportunity</button>
+    <button data-kind="Meetings" class="seg-btn">Meeting</button>
+    <button data-kind="Tasks" class="seg-btn">Task</button>
+  </div>
+  <p class="muted small indent" id="record-blurb"></p>
+  <p class="note small" id="record-unavailable" hidden></p>
+
+  <div class="field-group">
+    <label class="field"><span>Name</span><input type="text" id="r-name"></label>
+
+    <div class="row" id="row-opportunity" hidden>
+      <label class="field"><span>Amount</span><input type="text" id="r-amount" inputmode="decimal"></label>
+      <label class="field"><span>Expected close</span><input type="date" id="r-date_closed"></label>
+    </div>
+    <label class="field" id="row-stage" hidden>
+      <span>Sales stage</span><input type="text" id="r-sales_stage">
+    </label>
+
+    <div class="row" id="row-meeting" hidden>
+      <label class="field"><span>Starts</span><input type="datetime-local" id="r-date_start"></label>
+      <label class="field"><span>Hours</span><input type="number" id="r-duration_hours" min="0" step="1"></label>
+    </div>
+
+    <label class="field" id="row-task" hidden>
+      <span>Due</span><input type="datetime-local" id="r-date_due">
+    </label>
+  </div>
+
+  <label class="toggle small indent">
+    <input type="checkbox" id="r-archive" checked> Also file this email against it
+  </label>
+
+  <div id="record-status" class="status" hidden></div>
+
+  <footer class="foot">
+    <div class="muted small" id="record-hint"></div>
+    <div class="foot-actions">
+      <button id="btn-record-save" class="btn btn-primary">Create</button>
+    </div>
+  </footer>
+</section>
+
+<!-- Create Lead / Contact -->
+<section id="view-create" class="view" hidden>
+  <header class="msg-head">
+    <button id="btn-back" class="btn btn-quiet btn-xs">← Back</button>
+    <div class="subject" id="create-title">New record</div>
+    <div class="muted small" id="create-source"></div>
+  </header>
+
+  <div class="seg" id="create-kind">
+    <button data-kind="Leads" class="seg-btn is-active">Lead</button>
+    <button data-kind="Contacts" class="seg-btn">Contact</button>
+  </div>
+
+  <div id="account-block" class="field-group" hidden>
+    <div class="group-title">Account</div>
+    <div id="account-suggestions"></div>
+    <label class="field">
+      <span>Account name</span>
+      <input type="text" id="f-account_name" autocomplete="off">
+    </label>
+    <div id="account-note" class="muted small"></div>
+  </div>
+
+  <div class="field-group">
+    <div class="group-title">Person</div>
+    <div class="row">
+      <label class="field"><span>First name</span><input type="text" id="f-first_name"></label>
+      <label class="field"><span>Last name</span><input type="text" id="f-last_name"></label>
+    </div>
+    <label class="field"><span>Job title</span><input type="text" id="f-title"></label>
+    <label class="field"><span>Email</span><input type="email" id="f-email1"></label>
+    <div class="row">
+      <label class="field"><span>Phone</span><input type="text" id="f-phone_work"></label>
+      <label class="field"><span>Mobile</span><input type="text" id="f-phone_mobile"></label>
+    </div>
+    <label class="field">
+      <span>Website</span>
+      <input type="text" id="f-website">
+      <span class="field-note" id="website-note"></span>
+    </label>
+  </div>
+
+  <details class="more">
+    <summary>More details</summary>
+    <div class="field-group">
+      <div class="row">
+        <label class="field"><span>Switchboard</span><input type="text" id="f-phone_other"></label>
+        <label class="field"><span>Fax</span><input type="text" id="f-phone_fax"></label>
+      </div>
+      <label class="field"><span>Street</span><input type="text" id="f-primary_address_street"></label>
+      <div class="row">
+        <label class="field"><span>Postcode</span><input type="text" id="f-primary_address_postalcode"></label>
+        <label class="field"><span>City</span><input type="text" id="f-primary_address_city"></label>
+      </div>
+      <label class="field"><span>Country</span><input type="text" id="f-primary_address_country"></label>
+    </div>
+  </details>
+
+  <details class="more" id="sig-block-wrap">
+    <summary>Signature the fields came from</summary>
+    <pre id="sig-block" class="sig"></pre>
+  </details>
+
+  <div id="dupes" class="dupes" hidden>
+    <div class="dupes-head">Someone very like this is already in SuiteCRM</div>
+    <div id="dupes-list"></div>
+    <p class="muted small">
+      Adding the address to an existing record keeps one history instead of two.
+    </p>
+  </div>
+
+  <div id="create-status" class="status" hidden></div>
+
+  <footer class="foot">
+    <div class="muted small" id="review-hint"></div>
+    <div class="foot-actions">
+      <button id="btn-create" class="btn btn-primary">Create &amp; archive</button>
+    </div>
+  </footer>
+</section>
+
+<!-- Done -->
+<section id="view-done" class="view" hidden>
+  <div class="empty">
+    <div class="tick">✓</div>
+    <h2 id="done-title">Archived</h2>
+    <p class="muted" id="done-text"></p>
+    <ul id="done-warnings" class="warnings"></ul>
+    <div class="foot-actions center">
+      <button id="btn-undo" class="btn" hidden>Undo</button>
+      <button id="btn-open-record" class="btn">Open in SuiteCRM</button>
+      <button id="btn-close" class="btn btn-primary">Close</button>
+    </div>
+    <div id="undo-status" class="status" hidden></div>
+  </div>
+</section>
+
+<div id="loading" class="loading">
+  <div class="spinner"></div>
+  <div class="muted small" id="loading-text">Loading…</div>
+</div>
+
+<script src="popup.js" type="module"></script>
+</body>
+</html>

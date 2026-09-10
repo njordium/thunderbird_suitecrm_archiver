@@ -1,0 +1,87 @@
+<h2>0.2.1 — 2026-09-10</h2>
+<ul>
+<li>Documentation and packaging updates, including screenshots. No functional change.</li>
+</ul>
+<h2>0.2.0 — 2026-09-10</h2>
+<p>First release.</p>
+<h3>Signing in</h3>
+<ul>
+<li>Uses the SuiteCRM <strong>V8 REST API</strong> with OAuth2, not the legacy <code>v4_1</code> endpoint.</li>
+<li>Your CRM password is used once to obtain a token and is <strong>never stored</strong>. Only a refresh token is kept, and it is replaced each time it is used.</li>
+<li>Access tokens last an hour and renew silently. The sign-in window is a month and resets on every use, so ordinary use means never signing in again — and a Thunderbird upgrade does not sign you out.</li>
+<li>The CRM address is detected automatically, whether the API sits at <code>/Api</code> or <code>/legacy/Api</code>.</li>
+</ul>
+<h3>Archiving</h3>
+<ul>
+<li>Clicking the toolbar button searches **Leads, Contacts, Accounts and Targets at the same time** for the sender&#x27;s address. No module to choose, no search to type.</li>
+<li>A single match is pre-selected, so archiving is one further click.</li>
+<li>On a message <strong>you sent</strong>, the first <strong>To:</strong> recipient is the default target rather than the sender — who is you, and of no use to the CRM.</li>
+<li><em>Change</em> lists the other people on the message, <strong>To: first and Cc: after</strong>, since To: is who the message was addressed to. Each is labelled with how many CRM records they already have. Only people on the target&#x27;s domain are grouped as colleagues; other domains sit behind a toggle, and your own addresses are never offered.</li>
+<li>Cc: recipients can be left out of that list entirely; To: recipients are always offered.</li>
+<li>Contacts and Accounts expand in place, so the email can be filed against a linked Opportunity, Quote, Case or Project instead.</li>
+<li><strong>Create record…</strong> turns the email into a Case, Opportunity, Meeting or follow-up Task linked to the selected record, filing the email against it at the same time. Only the kinds SuiteCRM will actually link are offered — a Case needs an Account behind it, so it is not offered for a Target or an unconverted Lead, and the picker says why rather than quietly leaving them out.</li>
+<li>An email already archived is re-filed against the new record rather than duplicated.</li>
+<li><strong>The record carries the message&#x27;s own date</strong>, so an email from June sits under June in the CRM&#x27;s activity timeline rather than under the day you archived it. This can be switched off in settings, or per message from the archiving window.</li>
+<li>Attachments are stored as Notes. Inline images embedded in the body are skipped by default.</li>
+<li><strong>Archive the whole conversation</strong> in one go. The thread is rebuilt from the message&#x27;s own <code>References</code> chain, and messages that merely share a subject are excluded.</li>
+<li><strong>Archive several messages you picked by hand</strong>, when more than one is selected in the message list.</li>
+</ul>
+<h3>Creating records</h3>
+<ul>
+<li>When the sender is unknown, create a <strong>Lead</strong>, or a <strong>Contact</strong> under an Account.</li>
+<li>The form is filled in from the signature block, the message headers, and an attached vCard when there is one. Everything is worked out on your own machine; no message content is sent anywhere except your CRM.</li>
+<li>Anything the parser is not sure about is highlighted for you to confirm, so a guess is never saved silently.</li>
+<li>A website guessed from the sender&#x27;s email domain is filled in and marked as a guess for you to confirm. The add-on never contacts it — no third-party site is ever fetched, and the only site permission it asks for is your own CRM.</li>
+<li>The signature is located by its sign-off (&quot;Regards,&quot; and the like) rather than by guessing at the last few lines, so a greeting or the message body is never mistaken for contact details.</li>
+<li>Inline image placeholders, certification lines and tracking links no longer produce invented phone numbers, companies or postal addresses. A number needs a label, an international prefix or human grouping before it is treated as a phone number.</li>
+<li><strong>Your own signature is never harvested from a reply.</strong> If the signature block names only addresses on other domains, it belongs to someone else and is discarded.</li>
+<li>Swedish, Norwegian and Danish signatures are handled: compound job titles (<em>Kontorschef</em>), one-line addresses (<em>Mätarvägen 3B, 196 37 Kungsängen</em>), <em>Direkt</em> and <em>Växel</em> as separate numbers, and <em>Från:</em> / <em>Fra:</em> / <em>Skickat:</em> / <em>Ämne:</em> as quote markers.</li>
+<li>Names keep <em>Mc</em>, <em>Mac</em>, <em>O&#x27;</em>, <em>van</em> and <em>de</em> with the surname.</li>
+<li>Existing Accounts on the sender&#x27;s domain are offered, so a Contact can be linked to the right company instead of creating a duplicate Account.</li>
+<li>Someone merely copied on the message never inherits the sender&#x27;s job title, phone numbers or address — only company details, which the whole domain shares.</li>
+</ul>
+<h3>Safeguards</h3>
+<ul>
+<li>An email whose <code>Message-ID</code> matches one already archived is only re-filed when the sender matches too. A <code>Message-ID</code> is chosen by whoever sent the message and is not authenticated, so a match on its own is not proof the two are the same email.</li>
+<li>The add-on asks for permission to reach your CRM&#x27;s address specifically, not every site, and refuses to sign in without it.</li>
+<li>An unencrypted <code>http://</code> CRM address is called out in the settings, because the password grant sends your password in the request body.</li>
+</ul>
+<h3>Settings</h3>
+<ul>
+<li>Choose which mail accounts the archiving button works in, with <strong>Untick all</strong> and <strong>Tick all</strong> for mailboxes carrying many accounts. Leaving them all ticked also covers accounts added later. This scopes what the add-on acts on; Thunderbird grants add-on permissions per profile, so it is not a permission boundary.</li>
+<li>The SuiteCRM setup guide sits below the connection form and can be hidden once done.</li>
+<li>Optionally refuse to sign in over an unencrypted connection, so the CRM password can never cross the network in the clear.</li>
+</ul>
+<h3>Fixed</h3>
+<ul>
+<li>Sign-in failed with a bare network error against any CRM served over plain <code>http://</code>. Manifest V3 add-ons default to a policy that silently rewrites <code>http://</code> requests to <code>https://</code>; the add-on now declares its own policy without that directive. This is why the Manifest V2 add-on it replaces could reach the same address and this one could not.</li>
+<li>Sign-in also failed against any CRM on a non-default port, because Thunderbird does not accept a port in a permission pattern. The add-on now asks for the host without one.</li>
+</ul>
+<h3>Speed</h3>
+<ul>
+<li>The window opens immediately and fills in as answers arrive, with a visible searching state, instead of waiting for the CRM and a mailbox-wide scan first.</li>
+<li>Conversation discovery is scoped to the message&#x27;s own account rather than searching every account in the profile.</li>
+</ul>
+<h3>Troubleshooting</h3>
+<ul>
+<li>A <strong>Test connection</strong> button reports which layer is failing — host permission not granted, granted but blocked, or the CRM genuinely unreachable — rather than a bare network error.</li>
+<li><strong>Record a detailed log</strong>, off by default, captures what the add-on does and every request it makes, then exports it as a text file to save or copy.</li>
+<li>The report is written to be safe to share. Passwords, client secrets and access tokens are never recorded, so they cannot leak; message subjects and bodies are never captured; email addresses and the CRM host are masked unless you choose to include them.</li>
+</ul>
+<h3>Reliability</h3>
+<ul>
+<li>Creating a Contact from a signature containing a website no longer fails. Attributes are checked against the module&#x27;s own field list before being sent, since modules differ.</li>
+<li>An archived email keeps its sender and recipients. These fields are writable but absent from SuiteCRM&#x27;s own field metadata, so they need explicit handling.</li>
+<li>Re-filing an already-archived email now confirms the sender matches before reusing the record, using the field SuiteCRM actually returns.</li>
+</ul>
+<h3>Appearance</h3>
+<ul>
+<li>Proper toolbar icons at every size Thunderbird asks for, so the button is visible in Customise Toolbar rather than blank.</li>
+<li>A main-toolbar button in addition to the one in the message header.</li>
+</ul>
+<h3>Requirements</h3>
+<ul>
+<li>Thunderbird 140 ESR or newer. Verified on 140 ESR through 155.</li>
+<li>Your CRM password is used once and never stored; only a rotating refresh token is kept. The add-on declares that it handles your <strong>personal communications</strong> and **personally identifying information**, because email content and contact details leave your machine for your CRM. Nothing is sent anywhere else.</li>
+<li>SuiteCRM 7 or 8 with the V8 API enabled and an OAuth2 <strong>Password</strong> client.</li>
+</ul>

@@ -1,0 +1,20 @@
+{
+  "name": "suitecrm-email-archiver",
+  "version": "0.1.0",
+  "description": "Thunderbird MailExtension that archives email into SuiteCRM Leads, Contacts and Accounts.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "check": "./tools/check-syntax.sh src/lib/*.js src/background/*.js src/ui/*.js src/messageview/*.js src/compose/*.js && python3 tools/validate-manifest.py && npm run lint",
+    "verify": "node tools/verify-crm.mjs",
+    "build": "./tools/build.sh",
+    "lint": "eslint src tests tools",
+    "review": "./tools/review.sh"
+  },
+  "license": "MPL-2.0",
+  "devDependencies": {
+    "eslint": "^9.39.5",
+    "globals": "^17.12.0"
+  }
+}

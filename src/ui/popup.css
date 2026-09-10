@@ -1,0 +1,423 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+:root {
+  --bg: #ffffff;
+  --bg-sunken: #f5f6f8;
+  --bg-raised: #ffffff;
+  --fg: #1b1d21;
+  --fg-muted: #676c76;
+  --border: #dcdfe4;
+  --border-strong: #b9bec7;
+  --accent: #1a6ea8;
+  --accent-fg: #ffffff;
+  --accent-soft: #e8f1f8;
+  --ok: #1c8b4f;
+  --warn: #9a6400;
+  --warn-soft: #fdf4e3;
+  --danger: #b3261e;
+  --radius: 7px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1e2126;
+    --bg-sunken: #24282e;
+    --bg-raised: #2a2f36;
+    --fg: #e6e8eb;
+    --fg-muted: #9aa1ac;
+    --border: #3a4048;
+    --border-strong: #4d545e;
+    --accent: #4a9fd8;
+    --accent-fg: #12161a;
+    --accent-soft: #22323e;
+    --ok: #48c98a;
+    --warn: #e0a340;
+    --warn-soft: #33291a;
+    --danger: #f2685e;
+  }
+}
+
+* { box-sizing: border-box; }
+
+/*
+ * A class that sets `display` beats the user-agent rule for [hidden], so an
+ * element toggled with `el.hidden = true` stays visible. Every view stacked on
+ * top of the others because of exactly this. Make the attribute authoritative.
+ */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  width: 440px;
+  max-height: 580px;
+  overflow-y: auto;
+  font: 13px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--fg);
+  background: var(--bg);
+}
+
+.view { display: flex; flex-direction: column; }
+.muted { color: var(--fg-muted); }
+.small { font-size: 11.5px; }
+
+/* ---- header ---- */
+.msg-head {
+  padding: 11px 13px 9px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-sunken);
+  position: sticky; top: 0; z-index: 5;
+}
+.subject { font-weight: 600; font-size: 13.5px; overflow-wrap: anywhere; }
+
+/* ---- address bar ---- */
+.addr-bar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 13px;
+  border-bottom: 1px solid var(--border);
+}
+.addr-current { flex: 1; min-width: 0; }
+.addr-current .label {
+  font-size: 10px; text-transform: uppercase; letter-spacing: .05em;
+  color: var(--fg-muted);
+}
+.addr-name { font-weight: 600; overflow-wrap: anywhere; }
+.addr-email { color: var(--fg-muted); font-size: 12px; overflow-wrap: anywhere; }
+
+.addr-picker {
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-sunken);
+  padding: 8px 13px 10px;
+}
+.picker-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+
+.addr-opt {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  padding: 7px 9px; margin-bottom: 4px;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--bg-raised); color: inherit;
+  font: inherit; text-align: left; cursor: pointer;
+}
+.addr-opt:hover { border-color: var(--accent); }
+.addr-opt.is-active { border-color: var(--accent); background: var(--accent-soft); }
+.addr-opt .who { flex: 1; min-width: 0; }
+.addr-opt .who b { display: block; font-weight: 600; }
+.addr-opt .who span { color: var(--fg-muted); font-size: 11.5px; overflow-wrap: anywhere; }
+.role-tag {
+  font-size: 9.5px; text-transform: uppercase; letter-spacing: .04em;
+  padding: 2px 5px; border-radius: 3px;
+  background: var(--bg-sunken); color: var(--fg-muted); border: 1px solid var(--border);
+}
+.crm-tag {
+  font-size: 10px; padding: 2px 6px; border-radius: 10px;
+  background: var(--accent-soft); color: var(--accent); border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+/* ---- results ---- */
+.results { padding: 4px 13px 10px; min-height: 60px; }
+
+.mod-group { margin-top: 10px; }
+.mod-head {
+  display: flex; align-items: baseline; gap: 6px;
+  font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em;
+  color: var(--fg-muted); margin-bottom: 5px;
+}
+
+.rec {
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--bg-raised); margin-bottom: 5px; overflow: hidden;
+}
+.rec.is-selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+.rec-main {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  padding: 8px 10px; border: 0; background: none; color: inherit;
+  font: inherit; text-align: left; cursor: pointer;
+}
+.rec-main:hover { background: var(--bg-sunken); }
+.rec-body { flex: 1; min-width: 0; }
+.rec-title { font-weight: 600; overflow-wrap: anywhere; }
+.rec-sub { color: var(--fg-muted); font-size: 11.5px; overflow-wrap: anywhere; }
+.rec-check {
+  width: 17px; height: 17px; flex: none; border-radius: 50%;
+  border: 1.5px solid var(--border-strong);
+  display: grid; place-items: center; font-size: 11px; color: transparent;
+}
+.rec.is-selected .rec-check { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+
+.rec-expand {
+  border: 0; background: none; color: var(--accent); font: inherit; font-size: 11.5px;
+  padding: 4px 10px 8px; cursor: pointer; text-align: left; width: 100%;
+}
+.rec-related { padding: 0 10px 8px 34px; }
+.rel-item {
+  display: flex; gap: 7px; align-items: center; width: 100%;
+  padding: 5px 8px; margin-bottom: 3px;
+  border: 1px solid var(--border); border-radius: 5px;
+  background: none; color: inherit; font: inherit; font-size: 12px;
+  text-align: left; cursor: pointer;
+}
+.rel-item:hover { border-color: var(--accent); }
+.rel-item.is-selected { border-color: var(--accent); background: var(--accent-soft); }
+.rel-mod {
+  font-size: 9.5px; text-transform: uppercase; letter-spacing: .04em;
+  color: var(--fg-muted); flex: none;
+}
+
+/* ---- empty / not found ---- */
+.empty { padding: 26px 22px; text-align: center; }
+.empty h2 { margin: 0 0 6px; font-size: 15px; }
+.empty p { margin: 0 0 14px; }
+.tick {
+  width: 44px; height: 44px; margin: 0 auto 12px; border-radius: 50%;
+  background: var(--ok); color: #fff; display: grid; place-items: center; font-size: 24px;
+}
+.notfound {
+  text-align: center; padding: 18px 14px;
+  border: 1px dashed var(--border-strong); border-radius: var(--radius);
+  margin-top: 10px;
+}
+.notfound p { margin: 0 0 12px; }
+.notfound .foot-actions { justify-content: center; }
+
+/* ---- create form ---- */
+.seg {
+  display: flex; gap: 0; margin: 11px 13px 4px;
+  border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden;
+}
+.seg-btn {
+  flex: 1; padding: 7px; border: 0; background: var(--bg-raised);
+  color: var(--fg-muted); font: inherit; cursor: pointer;
+}
+.seg-btn.is-active { background: var(--accent); color: var(--accent-fg); font-weight: 600; }
+
+/* Why a kind is missing from the picker above. Stated rather than left to be
+   noticed, since a silently shorter list looks like a bug. */
+#record-unavailable {
+  margin: 6px 10px 0; padding: 6px 8px;
+  background: var(--warn-soft); border-left: 2px solid var(--warn);
+  border-radius: 3px; color: var(--fg);
+}
+
+.field-group { padding: 8px 13px 4px; }
+.group-title {
+  font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em;
+  color: var(--fg-muted); margin-bottom: 6px;
+}
+.row { display: flex; gap: 8px; }
+.row .field { flex: 1; min-width: 0; }
+
+.field { display: block; margin-bottom: 8px; }
+.field > span { display: block; font-size: 11.5px; color: var(--fg-muted); margin-bottom: 3px; }
+.field input {
+  width: 100%; padding: 6px 8px;
+  border: 1px solid var(--border); border-radius: 5px;
+  background: var(--bg-raised); color: var(--fg); font: inherit;
+}
+.field input:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: var(--accent); }
+
+/* Fields the parser is unsure about — the user should look before saving. */
+.field.needs-review input {
+  border-color: var(--warn); background: var(--warn-soft);
+}
+/*
+ * Fields the parser was unsure about are marked "guessed", not "check".
+ * "check" read as a control — an instruction the user could act on — while
+ * being inert text, and on the website row it sat beside a button that really
+ * did say check. This states what the field IS, so nothing looks clickable that
+ * is not. Scoped to the first span so a field's status note never gets it too.
+ */
+.field.needs-review > span:first-of-type::after {
+  content: " guessed";
+  color: var(--warn);
+  font-weight: 600;
+  font-size: 9.5px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  margin-left: 5px;
+  padding: 1px 4px;
+  border: 1px solid var(--warn);
+  border-radius: 3px;
+  vertical-align: 1px;
+}
+
+.acct-sugg {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  padding: 6px 9px; margin-bottom: 4px;
+  border: 1px solid var(--border); border-radius: 5px;
+  background: var(--bg-raised); color: inherit; font: inherit;
+  text-align: left; cursor: pointer;
+}
+.acct-sugg:hover { border-color: var(--accent); }
+.acct-sugg.is-active { border-color: var(--accent); background: var(--accent-soft); }
+
+.more { margin: 2px 13px 6px; }
+.more > summary { cursor: pointer; color: var(--accent); font-size: 12px; padding: 4px 0; }
+.sig {
+  margin: 4px 0 0; padding: 8px; max-height: 150px; overflow: auto;
+  background: var(--bg-sunken); border: 1px solid var(--border); border-radius: 5px;
+  font: 11px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+  white-space: pre-wrap; overflow-wrap: anywhere; color: var(--fg-muted);
+}
+
+/* ---- footer / buttons ---- */
+.foot {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 10px 13px; border-top: 1px solid var(--border);
+  background: var(--bg-sunken); position: sticky; bottom: 0;
+}
+.foot-actions { display: flex; gap: 7px; }
+.foot-actions.center { justify-content: center; }
+
+.btn {
+  padding: 6px 13px; border-radius: 5px; font: inherit;
+  border: 1px solid var(--border-strong); background: var(--bg-raised);
+  color: var(--fg); cursor: pointer;
+}
+.btn:hover:not(:disabled) { border-color: var(--accent); }
+.btn:disabled { opacity: .5; cursor: default; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); font-weight: 600; }
+.btn-quiet { border-color: transparent; background: none; color: var(--accent); }
+.btn-xs { padding: 3px 7px; font-size: 11.5px; }
+
+.toggle { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.toggle input { margin: 0; }
+
+/* ---- status ---- */
+.status { margin: 8px 13px; padding: 8px 10px; border-radius: 5px; font-size: 12px; }
+.status.is-error { background: color-mix(in srgb, var(--danger) 12%, transparent); color: var(--danger); }
+.status.is-warn { background: var(--warn-soft); color: var(--warn); }
+.status.is-info { background: var(--bg-sunken); color: var(--fg-muted); }
+
+.warnings { text-align: left; margin: 0 0 14px; padding-left: 18px; font-size: 11.5px; color: var(--warn); }
+.warnings:empty { display: none; }
+
+/* ---- loading ---- */
+.loading {
+  position: fixed; inset: 0; display: none;
+  flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  z-index: 20;
+}
+.loading.is-on { display: flex; }
+.spinner {
+  width: 26px; height: 26px; border-radius: 50%;
+  border: 2.5px solid var(--border); border-top-color: var(--accent);
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 2.4s; } }
+
+.foot-opts { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+
+/* ---- searching state ---- */
+.searching { padding: 4px 0 2px; }
+.searching-head {
+  display: flex; align-items: center; gap: 8px;
+  color: var(--fg-muted); font-size: 12px; margin-bottom: 10px;
+}
+.spinner-sm {
+  width: 13px; height: 13px; flex: none; border-radius: 50%;
+  border: 2px solid var(--border); border-top-color: var(--accent);
+  animation: spin .8s linear infinite;
+}
+.skeleton-row {
+  height: 40px; margin-bottom: 6px; border-radius: var(--radius);
+  background: linear-gradient(90deg,
+    var(--bg-sunken) 25%, var(--bg-raised) 50%, var(--bg-sunken) 75%);
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+.skeleton-row:nth-child(3) { width: 82%; }
+.skeleton-row:nth-child(4) { width: 64%; }
+@keyframes shimmer { 0% { background-position: 100% 0; } 100% { background-position: 0 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-row { animation-duration: 4s; }
+  .spinner-sm { animation-duration: 2.4s; }
+}
+
+.search-bar {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 13px 0;
+}
+.search-bar input {
+  flex: 1; min-width: 0;
+  padding: 6px 9px;
+  border: 1px solid var(--border); border-radius: 5px;
+  background: var(--bg-raised); color: var(--fg); font: inherit; font-size: 12.5px;
+}
+.search-bar input:focus {
+  outline: 2px solid var(--accent); outline-offset: -1px; border-color: var(--accent);
+}
+.search-bar input::-webkit-search-cancel-button { display: none; }
+
+.mini-num {
+  width: 44px; padding: 2px 5px; font: inherit; font-size: 11.5px;
+  border: 1px solid var(--border); border-radius: 4px;
+  background: var(--bg-raised); color: var(--fg);
+}
+.mini-num:disabled { opacity: .45; }
+
+.field-note { display: block; margin-top: 3px; font-size: 11px; color: var(--fg-muted); }
+
+.dupes {
+  margin: 8px 13px; padding: 11px 13px;
+  border: 1px solid var(--warn); border-radius: var(--radius);
+  background: var(--warn-soft);
+}
+.dupes-head { font-weight: 600; font-size: 12.5px; color: var(--warn); margin-bottom: 8px; }
+.dupe {
+  display: flex; align-items: center; gap: 9px; width: 100%;
+  padding: 7px 9px; margin-bottom: 5px;
+  border: 1px solid var(--border); border-radius: 5px;
+  background: var(--bg-raised); color: inherit; font: inherit;
+  text-align: left; cursor: pointer;
+}
+.dupe:hover { border-color: var(--accent); }
+.dupe .dupe-body { flex: 1; min-width: 0; }
+.dupe .dupe-name { font-weight: 600; }
+.dupe .dupe-sub { color: var(--fg-muted); font-size: 11.5px; overflow-wrap: anywhere; }
+.dupe .dupe-score {
+  font: 10.5px ui-monospace, Menlo, monospace; color: var(--fg-muted);
+  border: 1px solid var(--border); border-radius: 3px; padding: 2px 6px; flex: none;
+}
+
+.rec-foot { display: flex; gap: 8px; align-items: baseline; margin-top: 3px; }
+.rec-owner, .rec-age { font-size: 11px; color: var(--fg-muted); }
+.rec-owner::before { content: "◦ "; color: var(--border-strong); }
+.rec-age { margin-left: auto; font-variant-numeric: tabular-nums; }
+
+.rec-open {
+  flex: none; align-self: center;
+  border: 1px solid var(--border); border-radius: 4px;
+  background: none; color: var(--accent);
+  font: inherit; font-size: 11px; padding: 3px 8px; cursor: pointer;
+}
+.rec-open:hover { border-color: var(--accent); background: var(--accent-soft); }
+
+/* filter box inside the results, for a domain with many contacts */
+.filter-row { display: flex; align-items: center; gap: 8px; padding: 2px 0 8px; }
+.filter-row input {
+  flex: 1; min-width: 0; padding: 5px 8px; font: inherit; font-size: 12px;
+  border: 1px solid var(--border); border-radius: 5px;
+  background: var(--bg-raised); color: var(--fg);
+}
+.filter-row input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+.filter-row .muted { white-space: nowrap; font-size: 11px; }
+
+.recent-bar { padding: 0 13px 6px; }
+.recent {
+  margin: 0 13px 8px; padding: 8px 10px;
+  background: var(--bg-sunken); border: 1px solid var(--border); border-radius: var(--radius);
+  max-height: 190px; overflow-y: auto;
+}
+.recent-row {
+  display: flex; width: 100%; padding: 6px 8px; margin-bottom: 4px;
+  border: 1px solid var(--border); border-radius: 5px;
+  background: var(--bg-raised); color: inherit; font: inherit;
+  text-align: left; cursor: pointer;
+}
+.recent-row:hover { border-color: var(--accent); }
+.recent-subject { font-weight: 600; font-size: 12.5px; overflow-wrap: anywhere; }
+
