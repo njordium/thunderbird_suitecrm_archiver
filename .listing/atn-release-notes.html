@@ -19,6 +19,10 @@ First public release.
 <li>The subject the CRM stores can be <strong>edited before filing</strong>, and <em>Strip Re:</em> removes stacked reply and forward prefixes in one go. The message in Thunderbird is never modified.</li>
 </ul>
 
+<b>What it keeps, and how to remove it</b>
+
+Two things are remembered in your Thunderbird profile so they can be offered back to you: which CRM record mail from an address was last filed against, which is what the remembered-record shortcut files against, and the subject of each of the last 30 emails you filed, for the <em>Recent</em> list. Neither is sent anywhere, both are bounded, and <em>Clear what is remembered</em> in the settings deletes them — it says how many of each are there first, and it does not sign you out. A full privacy policy is in the repository as <code>docs/PRIVACY.md</code>.
+
 <b>Signing in</b>
 
 Uses the SuiteCRM <strong>V8 REST API</strong> with OAuth2. Your CRM password is exchanged once for tokens and never stored. Only a rotating refresh token is kept, so a Thunderbird upgrade does not sign you out, and an administrator can revoke access by deleting a single token.
