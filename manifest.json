@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "SuiteCRM Email Archiver",
   "description": "Archive email into SuiteCRM in one click. Clicking the button searches Leads, Contacts, Accounts and Targets at the same time for the sender's address, so there is no module to choose and no search to type; pick a match and the email is filed, with its attachments. If the sender is not in the CRM yet, create a Lead or a Contact under an Account, pre-filled from their signature. Signs in with OAuth2 against the SuiteCRM V8 API and keeps only a rotating refresh token, so your CRM password is never stored and a Thunderbird upgrade does not sign you out. Requires a one-time OAuth2 Password client in SuiteCRM: see the Preferences tab for the setup steps.",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "developer": {
     "name": "Kim Haverblad",
     "url": "https://njordium.com"

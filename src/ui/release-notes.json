@@ -1,6 +1,16 @@
 [
  {
   "t": "h2",
+  "v": "0.2.2 \u2014 2026-09-10"
+ },
+ {
+  "t": "ul",
+  "v": [
+   "Wording clarifications. No functional change."
+  ]
+ },
+ {
+  "t": "h2",
   "v": "0.2.1 \u2014 2026-09-10"
  },
  {

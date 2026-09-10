@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.2 — 2026-09-10
+
+- Wording clarifications. No functional change.
+
 ## 0.2.1 — 2026-09-10
 
 - Documentation and packaging updates, including screenshots. No functional change.
