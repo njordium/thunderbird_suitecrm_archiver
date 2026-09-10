@@ -618,7 +618,7 @@ const MODULE_TITLES = {
 // Rendered from whatever the last discovery found, so the built-in four are
 // always present even before anyone presses the button, and even if the CRM is
 // unreachable.
-let moduleState = { builtIn: [], extra: [], selected: null };
+let moduleState = { builtIn: [], extra: [], labels: {}, selected: null };
 
 function renderModules() {
   const box = $("module-list");
@@ -639,7 +639,11 @@ function renderModules() {
     tick.dataset.module = name;
     tick.addEventListener("change", saveModules);
 
-    label.append(tick, document.createTextNode(MODULE_TITLES[name] || name));
+    // The CRM's own label, which is localised and the only sensible name for a
+    // custom module. MODULE_TITLES covers the built-in four, where "Targets"
+    // reads better than SuiteCRM's internal "Prospects".
+    const title = MODULE_TITLES[name] || moduleState.labels?.[name] || name;
+    label.append(tick, document.createTextNode(title));
     box.appendChild(label);
   }
 }
@@ -668,14 +672,17 @@ async function refreshModules({ discover = false } = {}) {
   if (discover) note.textContent = "Asking the CRM…";
   try {
     const res = await call("listCrmModules");
-    moduleState = { builtIn: res.builtIn, extra: res.extra || [], selected: res.selected };
+    moduleState = {
+      builtIn: res.builtIn, extra: res.extra || [],
+      labels: res.labels || {}, selected: res.selected,
+    };
     renderModules();
     note.textContent = res.error
       ? `Could not ask the CRM for more modules (${res.error}).`
       : discover
         ? (moduleState.extra.length
-            ? `Found ${moduleState.extra.length} more module(s) that can be searched by address.`
-            : "No other module in this CRM has an email address field.")
+            ? `Found ${moduleState.extra.length} more module(s) you can search by address.`
+            : "No other module you have access to has an email address field.")
         : "";
   } catch (e) {
     $("module-list").textContent = "Sign in to choose modules.";

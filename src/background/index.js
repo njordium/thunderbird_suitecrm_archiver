@@ -308,53 +308,69 @@ const handlers = {
   },
 
   /**
-   * Modules that could be searched by email address.
+   * Modules this user could search by email address.
    *
-   * Discovery is additive, not a replacement. /meta/modules on a stock instance
-   * returns 27 modules and does not include Prospects, which this add-on
-   * searches successfully — so treating that list as authoritative would make
-   * Targets vanish from the settings while still working. The built-in four are
-   * always offered, and anything discovered is offered alongside them.
+   * Discovery is additive rather than authoritative, and SuiteCRM's own code
+   * says why. Api/V8/Helper/ModuleListProvider::getModuleList applies three
+   * filters in order:
    *
-   * Each candidate is checked for an email1 field, because a module without one
-   * cannot be searched by address and offering it would only produce failures.
+   *   query_module_access_list($current_user)   per-user module access
+   *   ACLController::filterModuleList()          ACL
+   *   removeInvisibleModules()                   the global $modInvisList
+   *
+   * So the list genuinely differs per user, which is the useful part. But the
+   * third filter is global, and $modInvisList contains Prospects — so Targets
+   * never appears here even for an administrator, while the add-on searches it
+   * successfully. Treating this list as the whole truth would make Targets
+   * vanish from the settings while still working, hence the built-in four are
+   * always offered.
+   *
+   * Each entry carries the user's own ACL actions, so a module they cannot list
+   * or view is filtered out before it is ever offered. That is cheaper and more
+   * accurate than discovering the refusal later, and it means one person's
+   * settings do not offer another person's modules.
    */
   async listCrmModules() {
     const client = await CrmClient.create();
     const chosen = (await store.getPrefs()).searchModules;
+    const base = { builtIn: DIRECT_MODULES, extra: [], labels: {}, selected: chosen };
 
-    let discovered = [];
+    let entries;
     try {
       const res = await client.getModuleList();
-      const data = res?.data?.attributes || res?.data || {};
-      discovered = Array.isArray(data) ? data : Object.keys(data);
+      entries = res?.data?.attributes;
+      if (!entries || typeof entries !== "object") throw new Error("unexpected module list shape");
     } catch (e) {
       log.warn("Could not list CRM modules:", e.message);
-      return {
-        builtIn: DIRECT_MODULES, extra: [], selected: chosen, error: e.message,
-      };
+      return { ...base, error: e.message };
     }
 
-    const extras = discovered
-      .filter((m) => typeof m === "string" && !DIRECT_MODULES.includes(m))
-      .sort();
+    const labels = {};
+    const candidates = [];
+    for (const [name, info] of Object.entries(entries)) {
+      if (DIRECT_MODULES.includes(name)) continue;
 
-    // Checked in parallel, but only for modules the user might actually pick.
-    // A per-module failure means "cannot search this", not a broken lookup.
-    const searchable = await Promise.all(extras.map(async (m) => {
+      // The access array is this user's own ACL actions. Without list and view
+      // a search would be refused, so the module is not worth offering.
+      const access = Array.isArray(info?.access) ? info.access : [];
+      if (!access.includes("list") || !access.includes("view")) continue;
+
+      if (info?.label) labels[name] = info.label;
+      candidates.push(name);
+    }
+
+    // Only modules that survived the access filter are checked for an address
+    // field, which keeps this to a handful of requests rather than one per
+    // module in the CRM. A module without email1 cannot be searched by address.
+    const searchable = await Promise.all(candidates.map(async (name) => {
       try {
-        const fields = await client.getFieldNames(m);
-        return fields.includes("email1") ? m : null;
+        return (await client.getFieldNames(name)).includes("email1") ? name : null;
       } catch {
         return null;
       }
     }));
 
-    return {
-      builtIn: DIRECT_MODULES,
-      extra: searchable.filter(Boolean),
-      selected: chosen,
-    };
+    return { ...base, extra: searchable.filter(Boolean).sort(), labels };
   },
 
   async getStatus() {

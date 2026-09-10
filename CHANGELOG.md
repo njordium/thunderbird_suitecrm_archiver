@@ -11,8 +11,11 @@
   add-on shortcut settings. The second opens the window instead of guessing when there is
   nothing remembered.
 - **Choose which modules are searched**, and find more. Fewer modules means faster lookups,
-  and a customised SuiteCRM can add its own. Only modules that actually have an email
-  address field are offered, since the others could never be searched by one.
+  and a customised SuiteCRM can add its own. What is offered depends on **your own access**:
+  SuiteCRM reports the modules you may list and view, so you are never offered one you would
+  be refused, and a colleague with a different role sees a different list. Modules without an
+  email address field are left out too, since they could never be searched by one, and the
+  CRM's own labels are used so a custom module reads properly.
 - **Share the connection settings.** One OAuth2 client serves a whole organisation, so an
   administrator can export the CRM address, client id and secret to a file for colleagues.
   Each person still signs in with their own username and password. The file contains no
