@@ -27,6 +27,11 @@ const DEFAULT_PREFS = {
   // null means the built-in four. An array replaces them, which is how a site
   // stops searching a module it never uses, or adds a custom one.
   searchModules: null,
+
+  // "auto" follows Thunderbird's own language. Anything else is a locale we
+  // ship, chosen in the settings, for someone whose CRM and mail client do not
+  // share a language.
+  uiLanguage: "auto",
   /**
    * Which accounts the archiving button works in.
    *
@@ -85,18 +90,44 @@ export const clearTokens = () => remove("tokens");
  * the copy whenever anything writes, including from another window.
  */
 let prefsCache = null;
+let prefsWrites = Promise.resolve();
 
-export async function getPrefs() {
-  if (prefsCache) return prefsCache;
-  prefsCache = { ...DEFAULT_PREFS, ...(await get("prefs", {})) };
+/** Take the loaded copy only if nobody beat us to it, so there is one object. */
+function adoptPrefs(loaded) {
+  prefsCache ??= loaded;
   return prefsCache;
 }
 
-export async function setPrefs(patch) {
-  const next = { ...(await getPrefs()), ...patch };
+/** Cache and persist in one tick: nothing may await between these two lines. */
+function commitPrefs(next) {
   prefsCache = next;
-  await set("prefs", next);
-  return next;
+  return set("prefs", next);
+}
+
+export async function getPrefs() {
+  if (prefsCache) return prefsCache;
+  return adoptPrefs({ ...DEFAULT_PREFS, ...(await get("prefs", {})) });
+}
+
+/**
+ * Merge a patch into the preferences.
+ *
+ * Read, modify, write, with an await in the middle: two writers at once each
+ * read the same copy and the second overwrote the first one's patch with its
+ * own stale base. Two windows open on the settings page is enough, and so is
+ * the add-on turning a module off while you tick a checkbox. Writes are now
+ * queued, and a failed write does not poison the queue for the next one.
+ */
+export async function setPrefs(patch) {
+  const run = async () => {
+    const base = await getPrefs();
+    const next = { ...base, ...patch };
+    await commitPrefs(next);
+    return next;
+  };
+  const queued = prefsWrites.then(run, run);
+  prefsWrites = queued.catch(() => {});
+  return queued;
 }
 
 /** Forget the cached copy, for tests, and when storage changes elsewhere. */

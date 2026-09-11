@@ -1,0 +1,161 @@
+{
+  "cmdArchiveOpen": {
+    "message": "Open the SuiteCRM archiving window for this message"
+  },
+  "cmdArchiveLast": {
+    "message": "File this message against the record it was last filed under"
+  },
+  "actionTitle": {
+    "message": "Archive to SuiteCRM"
+  },
+  "menuOpen": {
+    "message": "Archive to SuiteCRM…"
+  },
+  "menuCreate": {
+    "message": "Create a record from this email…"
+  },
+  "menuFileAgainst": {
+    "message": "File against $1"
+  },
+  "menuFileAgainstCase": {
+    "message": "File against Case #$1"
+  },
+  "menuFileManyAgainst": {
+    "message": "File $1 messages against $2"
+  },
+  "notifMessageFiled": {
+    "message": "Message filed"
+  },
+  "notifManyFiled": {
+    "message": "$1 messages filed"
+  },
+  "notifNothingFiled": {
+    "message": "Nothing filed"
+  },
+  "notifCouldNotFile": {
+    "message": "Could not file the message"
+  },
+  "notifFiledUnder": {
+    "message": "Filed under $1."
+  },
+  "viaSubject": {
+    "message": "The case number in the subject named it."
+  },
+  "viaReferences": {
+    "message": "The thread this reply belongs to named it."
+  },
+  "viaThread": {
+    "message": "That is where the rest of this thread was filed."
+  },
+  "notifAccountOff": {
+    "message": "$1 is a mail account this add-on is turned off for."
+  },
+  "filingFor": {
+    "message": "Filing for"
+  },
+  "filingForRecipient": {
+    "message": "Filing for (recipient of your message)"
+  },
+  "btnFile": {
+    "message": "File"
+  },
+  "btnFileTitle": {
+    "message": "File this message in SuiteCRM"
+  },
+  "btnFileUnder": {
+    "message": "File under $1"
+  },
+  "btnFileManyUnder": {
+    "message": "File $1 messages under $2"
+  },
+  "btnChange": {
+    "message": "Change"
+  },
+  "searchPlaceholder": {
+    "message": "Search SuiteCRM by name or company…"
+  },
+  "searchingFor": {
+    "message": "Searching SuiteCRM for $1…"
+  },
+  "notInCrm": {
+    "message": "$1 is not in SuiteCRM."
+  },
+  "orSearchAbove": {
+    "message": "Or search above by name or company. Useful when someone writes from a personal address."
+  },
+  "createLead": {
+    "message": "Create Lead"
+  },
+  "createContact": {
+    "message": "Create Contact"
+  },
+  "createAndFile": {
+    "message": "Create & file"
+  },
+  "createRecordEllipsis": {
+    "message": "Create record…"
+  },
+  "recentlyFiled": {
+    "message": "Recently filed"
+  },
+  "nothingFiledYet": {
+    "message": "Nothing filed yet in this session."
+  },
+  "filing": {
+    "message": "Filing…"
+  },
+  "filed": {
+    "message": "Filed"
+  },
+  "filingUndone": {
+    "message": "Filing undone"
+  },
+  "includeAttachments": {
+    "message": "Include attachments"
+  },
+  "useMessageDate": {
+    "message": "Use the message's date"
+  },
+  "followUpIn": {
+    "message": "Follow up in"
+  },
+  "daysSuffix": {
+    "message": "days"
+  },
+  "fileAllSelected": {
+    "message": "File all selected messages"
+  },
+  "fileWholeConversation": {
+    "message": "File the whole conversation"
+  },
+  "stripRe": {
+    "message": "Strip Re:"
+  },
+  "caseFromSubject": {
+    "message": "Case #$1, from the subject line"
+  },
+  "caseFromThread": {
+    "message": "Case #$1, from the reply chain"
+  },
+  "threadParentHead": {
+    "message": "Where the rest of this thread was filed"
+  },
+  "couldNotSearchModules": {
+    "message": "Could not search $1. Other modules were searched normally."
+  },
+  "moduleTurnedOff": {
+    "message": "$1 could not be searched, so it has been turned off in Preferences, where the reason is shown. Everything else was searched normally."
+  },
+  "languageGroup": {
+    "message": "Interface language"
+  },
+  "languageAuto": {
+    "message": "Follow Thunderbird"
+  },
+  "languageActive": {
+    "message": "Showing $1."
+  },
+  "languageNote": {
+    "message": "Thunderbird's own language is used unless you choose one here. Menu entries and notifications follow Thunderbird either way."
+  }
+}

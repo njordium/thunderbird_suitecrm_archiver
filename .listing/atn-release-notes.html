@@ -1,44 +1,34 @@
-First public release.
+<b>The interface now speaks thirteen languages</b>
 
-<b>What it does</b>
+US and UK English, Danish, Swedish, Norwegian Bokmål, Finnish, German, Spanish, Dutch, French, Italian, Polish and Brazilian Portuguese. Thunderbird's own language is followed automatically, and Preferences has a selector for anyone whose mail client and CRM do not share a language. This first pass covers the buttons, statuses, menu entries and notifications. The setup walkthrough and the permission explanations stay in English until a native speaker has reviewed them.
 
-<ul>
-<li>Files an email into an existing SuiteCRM <strong>Lead, Contact, Account or Target</strong>. One click searches all four at the same time for the sender's address, so there is no module to pick and no search to type.</li>
-<li>Files a reply to case mail against the <strong>Case</strong> it belongs to. SuiteCRM stamps the case number into the subject of email it sends about a Case, so the reply comes back carrying it, and that works even when the sender matches no CRM record at all, which is where an address lookup is weakest.</li>
-<li>Creates a <strong>Lead, or a Contact under an Account</strong>, when the sender is not in the CRM yet. The form is filled in from their signature block, the message headers and any attached vCard, all parsed locally. Guessed fields are marked for you to confirm.</li>
-<li>Stores attachments as Notes or Documents, archives a whole conversation in one action, and dates the CRM record by when the message was sent so the activity timeline stays in order.</li>
-<li>Turns an email into a <strong>Case, Opportunity, Meeting or follow-up Task</strong> linked to the record, offering only the kinds SuiteCRM will actually link.</li>
-<li>Shows whether a correspondent is in the CRM while you read and while you compose, and tags archived mail in Thunderbird.</li>
-</ul>
-
-<b>Ways in</b>
+<b>A module your CRM refuses is turned off instead of complaining on every message</b>
 
 <ul>
-<li>The toolbar button, or <strong>right-click</strong> a message or a selection of them. The menu can open the archiving window, file straight against the record that sender's mail went to last time, or create a record. The middle entry names the actual record and hides itself when there is nothing remembered.</li>
-<li><strong>Keyboard shortcuts</strong>: <code>Alt+Shift+S</code> opens the archiving window, <code>Alt+Shift+A</code> files against the remembered record without opening anything. Both re-bindable in Thunderbird's own add-on shortcut settings.</li>
-<li>The subject the CRM stores can be <strong>edited before filing</strong>, and <em>Strip Re:</em> removes stacked reply and forward prefixes in one go. The message in Thunderbird is never modified.</li>
+<li>Filing a message could warn <em>Could not search Prospects</em> over and over, using SuiteCRM's internal name for the module the settings call <strong>Targets</strong>, which read like a complaint about a module you do not have. Every module name shown to you is now the one the settings use.</li>
+<li>When a search fails, that module is checked once on its own. If the CRM refuses a plain read too, it stops being searched, is unticked in Preferences, and is marked there with the CRM's own reason and HTTP status. <em>Re-scan modules</em> re-tests it and clears the mark when access comes back, so a revoked role is something you can see and fix rather than a warning that never stops.</li>
+<li>A module that answers a plain read is left alone, since that failure was about one request. A server error takes three failures in a row, every module failing at once is read as the CRM being unreachable, and the last remaining module is never turned off.</li>
+<li>Filing sent mail automatically no longer ignores your module choice.</li>
 </ul>
 
-<b>What it keeps, and how to remove it</b>
-
-Two things are remembered in your Thunderbird profile so they can be offered back to you: which CRM record mail from an address was last filed against, which is what the remembered-record shortcut files against, and the subject of each of the last 30 emails you filed, for the <em>Recent</em> list. Neither is sent anywhere, both are bounded, and <em>Clear what is remembered</em> in the settings deletes them. It says how many of each are there first, and it does not sign you out. A full privacy policy is in the repository as <code>docs/PRIVACY.md</code>.
-
-<b>Signing in</b>
-
-Uses the SuiteCRM <strong>V8 REST API</strong> with OAuth2. Your CRM password is exchanged once for tokens and never stored. Only a rotating refresh token is kept, so a Thunderbird upgrade does not sign you out, and an administrator can revoke access by deleting a single token.
-
-One OAuth2 client serves a whole organisation, so an administrator can <strong>export the connection settings</strong>, CRM address, client id and secret, to a file for colleagues. Each person still signs in with their own username and password. The file holds no token and no username, and importing fills the form rather than connecting, so nothing can silently repoint the add-on at another server.
-
-<b>Fits your CRM and your role</b>
-
-You can choose which modules are searched: fewer means faster lookups, and a customised SuiteCRM can add its own. What is offered depends on <strong>your own access</strong>: SuiteCRM reports the modules you may list and view, so you are never offered one you would be refused, and a colleague with a different role sees a different list. The CRM's own labels are used, so a custom module reads properly.
-
-<b>What you need</b>
+<b>A reply goes where its conversation went</b>
 
 <ul>
-<li>Thunderbird <strong>140 ESR or newer</strong>.</li>
-<li>SuiteCRM <strong>7 or 8</strong> with the V8 REST API enabled.</li>
-<li>A one-time <strong>OAuth2 Password client</strong>, created by a SuiteCRM administrator. The Preferences tab walks through it and includes a generator for the client secret.</li>
+<li>SuiteCRM stamps the case number into subjects it sends, and that used to be the only route, so the match was lost as soon as the subject changed. The add-on now also follows the mail thread, where SuiteCRM's own outbound case mail is already filed against the Case, and tells you which of the two found the match.</li>
+<li>This is no longer limited to Cases. If an earlier message in the conversation was filed against an Account, a Contact or an Opportunity, a reply is offered there too.</li>
+<li>The right-click menu and <code>Alt+Shift+A</code> now file where the window would. They went straight to the sender's history, so the same message could land in two different places depending on how you filed it.</li>
 </ul>
 
-Known limitation: this uses OAuth2's password grant rather than a browser redirect flow, because SuiteCRM registers an authorization-code grant but ships no <code>/authorize</code> endpoint. Your password therefore passes through the add-on once. It is not kept.
+<b>Reading signatures</b>
+
+Four fixes, each from a message that got it wrong. <strong>Med venlig hilsen</strong> and <strong>Med vennlig hilsen</strong> were not recognised as sign-offs, which is most Danish and Norwegian mail, so nothing after them was read at all. A company registration number in a legal footer was filed as a work phone number, which is worse than an empty field. A <code>tel:</code> link wrapped around a number hid it. And an attribution line that wraps before <em>wrote:</em> left two lines of somebody else's mail inside the signature.
+
+<b>Also</b>
+
+<ul>
+<li>Clearer wording throughout: the interface says <em>file</em> where it used to say <em>archive</em>, since Thunderbird's own Archive button moves mail to a local folder and means something else entirely. <em>Archive</em> now appears only where SuiteCRM is named in the same breath.</li>
+<li><em>Find more modules</em> is now <em>Re-scan modules</em>, because it re-tests refused modules as well as looking for new ones.</li>
+<li><strong>About</strong> has a <em>Developer Support</em> button that opens the issue tracker.</li>
+<li>Three real races fixed: two windows saving a preference at once could lose one of the changes, pressing <em>Change</em> twice quickly could show one address with another's results, and switching between Lead and Contact while a signature parsed could fill the new form from the old one.</li>
+<li>The privacy policy in the repository now lists every key the add-on keeps in your profile, and what a thread lookup sends.</li>
+</ul>

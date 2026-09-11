@@ -1,0 +1,161 @@
+{
+  "cmdArchiveOpen": {
+    "message": "Otwórz okno archiwizacji SuiteCRM dla tej wiadomości"
+  },
+  "cmdArchiveLast": {
+    "message": "Przypisz wiadomość do rekordu, do którego przypisano ją ostatnio"
+  },
+  "actionTitle": {
+    "message": "Archiwizuj w SuiteCRM"
+  },
+  "menuOpen": {
+    "message": "Archiwizuj w SuiteCRM…"
+  },
+  "menuCreate": {
+    "message": "Utwórz rekord z tej wiadomości…"
+  },
+  "menuFileAgainst": {
+    "message": "Przypisz do $1"
+  },
+  "menuFileAgainstCase": {
+    "message": "Przypisz do zgłoszenia nr $1"
+  },
+  "menuFileManyAgainst": {
+    "message": "Przypisz $1 wiadomości do $2"
+  },
+  "notifMessageFiled": {
+    "message": "Wiadomość zarchiwizowana"
+  },
+  "notifManyFiled": {
+    "message": "Zarchiwizowano $1 wiadomości"
+  },
+  "notifNothingFiled": {
+    "message": "Nic nie zarchiwizowano"
+  },
+  "notifCouldNotFile": {
+    "message": "Nie udało się zarchiwizować wiadomości"
+  },
+  "notifFiledUnder": {
+    "message": "Przypisano do $1."
+  },
+  "viaSubject": {
+    "message": "Wskazał go numer zgłoszenia w temacie."
+  },
+  "viaReferences": {
+    "message": "Wskazał go wątek, do którego należy ta odpowiedź."
+  },
+  "viaThread": {
+    "message": "Tam zarchiwizowano pozostałą część wątku."
+  },
+  "notifAccountOff": {
+    "message": "$1 to konto pocztowe, dla którego dodatek jest wyłączony."
+  },
+  "filingFor": {
+    "message": "Archiwizowanie dla"
+  },
+  "filingForRecipient": {
+    "message": "Archiwizowanie dla (odbiorcy Twojej wiadomości)"
+  },
+  "btnFile": {
+    "message": "Archiwizuj"
+  },
+  "btnFileTitle": {
+    "message": "Zarchiwizuj tę wiadomość w SuiteCRM"
+  },
+  "btnFileUnder": {
+    "message": "Przypisz do $1"
+  },
+  "btnFileManyUnder": {
+    "message": "Przypisz $1 wiadomości do $2"
+  },
+  "btnChange": {
+    "message": "Zmień"
+  },
+  "searchPlaceholder": {
+    "message": "Szukaj w SuiteCRM po nazwisku lub firmie…"
+  },
+  "searchingFor": {
+    "message": "Szukanie $1 w SuiteCRM…"
+  },
+  "notInCrm": {
+    "message": "$1 nie występuje w SuiteCRM."
+  },
+  "orSearchAbove": {
+    "message": "Albo wyszukaj powyżej po nazwisku lub firmie. Przydatne, gdy ktoś pisze z prywatnego adresu."
+  },
+  "createLead": {
+    "message": "Utwórz lead"
+  },
+  "createContact": {
+    "message": "Utwórz kontakt"
+  },
+  "createAndFile": {
+    "message": "Utwórz i zarchiwizuj"
+  },
+  "createRecordEllipsis": {
+    "message": "Utwórz rekord…"
+  },
+  "recentlyFiled": {
+    "message": "Ostatnio zarchiwizowane"
+  },
+  "nothingFiledYet": {
+    "message": "W tej sesji nie zarchiwizowano jeszcze niczego."
+  },
+  "filing": {
+    "message": "Archiwizowanie…"
+  },
+  "filed": {
+    "message": "Zarchiwizowano"
+  },
+  "filingUndone": {
+    "message": "Archiwizacja wycofana"
+  },
+  "includeAttachments": {
+    "message": "Dołącz załączniki"
+  },
+  "useMessageDate": {
+    "message": "Użyj daty wiadomości"
+  },
+  "followUpIn": {
+    "message": "Przypomnij za"
+  },
+  "daysSuffix": {
+    "message": "dni"
+  },
+  "fileAllSelected": {
+    "message": "Zarchiwizuj wszystkie wybrane wiadomości"
+  },
+  "fileWholeConversation": {
+    "message": "Zarchiwizuj całą rozmowę"
+  },
+  "stripRe": {
+    "message": "Usuń Re:"
+  },
+  "caseFromSubject": {
+    "message": "Zgłoszenie nr $1, z tematu"
+  },
+  "caseFromThread": {
+    "message": "Zgłoszenie nr $1, z wątku odpowiedzi"
+  },
+  "threadParentHead": {
+    "message": "Tam, gdzie zarchiwizowano pozostałą część wątku"
+  },
+  "couldNotSearchModules": {
+    "message": "Nie udało się przeszukać $1. Pozostałe moduły przeszukano normalnie."
+  },
+  "moduleTurnedOff": {
+    "message": "Nie udało się przeszukać $1, więc wyłączono go w preferencjach, gdzie podano powód. Wszystko inne przeszukano normalnie."
+  },
+  "languageGroup": {
+    "message": "Język interfejsu"
+  },
+  "languageAuto": {
+    "message": "Zgodnie z Thunderbirdem"
+  },
+  "languageActive": {
+    "message": "Wyświetlany język: $1."
+  },
+  "languageNote": {
+    "message": "Używany jest język Thunderbirda, o ile nie wybierzesz innego tutaj. Pozycje menu i powiadomienia zawsze podążają za Thunderbirdem."
+  }
+}

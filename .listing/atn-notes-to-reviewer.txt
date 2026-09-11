@@ -73,10 +73,19 @@ VERIFICATION
   `./tools/review.sh`.
 
 The one substantive manual-review item webext-linter leaves is user-data
-exfiltration, naming three fetch() sites. Those are the CRM requests
-themselves: they go only to the host the user enters in Preferences, only after
-that user signs in there, and that is what the two declared
-data_collection_permissions describe.
+exfiltration, naming four fetch() sites. Three are the CRM requests themselves
+(src/background/index.js, src/lib/auth.js, src/lib/crm.js): they go only to the
+host the user enters in Preferences, only after that user signs in there, and
+that is what the two declared data_collection_permissions describe.
+
+The fourth, src/lib/i18n.js, sends nothing anywhere. It reads a packaged file:
+the URL comes from browser.runtime.getURL("_locales/<code>/messages.json"), so
+it is a moz-extension:// request for the add-on's own catalogue. It is fetch
+rather than browser.i18n because browser.i18n resolves only against
+Thunderbird's UI locale and offers no way to ask for another one, and the
+settings page lets the user choose a language. The manifest still declares
+default_locale and the catalogues are in the standard _locales layout, which
+Thunderbird uses for the manifest strings.
 
 DATA HANDLING
 

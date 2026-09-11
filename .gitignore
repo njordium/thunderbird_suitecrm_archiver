@@ -12,3 +12,7 @@ __pycache__/
 
 # Planning notes, kept locally rather than published
 docs/roadmap.html
+
+*.eml
+*.mbox
+samples/

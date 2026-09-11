@@ -1,0 +1,161 @@
+{
+  "cmdArchiveOpen": {
+    "message": "Ouvrir la fenêtre d'archivage SuiteCRM pour ce message"
+  },
+  "cmdArchiveLast": {
+    "message": "Classer ce message sur la fiche où il a été classé la dernière fois"
+  },
+  "actionTitle": {
+    "message": "Archiver dans SuiteCRM"
+  },
+  "menuOpen": {
+    "message": "Archiver dans SuiteCRM…"
+  },
+  "menuCreate": {
+    "message": "Créer une fiche à partir de ce courriel…"
+  },
+  "menuFileAgainst": {
+    "message": "Classer sur $1"
+  },
+  "menuFileAgainstCase": {
+    "message": "Classer sur le ticket n° $1"
+  },
+  "menuFileManyAgainst": {
+    "message": "Classer $1 messages sur $2"
+  },
+  "notifMessageFiled": {
+    "message": "Message archivé"
+  },
+  "notifManyFiled": {
+    "message": "$1 messages archivés"
+  },
+  "notifNothingFiled": {
+    "message": "Rien n'a été archivé"
+  },
+  "notifCouldNotFile": {
+    "message": "Le message n'a pas pu être archivé"
+  },
+  "notifFiledUnder": {
+    "message": "Classé sur $1."
+  },
+  "viaSubject": {
+    "message": "Le numéro de ticket dans l'objet l'a désigné."
+  },
+  "viaReferences": {
+    "message": "Le fil auquel appartient cette réponse l'a désigné."
+  },
+  "viaThread": {
+    "message": "C'est là que le reste du fil a été classé."
+  },
+  "notifAccountOff": {
+    "message": "$1 est un compte de courrier pour lequel ce module est désactivé."
+  },
+  "filingFor": {
+    "message": "Classement pour"
+  },
+  "filingForRecipient": {
+    "message": "Classement pour (destinataire de votre message)"
+  },
+  "btnFile": {
+    "message": "Classer"
+  },
+  "btnFileTitle": {
+    "message": "Classer ce message dans SuiteCRM"
+  },
+  "btnFileUnder": {
+    "message": "Classer sur $1"
+  },
+  "btnFileManyUnder": {
+    "message": "Classer $1 messages sur $2"
+  },
+  "btnChange": {
+    "message": "Changer"
+  },
+  "searchPlaceholder": {
+    "message": "Rechercher dans SuiteCRM par nom ou société…"
+  },
+  "searchingFor": {
+    "message": "Recherche de $1 dans SuiteCRM…"
+  },
+  "notInCrm": {
+    "message": "$1 n'est pas dans SuiteCRM."
+  },
+  "orSearchAbove": {
+    "message": "Ou cherchez ci-dessus par nom ou société. Utile lorsque quelqu'un écrit depuis une adresse personnelle."
+  },
+  "createLead": {
+    "message": "Créer un prospect"
+  },
+  "createContact": {
+    "message": "Créer un contact"
+  },
+  "createAndFile": {
+    "message": "Créer et classer"
+  },
+  "createRecordEllipsis": {
+    "message": "Créer une fiche…"
+  },
+  "recentlyFiled": {
+    "message": "Classés récemment"
+  },
+  "nothingFiledYet": {
+    "message": "Rien n'a encore été classé dans cette session."
+  },
+  "filing": {
+    "message": "Classement…"
+  },
+  "filed": {
+    "message": "Classé"
+  },
+  "filingUndone": {
+    "message": "Classement annulé"
+  },
+  "includeAttachments": {
+    "message": "Inclure les pièces jointes"
+  },
+  "useMessageDate": {
+    "message": "Utiliser la date du message"
+  },
+  "followUpIn": {
+    "message": "Relancer dans"
+  },
+  "daysSuffix": {
+    "message": "jours"
+  },
+  "fileAllSelected": {
+    "message": "Classer tous les messages sélectionnés"
+  },
+  "fileWholeConversation": {
+    "message": "Classer toute la conversation"
+  },
+  "stripRe": {
+    "message": "Supprimer Re:"
+  },
+  "caseFromSubject": {
+    "message": "Ticket n° $1, d'après l'objet"
+  },
+  "caseFromThread": {
+    "message": "Ticket n° $1, d'après le fil de réponse"
+  },
+  "threadParentHead": {
+    "message": "Là où le reste de ce fil a été classé"
+  },
+  "couldNotSearchModules": {
+    "message": "Impossible de chercher dans $1. Les autres modules ont été interrogés normalement."
+  },
+  "moduleTurnedOff": {
+    "message": "Impossible de chercher dans $1, qui a donc été désactivé dans les préférences, où la raison est indiquée. Tout le reste a été interrogé normalement."
+  },
+  "languageGroup": {
+    "message": "Langue de l'interface"
+  },
+  "languageAuto": {
+    "message": "Suivre Thunderbird"
+  },
+  "languageActive": {
+    "message": "Affichage en $1."
+  },
+  "languageNote": {
+    "message": "La langue de Thunderbird est utilisée sauf si vous en choisissez une ici. Les entrées de menu et les notifications suivent Thunderbird dans tous les cas."
+  }
+}

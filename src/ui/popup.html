@@ -26,7 +26,7 @@
     <div class="subject" id="msg-subject" title="Click to edit the subject the CRM will store"></div>
     <div class="subject-edit" id="subject-edit" hidden>
       <input type="text" id="in-subject" spellcheck="false">
-      <button type="button" id="btn-strip-re" class="btn btn-quiet btn-xs">Strip Re:</button>
+      <button type="button" id="btn-strip-re" class="btn btn-quiet btn-xs" data-i18n="stripRe">Strip Re:</button>
       <button type="button" id="btn-subject-done" class="btn btn-quiet btn-xs">Done</button>
     </div>
     <div class="muted small" id="msg-meta"></div>
@@ -34,11 +34,11 @@
 
   <div class="addr-bar">
     <div class="addr-current">
-      <span class="label">Filing for</span>
+      <span class="label" data-i18n="filingFor">Filing for</span>
       <div class="addr-name" id="addr-name"></div>
       <div class="addr-email" id="addr-email"></div>
     </div>
-    <button id="btn-change-addr" class="btn btn-quiet" hidden>Change</button>
+    <button id="btn-change-addr" class="btn btn-quiet" hidden data-i18n="btnChange">Change</button>
   </div>
 
   <div id="addr-picker" class="addr-picker" hidden>
@@ -53,7 +53,7 @@
   </div>
 
   <div class="search-bar">
-    <input type="search" id="crm-search" placeholder="Search SuiteCRM by name or company…"
+    <input type="search" id="crm-search" data-i18n-placeholder="searchPlaceholder" placeholder="Search SuiteCRM by name or company…"
            autocomplete="off" spellcheck="false">
     <button id="btn-search-clear" class="btn btn-quiet btn-xs" hidden>Clear</button>
   </div>
@@ -61,7 +61,7 @@
   <div id="results" class="results"></div>
 
   <div class="recent-bar">
-    <button id="btn-recent" class="btn btn-quiet btn-xs">Recently filed</button>
+    <button id="btn-recent" class="btn btn-quiet btn-xs" data-i18n="recentlyFiled">Recently filed</button>
   </div>
   <div id="recent" class="recent" hidden>
     <div id="recent-list"></div>
@@ -72,30 +72,30 @@
   <footer class="foot">
     <div class="foot-opts">
       <label class="toggle small">
-        <input type="checkbox" id="chk-attachments"> Include attachments
+        <input type="checkbox" id="chk-attachments"> <span data-i18n="includeAttachments">Include attachments</span>
         <span id="att-count" class="muted"></span>
       </label>
       <label class="toggle small">
-        <input type="checkbox" id="chk-date"> Use the message's date
+        <input type="checkbox" id="chk-date"> <span data-i18n="useMessageDate">Use the message's date</span>
         <span id="date-hint" class="muted"></span>
       </label>
       <label class="toggle small">
-        <input type="checkbox" id="chk-followup"> Follow up in
+        <input type="checkbox" id="chk-followup"> <span data-i18n="followUpIn">Follow up in</span>
         <input type="number" id="followup-days" value="3" min="1" max="90" class="mini-num">
         days
       </label>
       <label class="toggle small" id="selection-opt" hidden>
-        <input type="checkbox" id="chk-selection"> File all selected messages
+        <input type="checkbox" id="chk-selection"> <span data-i18n="fileAllSelected">File all selected messages</span>
         <span id="selection-count" class="muted"></span>
       </label>
       <label class="toggle small" id="thread-opt" hidden>
-        <input type="checkbox" id="chk-thread"> File the whole conversation
+        <input type="checkbox" id="chk-thread"> <span data-i18n="fileWholeConversation">File the whole conversation</span>
         <span id="thread-count" class="muted"></span>
       </label>
     </div>
     <div class="foot-actions">
-      <button id="btn-create-record" class="btn" disabled>Create record…</button>
-      <button id="btn-archive" class="btn btn-primary" title="File this message in SuiteCRM" disabled>File</button>
+      <button id="btn-create-record" class="btn" disabled data-i18n="createRecordEllipsis">Create record…</button>
+      <button id="btn-archive" class="btn btn-primary" data-i18n="btnFile" data-i18n-title="btnFileTitle" title="File this message in SuiteCRM" disabled>File</button>
     </div>
   </footer>
 </section>
@@ -228,7 +228,7 @@
   <footer class="foot">
     <div class="muted small" id="review-hint"></div>
     <div class="foot-actions">
-      <button id="btn-create" class="btn btn-primary">Create &amp; file</button>
+      <button id="btn-create" class="btn btn-primary" data-i18n="createAndFile">Create &amp; file</button>
     </div>
   </footer>
 </section>
@@ -237,7 +237,7 @@
 <section id="view-done" class="view" hidden>
   <div class="empty">
     <div class="tick">✓</div>
-    <h2 id="done-title">Filed</h2>
+    <h2 id="done-title" data-i18n="filed">Filed</h2>
     <p class="muted" id="done-text"></p>
     <ul id="done-warnings" class="warnings"></ul>
     <div class="foot-actions center">

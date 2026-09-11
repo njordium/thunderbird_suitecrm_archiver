@@ -273,7 +273,8 @@ await step("create an Account and Contact from the parsed signature", async () =
   });
   accountId = account.id; cleanup.push({ module: "Accounts", id: accountId });
 
-  const { account_name: _company, ...person } = parsed.fields;
+  const { account_name: _ignoredCompany, ...person } = parsed.fields;   // eslint-disable-line no-unused-vars
+
   const contact = await client.createRecord("Contacts", { ...person, account_id: accountId });
   contactId = contact.id; cleanup.push({ module: "Contacts", id: contactId });
   return `Account ${accountId}, Contact ${contactId}`;

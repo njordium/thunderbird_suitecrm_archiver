@@ -1,0 +1,161 @@
+{
+  "cmdArchiveOpen": {
+    "message": "Abrir a janela de arquivamento do SuiteCRM para esta mensagem"
+  },
+  "cmdArchiveLast": {
+    "message": "Arquivar a mensagem no registro em que foi arquivada pela última vez"
+  },
+  "actionTitle": {
+    "message": "Arquivar no SuiteCRM"
+  },
+  "menuOpen": {
+    "message": "Arquivar no SuiteCRM…"
+  },
+  "menuCreate": {
+    "message": "Criar um registro a partir deste e-mail…"
+  },
+  "menuFileAgainst": {
+    "message": "Arquivar em $1"
+  },
+  "menuFileAgainstCase": {
+    "message": "Arquivar no caso nº $1"
+  },
+  "menuFileManyAgainst": {
+    "message": "Arquivar $1 mensagens em $2"
+  },
+  "notifMessageFiled": {
+    "message": "Mensagem arquivada"
+  },
+  "notifManyFiled": {
+    "message": "$1 mensagens arquivadas"
+  },
+  "notifNothingFiled": {
+    "message": "Nada arquivado"
+  },
+  "notifCouldNotFile": {
+    "message": "Não foi possível arquivar a mensagem"
+  },
+  "notifFiledUnder": {
+    "message": "Arquivada em $1."
+  },
+  "viaSubject": {
+    "message": "O número do caso no assunto indicou-o."
+  },
+  "viaReferences": {
+    "message": "A conversa à qual esta resposta pertence indicou-o."
+  },
+  "viaThread": {
+    "message": "Foi ali que o resto da conversa foi arquivado."
+  },
+  "notifAccountOff": {
+    "message": "$1 é uma conta de e-mail para a qual esta extensão está desativada."
+  },
+  "filingFor": {
+    "message": "Arquivando para"
+  },
+  "filingForRecipient": {
+    "message": "Arquivando para (destinatário da sua mensagem)"
+  },
+  "btnFile": {
+    "message": "Arquivar"
+  },
+  "btnFileTitle": {
+    "message": "Arquivar esta mensagem no SuiteCRM"
+  },
+  "btnFileUnder": {
+    "message": "Arquivar em $1"
+  },
+  "btnFileManyUnder": {
+    "message": "Arquivar $1 mensagens em $2"
+  },
+  "btnChange": {
+    "message": "Alterar"
+  },
+  "searchPlaceholder": {
+    "message": "Pesquisar no SuiteCRM por nome ou empresa…"
+  },
+  "searchingFor": {
+    "message": "Pesquisando $1 no SuiteCRM…"
+  },
+  "notInCrm": {
+    "message": "$1 não está no SuiteCRM."
+  },
+  "orSearchAbove": {
+    "message": "Ou pesquise acima por nome ou empresa. Útil quando alguém escreve de um endereço pessoal."
+  },
+  "createLead": {
+    "message": "Criar lead"
+  },
+  "createContact": {
+    "message": "Criar contato"
+  },
+  "createAndFile": {
+    "message": "Criar e arquivar"
+  },
+  "createRecordEllipsis": {
+    "message": "Criar registro…"
+  },
+  "recentlyFiled": {
+    "message": "Arquivados recentemente"
+  },
+  "nothingFiledYet": {
+    "message": "Nada foi arquivado ainda nesta sessão."
+  },
+  "filing": {
+    "message": "Arquivando…"
+  },
+  "filed": {
+    "message": "Arquivada"
+  },
+  "filingUndone": {
+    "message": "Arquivamento desfeito"
+  },
+  "includeAttachments": {
+    "message": "Incluir anexos"
+  },
+  "useMessageDate": {
+    "message": "Usar a data da mensagem"
+  },
+  "followUpIn": {
+    "message": "Retomar em"
+  },
+  "daysSuffix": {
+    "message": "dias"
+  },
+  "fileAllSelected": {
+    "message": "Arquivar todas as mensagens selecionadas"
+  },
+  "fileWholeConversation": {
+    "message": "Arquivar a conversa inteira"
+  },
+  "stripRe": {
+    "message": "Remover Re:"
+  },
+  "caseFromSubject": {
+    "message": "Caso nº $1, pelo assunto"
+  },
+  "caseFromThread": {
+    "message": "Caso nº $1, pela conversa"
+  },
+  "threadParentHead": {
+    "message": "Onde o resto desta conversa foi arquivado"
+  },
+  "couldNotSearchModules": {
+    "message": "Não foi possível pesquisar em $1. Os outros módulos foram pesquisados normalmente."
+  },
+  "moduleTurnedOff": {
+    "message": "Não foi possível pesquisar em $1, por isso ele foi desativado nas preferências, onde o motivo é mostrado. Todo o restante foi pesquisado normalmente."
+  },
+  "languageGroup": {
+    "message": "Idioma da interface"
+  },
+  "languageAuto": {
+    "message": "Seguir o Thunderbird"
+  },
+  "languageActive": {
+    "message": "Exibindo $1."
+  },
+  "languageNote": {
+    "message": "O idioma do Thunderbird é usado a menos que você escolha um aqui. Os itens de menu e as notificações seguem o Thunderbird em qualquer caso."
+  }
+}

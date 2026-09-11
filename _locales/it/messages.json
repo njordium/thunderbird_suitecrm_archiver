@@ -1,0 +1,161 @@
+{
+  "cmdArchiveOpen": {
+    "message": "Apri la finestra di archiviazione SuiteCRM per questo messaggio"
+  },
+  "cmdArchiveLast": {
+    "message": "Archivia il messaggio sul record su cui è stato archiviato l'ultima volta"
+  },
+  "actionTitle": {
+    "message": "Archivia in SuiteCRM"
+  },
+  "menuOpen": {
+    "message": "Archivia in SuiteCRM…"
+  },
+  "menuCreate": {
+    "message": "Crea un record da questa email…"
+  },
+  "menuFileAgainst": {
+    "message": "Archivia su $1"
+  },
+  "menuFileAgainstCase": {
+    "message": "Archivia sul caso n. $1"
+  },
+  "menuFileManyAgainst": {
+    "message": "Archivia $1 messaggi su $2"
+  },
+  "notifMessageFiled": {
+    "message": "Messaggio archiviato"
+  },
+  "notifManyFiled": {
+    "message": "$1 messaggi archiviati"
+  },
+  "notifNothingFiled": {
+    "message": "Nulla archiviato"
+  },
+  "notifCouldNotFile": {
+    "message": "Non è stato possibile archiviare il messaggio"
+  },
+  "notifFiledUnder": {
+    "message": "Archiviato su $1."
+  },
+  "viaSubject": {
+    "message": "Il numero di caso nell'oggetto lo ha indicato."
+  },
+  "viaReferences": {
+    "message": "La conversazione a cui appartiene questa risposta lo ha indicato."
+  },
+  "viaThread": {
+    "message": "È lì che è stato archiviato il resto della conversazione."
+  },
+  "notifAccountOff": {
+    "message": "$1 è un account di posta per cui questo componente aggiuntivo è disattivato."
+  },
+  "filingFor": {
+    "message": "Archiviazione per"
+  },
+  "filingForRecipient": {
+    "message": "Archiviazione per (destinatario del tuo messaggio)"
+  },
+  "btnFile": {
+    "message": "Archivia"
+  },
+  "btnFileTitle": {
+    "message": "Archivia questo messaggio in SuiteCRM"
+  },
+  "btnFileUnder": {
+    "message": "Archivia su $1"
+  },
+  "btnFileManyUnder": {
+    "message": "Archivia $1 messaggi su $2"
+  },
+  "btnChange": {
+    "message": "Cambia"
+  },
+  "searchPlaceholder": {
+    "message": "Cerca in SuiteCRM per nome o azienda…"
+  },
+  "searchingFor": {
+    "message": "Ricerca di $1 in SuiteCRM…"
+  },
+  "notInCrm": {
+    "message": "$1 non è in SuiteCRM."
+  },
+  "orSearchAbove": {
+    "message": "Oppure cerca sopra per nome o azienda. Utile quando qualcuno scrive da un indirizzo personale."
+  },
+  "createLead": {
+    "message": "Crea lead"
+  },
+  "createContact": {
+    "message": "Crea contatto"
+  },
+  "createAndFile": {
+    "message": "Crea e archivia"
+  },
+  "createRecordEllipsis": {
+    "message": "Crea record…"
+  },
+  "recentlyFiled": {
+    "message": "Archiviati di recente"
+  },
+  "nothingFiledYet": {
+    "message": "In questa sessione non è ancora stato archiviato nulla."
+  },
+  "filing": {
+    "message": "Archiviazione…"
+  },
+  "filed": {
+    "message": "Archiviato"
+  },
+  "filingUndone": {
+    "message": "Archiviazione annullata"
+  },
+  "includeAttachments": {
+    "message": "Includi allegati"
+  },
+  "useMessageDate": {
+    "message": "Usa la data del messaggio"
+  },
+  "followUpIn": {
+    "message": "Ricontatta entro"
+  },
+  "daysSuffix": {
+    "message": "giorni"
+  },
+  "fileAllSelected": {
+    "message": "Archivia tutti i messaggi selezionati"
+  },
+  "fileWholeConversation": {
+    "message": "Archivia l'intera conversazione"
+  },
+  "stripRe": {
+    "message": "Rimuovi Re:"
+  },
+  "caseFromSubject": {
+    "message": "Caso n. $1, dall'oggetto"
+  },
+  "caseFromThread": {
+    "message": "Caso n. $1, dalla conversazione"
+  },
+  "threadParentHead": {
+    "message": "Dove è stato archiviato il resto della conversazione"
+  },
+  "couldNotSearchModules": {
+    "message": "Non è stato possibile cercare in $1. Gli altri moduli sono stati interrogati normalmente."
+  },
+  "moduleTurnedOff": {
+    "message": "Non è stato possibile cercare in $1, quindi è stato disattivato nelle preferenze, dove è indicato il motivo. Tutto il resto è stato interrogato normalmente."
+  },
+  "languageGroup": {
+    "message": "Lingua dell'interfaccia"
+  },
+  "languageAuto": {
+    "message": "Segui Thunderbird"
+  },
+  "languageActive": {
+    "message": "Visualizzazione in $1."
+  },
+  "languageNote": {
+    "message": "Viene usata la lingua di Thunderbird a meno che non ne scelga una qui. Le voci di menu e le notifiche seguono comunque Thunderbird."
+  }
+}

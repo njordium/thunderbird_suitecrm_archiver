@@ -1,0 +1,161 @@
+{
+  "cmdArchiveOpen": {
+    "message": "Avaa SuiteCRM-arkistointi-ikkuna tälle viestille"
+  },
+  "cmdArchiveLast": {
+    "message": "Arkistoi viesti siihen tietueeseen, johon se viimeksi arkistoitiin"
+  },
+  "actionTitle": {
+    "message": "Arkistoi SuiteCRM:ään"
+  },
+  "menuOpen": {
+    "message": "Arkistoi SuiteCRM:ään…"
+  },
+  "menuCreate": {
+    "message": "Luo tietue tästä viestistä…"
+  },
+  "menuFileAgainst": {
+    "message": "Arkistoi kohteeseen $1"
+  },
+  "menuFileAgainstCase": {
+    "message": "Arkistoi tapaukseen #$1"
+  },
+  "menuFileManyAgainst": {
+    "message": "Arkistoi $1 viestiä kohteeseen $2"
+  },
+  "notifMessageFiled": {
+    "message": "Viesti arkistoitu"
+  },
+  "notifManyFiled": {
+    "message": "$1 viestiä arkistoitu"
+  },
+  "notifNothingFiled": {
+    "message": "Mitään ei arkistoitu"
+  },
+  "notifCouldNotFile": {
+    "message": "Viestiä ei voitu arkistoida"
+  },
+  "notifFiledUnder": {
+    "message": "Arkistoitu kohteeseen $1."
+  },
+  "viaSubject": {
+    "message": "Aiheessa oleva tapausnumero osoitti sen."
+  },
+  "viaReferences": {
+    "message": "Tämän vastauksen viestiketju osoitti sen."
+  },
+  "viaThread": {
+    "message": "Sinne muu osa ketjusta arkistoitiin."
+  },
+  "notifAccountOff": {
+    "message": "$1 on sähköpostitili, jolle tämä lisäosa on poistettu käytöstä."
+  },
+  "filingFor": {
+    "message": "Arkistoidaan"
+  },
+  "filingForRecipient": {
+    "message": "Arkistoidaan (viestisi vastaanottaja)"
+  },
+  "btnFile": {
+    "message": "Arkistoi"
+  },
+  "btnFileTitle": {
+    "message": "Arkistoi tämä viesti SuiteCRM:ään"
+  },
+  "btnFileUnder": {
+    "message": "Arkistoi kohteeseen $1"
+  },
+  "btnFileManyUnder": {
+    "message": "Arkistoi $1 viestiä kohteeseen $2"
+  },
+  "btnChange": {
+    "message": "Vaihda"
+  },
+  "searchPlaceholder": {
+    "message": "Etsi SuiteCRM:stä nimellä tai yrityksellä…"
+  },
+  "searchingFor": {
+    "message": "Etsitään SuiteCRM:stä $1…"
+  },
+  "notInCrm": {
+    "message": "$1 ei ole SuiteCRM:ssä."
+  },
+  "orSearchAbove": {
+    "message": "Tai etsi yllä nimellä tai yrityksellä. Hyödyllistä, kun joku kirjoittaa henkilökohtaisesta osoitteesta."
+  },
+  "createLead": {
+    "message": "Luo liidi"
+  },
+  "createContact": {
+    "message": "Luo yhteystieto"
+  },
+  "createAndFile": {
+    "message": "Luo ja arkistoi"
+  },
+  "createRecordEllipsis": {
+    "message": "Luo tietue…"
+  },
+  "recentlyFiled": {
+    "message": "Viimeksi arkistoidut"
+  },
+  "nothingFiledYet": {
+    "message": "Tässä istunnossa ei ole vielä arkistoitu mitään."
+  },
+  "filing": {
+    "message": "Arkistoidaan…"
+  },
+  "filed": {
+    "message": "Arkistoitu"
+  },
+  "filingUndone": {
+    "message": "Arkistointi peruttu"
+  },
+  "includeAttachments": {
+    "message": "Sisällytä liitteet"
+  },
+  "useMessageDate": {
+    "message": "Käytä viestin päivämäärää"
+  },
+  "followUpIn": {
+    "message": "Seuraa"
+  },
+  "daysSuffix": {
+    "message": "päivän kuluttua"
+  },
+  "fileAllSelected": {
+    "message": "Arkistoi kaikki valitut viestit"
+  },
+  "fileWholeConversation": {
+    "message": "Arkistoi koko keskustelu"
+  },
+  "stripRe": {
+    "message": "Poista Re:"
+  },
+  "caseFromSubject": {
+    "message": "Tapaus #$1, aiheesta"
+  },
+  "caseFromThread": {
+    "message": "Tapaus #$1, vastausketjusta"
+  },
+  "threadParentHead": {
+    "message": "Minne muu osa ketjusta arkistoitiin"
+  },
+  "couldNotSearchModules": {
+    "message": "Moduulista $1 ei voitu etsiä. Muut moduulit haettiin normaalisti."
+  },
+  "moduleTurnedOff": {
+    "message": "Moduulista $1 ei voitu etsiä, joten se on poistettu käytöstä asetuksissa, joissa syy näkyy. Kaikki muu haettiin normaalisti."
+  },
+  "languageGroup": {
+    "message": "Käyttöliittymän kieli"
+  },
+  "languageAuto": {
+    "message": "Seuraa Thunderbirdia"
+  },
+  "languageActive": {
+    "message": "Näytetään $1."
+  },
+  "languageNote": {
+    "message": "Thunderbirdin oma kieli on käytössä, ellet valitse kieltä täällä. Valikot ja ilmoitukset seuraavat Thunderbirdia joka tapauksessa."
+  }
+}

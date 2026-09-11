@@ -1,0 +1,161 @@
+{
+  "cmdArchiveOpen": {
+    "message": "Het SuiteCRM-archiveringsvenster voor dit bericht openen"
+  },
+  "cmdArchiveLast": {
+    "message": "Het bericht koppelen aan het record waaraan het de vorige keer is gekoppeld"
+  },
+  "actionTitle": {
+    "message": "Archiveren in SuiteCRM"
+  },
+  "menuOpen": {
+    "message": "Archiveren in SuiteCRM…"
+  },
+  "menuCreate": {
+    "message": "Een record maken op basis van dit bericht…"
+  },
+  "menuFileAgainst": {
+    "message": "Koppelen aan $1"
+  },
+  "menuFileAgainstCase": {
+    "message": "Koppelen aan case #$1"
+  },
+  "menuFileManyAgainst": {
+    "message": "$1 berichten koppelen aan $2"
+  },
+  "notifMessageFiled": {
+    "message": "Bericht gearchiveerd"
+  },
+  "notifManyFiled": {
+    "message": "$1 berichten gearchiveerd"
+  },
+  "notifNothingFiled": {
+    "message": "Niets gearchiveerd"
+  },
+  "notifCouldNotFile": {
+    "message": "Het bericht kon niet worden gearchiveerd"
+  },
+  "notifFiledUnder": {
+    "message": "Gekoppeld aan $1."
+  },
+  "viaSubject": {
+    "message": "Het casenummer in het onderwerp wees erop."
+  },
+  "viaReferences": {
+    "message": "Het gesprek waar dit antwoord bij hoort wees erop."
+  },
+  "viaThread": {
+    "message": "Daar is de rest van dit gesprek gearchiveerd."
+  },
+  "notifAccountOff": {
+    "message": "$1 is een account waarvoor deze add-on is uitgeschakeld."
+  },
+  "filingFor": {
+    "message": "Archiveren voor"
+  },
+  "filingForRecipient": {
+    "message": "Archiveren voor (ontvanger van uw bericht)"
+  },
+  "btnFile": {
+    "message": "Archiveren"
+  },
+  "btnFileTitle": {
+    "message": "Dit bericht archiveren in SuiteCRM"
+  },
+  "btnFileUnder": {
+    "message": "Koppelen aan $1"
+  },
+  "btnFileManyUnder": {
+    "message": "$1 berichten koppelen aan $2"
+  },
+  "btnChange": {
+    "message": "Wijzigen"
+  },
+  "searchPlaceholder": {
+    "message": "SuiteCRM zoeken op naam of bedrijf…"
+  },
+  "searchingFor": {
+    "message": "SuiteCRM zoeken naar $1…"
+  },
+  "notInCrm": {
+    "message": "$1 staat niet in SuiteCRM."
+  },
+  "orSearchAbove": {
+    "message": "Of zoek hierboven op naam of bedrijf. Handig als iemand vanaf een privéadres schrijft."
+  },
+  "createLead": {
+    "message": "Lead maken"
+  },
+  "createContact": {
+    "message": "Contact maken"
+  },
+  "createAndFile": {
+    "message": "Maken en archiveren"
+  },
+  "createRecordEllipsis": {
+    "message": "Record maken…"
+  },
+  "recentlyFiled": {
+    "message": "Recent gearchiveerd"
+  },
+  "nothingFiledYet": {
+    "message": "In deze sessie is nog niets gearchiveerd."
+  },
+  "filing": {
+    "message": "Archiveren…"
+  },
+  "filed": {
+    "message": "Gearchiveerd"
+  },
+  "filingUndone": {
+    "message": "Archivering ongedaan gemaakt"
+  },
+  "includeAttachments": {
+    "message": "Bijlagen meenemen"
+  },
+  "useMessageDate": {
+    "message": "De datum van het bericht gebruiken"
+  },
+  "followUpIn": {
+    "message": "Opvolgen over"
+  },
+  "daysSuffix": {
+    "message": "dagen"
+  },
+  "fileAllSelected": {
+    "message": "Alle geselecteerde berichten archiveren"
+  },
+  "fileWholeConversation": {
+    "message": "Het hele gesprek archiveren"
+  },
+  "stripRe": {
+    "message": "Re: verwijderen"
+  },
+  "caseFromSubject": {
+    "message": "Case #$1, uit de onderwerpregel"
+  },
+  "caseFromThread": {
+    "message": "Case #$1, uit het antwoordgesprek"
+  },
+  "threadParentHead": {
+    "message": "Waar de rest van dit gesprek is gearchiveerd"
+  },
+  "couldNotSearchModules": {
+    "message": "Kon niet zoeken in $1. De andere modules zijn normaal doorzocht."
+  },
+  "moduleTurnedOff": {
+    "message": "Er kon niet worden gezocht in $1, dus is het uitgeschakeld in de voorkeuren, waar de reden staat. Al het andere is normaal doorzocht."
+  },
+  "languageGroup": {
+    "message": "Taal van de interface"
+  },
+  "languageAuto": {
+    "message": "Thunderbird volgen"
+  },
+  "languageActive": {
+    "message": "$1 wordt weergegeven."
+  },
+  "languageNote": {
+    "message": "De taal van Thunderbird wordt gebruikt tenzij u hier een taal kiest. Menu-items en meldingen volgen in elk geval Thunderbird."
+  }
+}

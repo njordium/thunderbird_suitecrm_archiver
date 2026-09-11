@@ -1,0 +1,161 @@
+{
+  "cmdArchiveOpen": {
+    "message": "Abrir la ventana de archivado de SuiteCRM para este mensaje"
+  },
+  "cmdArchiveLast": {
+    "message": "Archivar el mensaje en el registro donde se archivó la última vez"
+  },
+  "actionTitle": {
+    "message": "Archivar en SuiteCRM"
+  },
+  "menuOpen": {
+    "message": "Archivar en SuiteCRM…"
+  },
+  "menuCreate": {
+    "message": "Crear un registro a partir de este correo…"
+  },
+  "menuFileAgainst": {
+    "message": "Archivar en $1"
+  },
+  "menuFileAgainstCase": {
+    "message": "Archivar en el caso n.º $1"
+  },
+  "menuFileManyAgainst": {
+    "message": "Archivar $1 mensajes en $2"
+  },
+  "notifMessageFiled": {
+    "message": "Mensaje archivado"
+  },
+  "notifManyFiled": {
+    "message": "$1 mensajes archivados"
+  },
+  "notifNothingFiled": {
+    "message": "No se archivó nada"
+  },
+  "notifCouldNotFile": {
+    "message": "No se pudo archivar el mensaje"
+  },
+  "notifFiledUnder": {
+    "message": "Archivado en $1."
+  },
+  "viaSubject": {
+    "message": "El número de caso del asunto lo identificó."
+  },
+  "viaReferences": {
+    "message": "La conversación a la que pertenece esta respuesta lo identificó."
+  },
+  "viaThread": {
+    "message": "Ahí se archivó el resto de la conversación."
+  },
+  "notifAccountOff": {
+    "message": "$1 es una cuenta de correo para la que este complemento está desactivado."
+  },
+  "filingFor": {
+    "message": "Archivando para"
+  },
+  "filingForRecipient": {
+    "message": "Archivando para (destinatario de su mensaje)"
+  },
+  "btnFile": {
+    "message": "Archivar"
+  },
+  "btnFileTitle": {
+    "message": "Archivar este mensaje en SuiteCRM"
+  },
+  "btnFileUnder": {
+    "message": "Archivar en $1"
+  },
+  "btnFileManyUnder": {
+    "message": "Archivar $1 mensajes en $2"
+  },
+  "btnChange": {
+    "message": "Cambiar"
+  },
+  "searchPlaceholder": {
+    "message": "Buscar en SuiteCRM por nombre o empresa…"
+  },
+  "searchingFor": {
+    "message": "Buscando $1 en SuiteCRM…"
+  },
+  "notInCrm": {
+    "message": "$1 no está en SuiteCRM."
+  },
+  "orSearchAbove": {
+    "message": "O busque arriba por nombre o empresa. Útil cuando alguien escribe desde una dirección personal."
+  },
+  "createLead": {
+    "message": "Crear cliente potencial"
+  },
+  "createContact": {
+    "message": "Crear contacto"
+  },
+  "createAndFile": {
+    "message": "Crear y archivar"
+  },
+  "createRecordEllipsis": {
+    "message": "Crear registro…"
+  },
+  "recentlyFiled": {
+    "message": "Archivados recientemente"
+  },
+  "nothingFiledYet": {
+    "message": "Todavía no se ha archivado nada en esta sesión."
+  },
+  "filing": {
+    "message": "Archivando…"
+  },
+  "filed": {
+    "message": "Archivado"
+  },
+  "filingUndone": {
+    "message": "Archivado deshecho"
+  },
+  "includeAttachments": {
+    "message": "Incluir adjuntos"
+  },
+  "useMessageDate": {
+    "message": "Usar la fecha del mensaje"
+  },
+  "followUpIn": {
+    "message": "Hacer seguimiento en"
+  },
+  "daysSuffix": {
+    "message": "días"
+  },
+  "fileAllSelected": {
+    "message": "Archivar todos los mensajes seleccionados"
+  },
+  "fileWholeConversation": {
+    "message": "Archivar toda la conversación"
+  },
+  "stripRe": {
+    "message": "Quitar Re:"
+  },
+  "caseFromSubject": {
+    "message": "Caso n.º $1, del asunto"
+  },
+  "caseFromThread": {
+    "message": "Caso n.º $1, de la conversación"
+  },
+  "threadParentHead": {
+    "message": "Donde se archivó el resto de esta conversación"
+  },
+  "couldNotSearchModules": {
+    "message": "No se pudo buscar en $1. Los demás módulos se buscaron con normalidad."
+  },
+  "moduleTurnedOff": {
+    "message": "No se pudo buscar en $1, por lo que se ha desactivado en las preferencias, donde se indica el motivo. Todo lo demás se buscó con normalidad."
+  },
+  "languageGroup": {
+    "message": "Idioma de la interfaz"
+  },
+  "languageAuto": {
+    "message": "Seguir a Thunderbird"
+  },
+  "languageActive": {
+    "message": "Mostrando $1."
+  },
+  "languageNote": {
+    "message": "Se usa el idioma de Thunderbird a menos que elija uno aquí. Los menús y las notificaciones siguen a Thunderbird en cualquier caso."
+  }
+}

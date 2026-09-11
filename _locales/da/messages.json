@@ -1,0 +1,161 @@
+{
+  "cmdArchiveOpen": {
+    "message": "Åbn SuiteCRM-arkiveringsvinduet for denne mail"
+  },
+  "cmdArchiveLast": {
+    "message": "Arkivér denne mail på den post, den sidst blev arkiveret på"
+  },
+  "actionTitle": {
+    "message": "Arkivér i SuiteCRM"
+  },
+  "menuOpen": {
+    "message": "Arkivér i SuiteCRM…"
+  },
+  "menuCreate": {
+    "message": "Opret en post ud fra denne mail…"
+  },
+  "menuFileAgainst": {
+    "message": "Arkivér på $1"
+  },
+  "menuFileAgainstCase": {
+    "message": "Arkivér på sag #$1"
+  },
+  "menuFileManyAgainst": {
+    "message": "Arkivér $1 mails på $2"
+  },
+  "notifMessageFiled": {
+    "message": "Mail arkiveret"
+  },
+  "notifManyFiled": {
+    "message": "$1 mails arkiveret"
+  },
+  "notifNothingFiled": {
+    "message": "Intet arkiveret"
+  },
+  "notifCouldNotFile": {
+    "message": "Mailen kunne ikke arkiveres"
+  },
+  "notifFiledUnder": {
+    "message": "Arkiveret på $1."
+  },
+  "viaSubject": {
+    "message": "Sagsnummeret i emnefeltet pegede på den."
+  },
+  "viaReferences": {
+    "message": "Tråden, som dette svar hører til, pegede på den."
+  },
+  "viaThread": {
+    "message": "Det er der, resten af tråden blev arkiveret."
+  },
+  "notifAccountOff": {
+    "message": "$1 er en mailkonto, som dette tilføjelsesprogram er slået fra for."
+  },
+  "filingFor": {
+    "message": "Arkiverer for"
+  },
+  "filingForRecipient": {
+    "message": "Arkiverer for (modtageren af din mail)"
+  },
+  "btnFile": {
+    "message": "Arkivér"
+  },
+  "btnFileTitle": {
+    "message": "Arkivér denne mail i SuiteCRM"
+  },
+  "btnFileUnder": {
+    "message": "Arkivér på $1"
+  },
+  "btnFileManyUnder": {
+    "message": "Arkivér $1 mails på $2"
+  },
+  "btnChange": {
+    "message": "Skift"
+  },
+  "searchPlaceholder": {
+    "message": "Søg i SuiteCRM efter navn eller firma…"
+  },
+  "searchingFor": {
+    "message": "Søger i SuiteCRM efter $1…"
+  },
+  "notInCrm": {
+    "message": "$1 findes ikke i SuiteCRM."
+  },
+  "orSearchAbove": {
+    "message": "Eller søg ovenfor på navn eller firma. Nyttigt når nogen skriver fra en privat adresse."
+  },
+  "createLead": {
+    "message": "Opret lead"
+  },
+  "createContact": {
+    "message": "Opret kontakt"
+  },
+  "createAndFile": {
+    "message": "Opret og arkivér"
+  },
+  "createRecordEllipsis": {
+    "message": "Opret post…"
+  },
+  "recentlyFiled": {
+    "message": "Senest arkiveret"
+  },
+  "nothingFiledYet": {
+    "message": "Intet arkiveret endnu i denne session."
+  },
+  "filing": {
+    "message": "Arkiverer…"
+  },
+  "filed": {
+    "message": "Arkiveret"
+  },
+  "filingUndone": {
+    "message": "Arkivering fortrudt"
+  },
+  "includeAttachments": {
+    "message": "Medtag vedhæftede filer"
+  },
+  "useMessageDate": {
+    "message": "Brug mailens dato"
+  },
+  "followUpIn": {
+    "message": "Følg op om"
+  },
+  "daysSuffix": {
+    "message": "dage"
+  },
+  "fileAllSelected": {
+    "message": "Arkivér alle valgte mails"
+  },
+  "fileWholeConversation": {
+    "message": "Arkivér hele samtalen"
+  },
+  "stripRe": {
+    "message": "Fjern Re:"
+  },
+  "caseFromSubject": {
+    "message": "Sag #$1, fra emnefeltet"
+  },
+  "caseFromThread": {
+    "message": "Sag #$1, fra svartråden"
+  },
+  "threadParentHead": {
+    "message": "Der, hvor resten af tråden blev arkiveret"
+  },
+  "couldNotSearchModules": {
+    "message": "Kunne ikke søge i $1. De øvrige moduler blev søgt som normalt."
+  },
+  "moduleTurnedOff": {
+    "message": "$1 kunne ikke søges og er derfor slået fra under Indstillinger, hvor årsagen vises. Alt andet blev søgt som normalt."
+  },
+  "languageGroup": {
+    "message": "Sprog i brugerfladen"
+  },
+  "languageAuto": {
+    "message": "Følg Thunderbird"
+  },
+  "languageActive": {
+    "message": "Viser $1."
+  },
+  "languageNote": {
+    "message": "Thunderbirds eget sprog bruges, medmindre du vælger et her. Menupunkter og meddelelser følger Thunderbird under alle omstændigheder."
+  }
+}

@@ -354,3 +354,76 @@ test("nothing that is not a domain yields a homepage", async () => {
   assert.equal(homepageFromDomain("G2.COM"), "https://www.g2.com", "case is normalised");
   assert.equal(homepageFromDomain("g2.com."), "https://www.g2.com", "a trailing dot is dropped");
 });
+
+// --- Shapes taken from real mail -------------------------------------------
+//
+// Written from messages that parsed badly on this machine. The structure,
+// labels and quirks are theirs; the names, domains and numbers are not, since
+// the originals are third-party correspondence that never enters this repo.
+
+test("a company registration number in a legal footer is not a phone number", () => {
+  const body = [
+    "Thanks,", "", "Tobias", "", "Kind regards,", "",
+    "Tobias Helmer", "Country Marketing Manager", "Acme Technologies | Sweden",
+    "+4670 726 88 46", "tobias.helmer@acme.example",
+    "Acme AB, Storgatan 1, SE-169 70 Solna, Sweden", "",
+    "Acme AB, Storgatan 1, SE-169 70, SOLNA, SWEDEN Org.nr/Corp. Id. No: 556369-6631, " +
+      "Moms regr. nr/VAT No: SE556369663101",
+  ].join("\n");
+  const r = parseContact({ author: "Helmer, Tobias <tobias.helmer@acme.example>", bodyText: body });
+  assert.equal(r.fields.phone_mobile, "+4670 726 88 46");
+  assert.ok(!String(r.fields.phone_work || "").includes("556369"),
+    `the registration number was filed as a phone: ${r.fields.phone_work}`);
+  assert.ok(!String(r.fields.phone_other || "").includes("556369"));
+  assert.equal(r.fields.title, "Country Marketing Manager");
+});
+
+test("a tel: link wrapped around the number does not hide it", () => {
+  const body = [
+    "Med venlig hilsen", "",
+    "Mia Sonne", "Recruitment Specialist",
+    "Mobile: +45 2213 6113<tel:+45%202213%206113>",
+    "Email: mia@example.dk<mailto:mia@example.dk>", "",
+    "Example A/S",
+  ].join("\n");
+  const r = parseContact({ author: "Mia Sonne <mia@example.dk>", bodyText: body });
+  assert.equal(r.fields.phone_mobile, "+45 2213 6113");
+  assert.equal(r.fields.title, "Recruitment Specialist");
+});
+
+test("an Associate title is recognised, not just the senior ones", () => {
+  const body = [
+    "Best wishes,", "Drin", "", "--", "",
+    "Drin Example", "", "Associate - Global Market Insights Team",
+    "Office Number: +46 (0) 40 60 57 056", "", "www.example.com",
+  ].join("\n");
+  const r = parseContact({ author: "Drin Example <drg@example.com>", bodyText: body });
+  assert.equal(r.fields.title, "Associate - Global Market Insights Team");
+  assert.ok(r.fields.phone_work || r.fields.phone_other, "the office number was dropped");
+});
+
+test("a wrapped attribution line does not drag the quoted mail into the signature", () => {
+  const body = [
+    "Hi,", "", "Passing this on.", "", "Best wishes,", "Drin", "", "--", "",
+    "Drin Example", "Associate - Global Market Insights Team", "",
+    "On Mon, 7 Sep 2026 at 21:34, Someone Else <someone@other.example>",
+    "wrote:", "",
+    "> Kind regards,", "> Someone Else", "> Head of Nothing", "> +46 733 27 27 15",
+  ].join("\n");
+  const r = parseContact({ author: "Drin Example <drg@example.com>", bodyText: body });
+  assert.equal(r.fields.title, "Associate - Global Market Insights Team");
+  assert.ok(!String(r.fields.phone_work || r.fields.phone_mobile || "").includes("733"),
+    "a number from the quoted message was attributed to this sender");
+});
+
+test("the Nordic sign-offs people actually write are recognised", () => {
+  for (const signoff of [
+    "Med venlig hilsen", "Med vennlig hilsen", "Venlig hilsen", "Vennlig hilsen",
+    "Med vänliga hälsningar", "Ystävällisin terveisin", "Mvh",
+  ]) {
+    const body = [signoff, "", "Mia Sonne", "Recruitment Specialist", "", "Example A/S"].join("\n");
+    const r = parseContact({ author: "Mia Sonne <mia@example.dk>", bodyText: body });
+    assert.equal(r.fields.title, "Recruitment Specialist",
+      `"${signoff}" was not recognised as a sign-off, so nothing after it was read`);
+  }
+});

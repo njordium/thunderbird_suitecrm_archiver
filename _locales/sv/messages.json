@@ -1,0 +1,161 @@
+{
+  "cmdArchiveOpen": {
+    "message": "Öppna SuiteCRM-arkiveringsfönstret för det här meddelandet"
+  },
+  "cmdArchiveLast": {
+    "message": "Arkivera meddelandet på posten det senast arkiverades på"
+  },
+  "actionTitle": {
+    "message": "Arkivera i SuiteCRM"
+  },
+  "menuOpen": {
+    "message": "Arkivera i SuiteCRM…"
+  },
+  "menuCreate": {
+    "message": "Skapa en post från det här meddelandet…"
+  },
+  "menuFileAgainst": {
+    "message": "Arkivera på $1"
+  },
+  "menuFileAgainstCase": {
+    "message": "Arkivera på ärende #$1"
+  },
+  "menuFileManyAgainst": {
+    "message": "Arkivera $1 meddelanden på $2"
+  },
+  "notifMessageFiled": {
+    "message": "Meddelandet arkiverat"
+  },
+  "notifManyFiled": {
+    "message": "$1 meddelanden arkiverade"
+  },
+  "notifNothingFiled": {
+    "message": "Inget arkiverat"
+  },
+  "notifCouldNotFile": {
+    "message": "Meddelandet kunde inte arkiveras"
+  },
+  "notifFiledUnder": {
+    "message": "Arkiverat på $1."
+  },
+  "viaSubject": {
+    "message": "Ärendenumret i ämnesraden pekade ut den."
+  },
+  "viaReferences": {
+    "message": "Tråden som svaret hör till pekade ut den."
+  },
+  "viaThread": {
+    "message": "Det är dit resten av tråden arkiverades."
+  },
+  "notifAccountOff": {
+    "message": "$1 är ett e-postkonto som tillägget är avstängt för."
+  },
+  "filingFor": {
+    "message": "Arkiverar för"
+  },
+  "filingForRecipient": {
+    "message": "Arkiverar för (mottagaren av ditt meddelande)"
+  },
+  "btnFile": {
+    "message": "Arkivera"
+  },
+  "btnFileTitle": {
+    "message": "Arkivera meddelandet i SuiteCRM"
+  },
+  "btnFileUnder": {
+    "message": "Arkivera på $1"
+  },
+  "btnFileManyUnder": {
+    "message": "Arkivera $1 meddelanden på $2"
+  },
+  "btnChange": {
+    "message": "Byt"
+  },
+  "searchPlaceholder": {
+    "message": "Sök i SuiteCRM på namn eller företag…"
+  },
+  "searchingFor": {
+    "message": "Söker i SuiteCRM efter $1…"
+  },
+  "notInCrm": {
+    "message": "$1 finns inte i SuiteCRM."
+  },
+  "orSearchAbove": {
+    "message": "Eller sök ovan på namn eller företag. Användbart när någon skriver från en privat adress."
+  },
+  "createLead": {
+    "message": "Skapa lead"
+  },
+  "createContact": {
+    "message": "Skapa kontakt"
+  },
+  "createAndFile": {
+    "message": "Skapa och arkivera"
+  },
+  "createRecordEllipsis": {
+    "message": "Skapa post…"
+  },
+  "recentlyFiled": {
+    "message": "Senast arkiverat"
+  },
+  "nothingFiledYet": {
+    "message": "Inget arkiverat än under den här sessionen."
+  },
+  "filing": {
+    "message": "Arkiverar…"
+  },
+  "filed": {
+    "message": "Arkiverat"
+  },
+  "filingUndone": {
+    "message": "Arkiveringen ångrad"
+  },
+  "includeAttachments": {
+    "message": "Inkludera bilagor"
+  },
+  "useMessageDate": {
+    "message": "Använd meddelandets datum"
+  },
+  "followUpIn": {
+    "message": "Följ upp om"
+  },
+  "daysSuffix": {
+    "message": "dagar"
+  },
+  "fileAllSelected": {
+    "message": "Arkivera alla markerade meddelanden"
+  },
+  "fileWholeConversation": {
+    "message": "Arkivera hela konversationen"
+  },
+  "stripRe": {
+    "message": "Ta bort Re:"
+  },
+  "caseFromSubject": {
+    "message": "Ärende #$1, från ämnesraden"
+  },
+  "caseFromThread": {
+    "message": "Ärende #$1, från svarstråden"
+  },
+  "threadParentHead": {
+    "message": "Dit resten av tråden arkiverades"
+  },
+  "couldNotSearchModules": {
+    "message": "Kunde inte söka i $1. Övriga moduler söktes som vanligt."
+  },
+  "moduleTurnedOff": {
+    "message": "$1 kunde inte sökas och har därför stängts av under Inställningar, där orsaken visas. Allt annat söktes som vanligt."
+  },
+  "languageGroup": {
+    "message": "Språk i gränssnittet"
+  },
+  "languageAuto": {
+    "message": "Följ Thunderbird"
+  },
+  "languageActive": {
+    "message": "Visar $1."
+  },
+  "languageNote": {
+    "message": "Thunderbirds eget språk används om du inte väljer ett här. Menyval och notiser följer Thunderbird oavsett."
+  }
+}

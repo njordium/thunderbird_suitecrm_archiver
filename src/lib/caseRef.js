@@ -144,7 +144,23 @@ export function looksLikeReply(subject) {
  * to be the case mail, and bounded, so an old thread cannot turn one lookup
  * into thirty requests.
  */
-export async function findCaseByReferences(client, ids, { max = 5, log = null } = {}) {
+export async function findCaseByReferences(client, ids, opts = {}) {
+  const found = await findThreadParent(client, ids, {
+    ...opts,
+    accept: (parentType) => parentType === "Cases",
+  });
+  return found ? { caseId: found.id, viaMessageId: found.viaMessageId } : null;
+}
+
+/**
+ * The CRM record an earlier message in this thread was filed against.
+ *
+ * The Case version of this is the common case, but the reasoning is not
+ * specific to Cases: if the previous message in a conversation was filed
+ * against an Account, a Contact or an Opportunity, that is where this reply
+ * belongs too. `accept` narrows it when only one kind will do.
+ */
+export async function findThreadParent(client, ids, { max = 5, log = null, accept = null } = {}) {
   const chain = [...(ids || [])].filter(Boolean);
   // The chain runs oldest to newest, so the immediate parent is at the end.
   const nearestFirst = chain.reverse().slice(0, max);
@@ -163,8 +179,9 @@ export async function findCaseByReferences(client, ids, { max = 5, log = null } 
       continue;
     }
 
-    const hit = (records || []).find((r) => r?.parent_type === "Cases" && r?.parent_id);
-    if (hit) return { caseId: hit.parent_id, viaMessageId: messageId };
+    const hit = (records || []).find((r) =>
+      r?.parent_type && r?.parent_id && (!accept || accept(r.parent_type)));
+    if (hit) return { module: hit.parent_type, id: hit.parent_id, viaMessageId: messageId };
   }
   return null;
 }

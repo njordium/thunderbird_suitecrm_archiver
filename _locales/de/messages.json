@@ -1,0 +1,161 @@
+{
+  "cmdArchiveOpen": {
+    "message": "SuiteCRM-Archivierungsfenster für diese Nachricht öffnen"
+  },
+  "cmdArchiveLast": {
+    "message": "Nachricht dem Datensatz zuordnen, dem sie zuletzt zugeordnet wurde"
+  },
+  "actionTitle": {
+    "message": "In SuiteCRM archivieren"
+  },
+  "menuOpen": {
+    "message": "In SuiteCRM archivieren…"
+  },
+  "menuCreate": {
+    "message": "Datensatz aus dieser E-Mail erstellen…"
+  },
+  "menuFileAgainst": {
+    "message": "Zu $1 zuordnen"
+  },
+  "menuFileAgainstCase": {
+    "message": "Zu Ticket #$1 zuordnen"
+  },
+  "menuFileManyAgainst": {
+    "message": "$1 Nachrichten zu $2 zuordnen"
+  },
+  "notifMessageFiled": {
+    "message": "Nachricht archiviert"
+  },
+  "notifManyFiled": {
+    "message": "$1 Nachrichten archiviert"
+  },
+  "notifNothingFiled": {
+    "message": "Nichts archiviert"
+  },
+  "notifCouldNotFile": {
+    "message": "Nachricht konnte nicht archiviert werden"
+  },
+  "notifFiledUnder": {
+    "message": "Zu $1 zugeordnet."
+  },
+  "viaSubject": {
+    "message": "Die Ticketnummer im Betreff hat darauf verwiesen."
+  },
+  "viaReferences": {
+    "message": "Der Thread, zu dem diese Antwort gehört, hat darauf verwiesen."
+  },
+  "viaThread": {
+    "message": "Dort wurde der Rest dieses Threads abgelegt."
+  },
+  "notifAccountOff": {
+    "message": "$1 ist ein Konto, für das dieses Add-on ausgeschaltet ist."
+  },
+  "filingFor": {
+    "message": "Archivieren für"
+  },
+  "filingForRecipient": {
+    "message": "Archivieren für (Empfänger Ihrer Nachricht)"
+  },
+  "btnFile": {
+    "message": "Archivieren"
+  },
+  "btnFileTitle": {
+    "message": "Diese Nachricht in SuiteCRM archivieren"
+  },
+  "btnFileUnder": {
+    "message": "Zu $1 zuordnen"
+  },
+  "btnFileManyUnder": {
+    "message": "$1 Nachrichten zu $2 zuordnen"
+  },
+  "btnChange": {
+    "message": "Ändern"
+  },
+  "searchPlaceholder": {
+    "message": "SuiteCRM nach Name oder Firma durchsuchen…"
+  },
+  "searchingFor": {
+    "message": "SuiteCRM wird nach $1 durchsucht…"
+  },
+  "notInCrm": {
+    "message": "$1 ist nicht in SuiteCRM."
+  },
+  "orSearchAbove": {
+    "message": "Oder suchen Sie oben nach Name oder Firma. Nützlich, wenn jemand von einer privaten Adresse schreibt."
+  },
+  "createLead": {
+    "message": "Lead erstellen"
+  },
+  "createContact": {
+    "message": "Kontakt erstellen"
+  },
+  "createAndFile": {
+    "message": "Erstellen und archivieren"
+  },
+  "createRecordEllipsis": {
+    "message": "Datensatz erstellen…"
+  },
+  "recentlyFiled": {
+    "message": "Zuletzt archiviert"
+  },
+  "nothingFiledYet": {
+    "message": "In dieser Sitzung wurde noch nichts archiviert."
+  },
+  "filing": {
+    "message": "Wird archiviert…"
+  },
+  "filed": {
+    "message": "Archiviert"
+  },
+  "filingUndone": {
+    "message": "Archivierung zurückgenommen"
+  },
+  "includeAttachments": {
+    "message": "Anhänge einbeziehen"
+  },
+  "useMessageDate": {
+    "message": "Datum der Nachricht verwenden"
+  },
+  "followUpIn": {
+    "message": "Nachfassen in"
+  },
+  "daysSuffix": {
+    "message": "Tagen"
+  },
+  "fileAllSelected": {
+    "message": "Alle ausgewählten Nachrichten archivieren"
+  },
+  "fileWholeConversation": {
+    "message": "Die ganze Unterhaltung archivieren"
+  },
+  "stripRe": {
+    "message": "Re: entfernen"
+  },
+  "caseFromSubject": {
+    "message": "Ticket #$1, aus der Betreffzeile"
+  },
+  "caseFromThread": {
+    "message": "Ticket #$1, aus dem Antwortverlauf"
+  },
+  "threadParentHead": {
+    "message": "Wo der Rest dieses Threads abgelegt wurde"
+  },
+  "couldNotSearchModules": {
+    "message": "$1 konnte nicht durchsucht werden. Die anderen Module wurden normal durchsucht."
+  },
+  "moduleTurnedOff": {
+    "message": "$1 konnte nicht durchsucht werden und wurde daher in den Einstellungen ausgeschaltet, wo der Grund steht. Alles andere wurde normal durchsucht."
+  },
+  "languageGroup": {
+    "message": "Sprache der Oberfläche"
+  },
+  "languageAuto": {
+    "message": "Thunderbird folgen"
+  },
+  "languageActive": {
+    "message": "Angezeigt wird $1."
+  },
+  "languageNote": {
+    "message": "Es wird die Sprache von Thunderbird verwendet, sofern Sie hier keine wählen. Menüeinträge und Benachrichtigungen folgen in jedem Fall Thunderbird."
+  }
+}

@@ -11,6 +11,7 @@
 
 import { MODULE_LABEL, moduleTitle, recordLabel, recordSubtitle, recordOwner } from "../lib/modules.js";
 import { timeAgo } from "../lib/humanTime.js";
+import { useLocale, localise, t } from "../lib/i18n.js";
 import { unwrapMessageList } from "../lib/tbcompat.js";
 import { creatableFor, unavailableReason } from "../lib/createFromEmail.js";
 
@@ -173,6 +174,16 @@ function report(level, text) {
 }
 
 async function init() {
+  // Language first: the window must not paint English and then swap it out.
+  try {
+    const prefs = await call("getPrefs");
+    await useLocale(prefs.uiLanguage);
+    localise();
+  } catch {
+    // No preferences yet, or the background is not answering. English is a
+    // working window, so this is not worth stopping for.
+  }
+
   // Show the window first and fill it in as answers arrive. Nothing here may
   // block on the CRM or on a mailbox-wide search: the popup used to wait about
   // two seconds for conversation discovery before it drew anything at all.
@@ -228,11 +239,18 @@ async function init() {
   }
 }
 
+/** Record the conversation size in one tick. */
+function applyThreadCount(n) {
+  state.threadCount = n;
+}
+
 /** Conversation discovery is slow, so it arrives after the window is usable. */
 async function loadThreadInfo() {
   try {
-    const info = await call("getThreadInfo", { messageId: state.messageId });
-    state.threadCount = info.threadCount || 1;
+    const askedFor = state.messageId;
+    const info = await call("getThreadInfo", { messageId: askedFor });
+    if (askedFor !== state.messageId) return;
+    applyThreadCount(info.threadCount || 1);
     if (state.threadCount > 1) {
       $("thread-opt").hidden = false;
       $("thread-count").textContent = `(${state.threadCount} messages)`;
@@ -352,7 +370,7 @@ function updateArchiveLabel() {
   if (state.archiveSelection) n = state.selectedIds.length;
   else if (state.wholeThread && total > 1) n = total;
 
-  btn.textContent = n > 1 ? `File ${n} messages under ${target}` : `File under ${target}`;
+  btn.textContent = n > 1 ? t("btnFileManyUnder", n, target) : t("btnFileUnder", target);
 }
 
 // ---------------------------------------------------------------------------
@@ -370,8 +388,8 @@ function renderAddressBar() {
   const label = document.querySelector(".addr-current .label");
   if (label) {
     label.textContent = c.sentByMe && active === c.primary
-      ? "Filing for (recipient of your message)"
-      : "Filing for";
+      ? t("filingForRecipient")
+      : t("filingFor");
   }
 
   // Only offer the switch when there is somebody to switch to.
@@ -448,7 +466,22 @@ async function annotatePickerCounts() {
   }
 }
 
+// Bumped on every lookup. An answer that arrives after a newer lookup started
+// is thrown away: Change twice in quick succession used to let the slower first
+// answer overwrite the second, so the window showed one address and the results
+// of another.
+let lookupGeneration = 0;
+
+/** Install a lookup result in one tick, with nothing awaited in between. */
+function applyLookup({ lookup, memory, caseHit }) {
+  state.lookup = lookup;
+  state.lastTarget = memory?.target || null;
+  state.caseHit = caseHit?.found || null;
+  state.caseVia = caseHit?.via || null;
+}
+
 async function selectAddress(email, name) {
+  const generation = ++lookupGeneration;
   state.activeEmail = email;
   state.activeName = name || null;
   state.searchTerm = "";
@@ -459,7 +492,7 @@ async function selectAddress(email, name) {
   renderAddressBar();
   setStatus($("status"), "");
 
-  setSearching(`Searching SuiteCRM for ${email}…`);
+  setSearching(t("searchingFor", email));
 
   try {
     // Both are CRM requests and neither answer depends on the other, so
@@ -474,10 +507,8 @@ async function selectAddress(email, name) {
           }).catch(() => null)
         : Promise.resolve(null),
     ]);
-    state.lookup = lookup;
-    state.lastTarget = memory?.target || null;
-    state.caseHit = caseHit?.found || null;
-    state.caseVia = caseHit?.via || null;
+    if (generation !== lookupGeneration) return;   // a newer lookup is running
+    applyLookup({ lookup, memory, caseHit });
     renderResults();
   } catch (e) {
     $("results").textContent = "";
@@ -505,8 +536,8 @@ function renderCaseRef(rec) {
   // subject number is SuiteCRM's own marker, while a reference chain match
   // means the subject had lost it and the thread was followed instead.
   head.textContent = state.caseVia === "references"
-    ? `Case #${rec.case_number}, from the reply chain`
-    : `Case #${rec.case_number}, from the subject line`;
+    ? t("caseFromThread", rec.case_number)
+    : t("caseFromSubject", rec.case_number);
   wrap.appendChild(head);
 
   const card = el("div", "rec");
@@ -537,8 +568,8 @@ function renderResults() {
     const names = r.failures.map((f) => f.title || moduleTitle(f.module)).join(", ");
     const off = r.failures.some((f) => f.disabled);
     setStatus($("status"), off
-      ? `${names} could not be searched, so it has been turned off in Preferences, where the reason is shown. Everything else was searched normally.`
-      : `Could not search ${names}. Other modules were searched normally.`, "warn");
+      ? t("moduleTurnedOff", names)
+      : t("couldNotSearchModules", names), "warn");
   }
 
   if (!r.found) return state.searchTerm ? renderNoSearchHits() : renderNotFound();
@@ -710,18 +741,17 @@ function recordCard(rec) {
       expand.textContent = "Loading…";
       try {
         const related = await call("expandRecord", { record: rec });
-        holder.textContent = "";
         const entries = Object.entries(related);
         if (!entries.length) {
           expand.textContent = "No linked records";
           expand.disabled = true;
           return;
         }
+        const frag = document.createDocumentFragment();
         for (const [module, recs] of entries) {
-          for (const r of recs) holder.appendChild(relatedItem({ ...r, module }));
+          for (const r of recs) frag.appendChild(relatedItem({ ...r, module }));
         }
-        holder.dataset.loaded = "1";
-        holder.hidden = false;
+        revealRelated(holder, frag);
         expand.textContent = "Hide linked records";
       } catch {
         expand.textContent = "Could not load linked records";
@@ -759,18 +789,18 @@ function selectRecord(rec, { remembered = false } = {}) {
 function renderNotFound() {
   const box = $("results");
   const wrap = el("div", "notfound");
-  wrap.appendChild(el("p", "muted", `${state.activeEmail} is not in SuiteCRM.`));
+  wrap.appendChild(el("p", "muted", t("notInCrm", state.activeEmail)));
 
   const actions = el("div", "foot-actions");
-  const lead = el("button", "btn btn-primary", "Create Lead");
+  const lead = el("button", "btn btn-primary", t("createLead"));
   lead.addEventListener("click", () => openCreate("Leads"));
-  const contact = el("button", "btn", "Create Contact");
+  const contact = el("button", "btn", t("createContact"));
   contact.addEventListener("click", () => openCreate("Contacts"));
   actions.append(lead, contact);
   wrap.appendChild(actions);
 
   const hint = el("p", "muted small",
-    "Or search above by name or company. Useful when someone writes from a personal address.");
+    t("orSearchAbove"));
   wrap.appendChild(hint);
 
   if (state.lookup.accountsByDomain?.length) {
@@ -791,7 +821,7 @@ async function renderRecent() {
     const { entries } = await call("recentArchives");
     box.textContent = "";
     if (!entries.length) {
-      box.appendChild(el("div", "muted small", "Nothing filed yet in this session."));
+      box.appendChild(el("div", "muted small", t("nothingFiledYet")));
       return;
     }
     for (const e of entries) {
@@ -813,7 +843,7 @@ async function renderRecent() {
 $("btn-recent").addEventListener("click", () => {
   const panel = $("recent");
   panel.hidden = !panel.hidden;
-  $("btn-recent").textContent = panel.hidden ? "Recently filed" : "Hide recent";
+  $("btn-recent").textContent = panel.hidden ? t("recentlyFiled") : "Hide recent";
   if (!panel.hidden) renderRecent();
 });
 
@@ -832,16 +862,36 @@ const FORM_FIELDS = [
   "primary_address_city", "primary_address_country",
 ];
 
+/** Swap in the linked records and show them, with nothing awaited between. */
+function revealRelated(holder, frag) {
+  holder.textContent = "";
+  holder.appendChild(frag);
+  holder.dataset.loaded = "1";
+  holder.hidden = false;
+}
+
+/** Note which record is now the target, in one tick. */
+function applySelected(selected) {
+  state.selected = selected;
+}
+
+/** Install the parsed proposal in one tick. */
+function applyProposal(proposal) {
+  state.proposal = proposal;
+}
+
 async function openCreate(kind) {
   state.createKind = kind;
   showView("create");
   setLoading(true, "Reading the signature…");
   try {
-    state.proposal = await call("proposeContact", {
+    const proposal = await call("proposeContact", {
       messageId: state.messageId,
       email: state.activeEmail,
       name: state.activeName,
     });
+    if (state.createKind !== kind) return;        // the user switched kind
+    applyProposal(proposal);
     renderCreateForm();
     checkForDuplicates();
   } catch (e) {
@@ -1023,11 +1073,11 @@ async function doCreate() {
       created.module = "Leads";
     }
 
-    state.selected = {
+    applySelected({
       type: created.module,
       id: created.id,
       label: recordLabel(created) || form.last_name,
-    };
+    });
     await doArchive();
   } catch (e) {
     setLoading(false);
@@ -1057,14 +1107,14 @@ async function doArchive() {
       ? " Attachments will be uploaded for each one."
       : "";
     const ok = confirm(
-      `File ${count} messages under ${state.selected.label}?` + atts +
+      t("btnFileManyUnder", count, state.selected.label) + atts +
       "\n\nThis can take a while, and only the last message can be undone."
     );
     if (!ok) return;
     state.confirmedBulk = true;
   }
 
-  setLoading(true, "Filing…");
+  setLoading(true, t("filing"));
   try {
     if (state.activeEmail && state.selected) {
       call("rememberTarget", { email: state.activeEmail, target: state.selected }).catch(() => {});
@@ -1093,7 +1143,7 @@ async function doArchive() {
 function renderDone(res) {
   showView("done");
   $("btn-open-record").hidden = false;
-  $("done-title").textContent = res.updated ? "Re-filed" : "Filed";
+  $("done-title").textContent = res.updated ? "Re-filed" : t("filed");
 
   const bits = [];
   if (res.recordKind) {
@@ -1157,7 +1207,7 @@ $("btn-undo").addEventListener("click", async () => {
     note.textContent = (bits.join(", ") || "Nothing needed undoing") +
       (r.problems.length ? `. ${r.problems.join(" ")}` : ".");
     btn.hidden = true;
-    $("done-title").textContent = "Filing undone";
+    $("done-title").textContent = t("filingUndone");
     $("btn-open-record").hidden = true;
   } catch (e) {
     note.className = "status is-error";
@@ -1363,7 +1413,7 @@ $("btn-record-save").addEventListener("click", async () => {
       archive: $("r-archive").checked,
     });
 
-    state.selected = { type: res.module, id: res.id, label: res.label };
+    applySelected({ type: res.module, id: res.id, label: res.label });
     renderDone({
       created: true,
       attachments: [],

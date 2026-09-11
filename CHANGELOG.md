@@ -14,6 +14,29 @@
   never turned off. *Find more modules* re-tests anything
   marked and clears the mark when access comes back, so a revoked role shows up as something
   you can see and fix rather than a warning that never stops.
+- **The interface speaks thirteen languages.** US and UK English, Danish, Swedish, Norwegian
+  Bokmål, Finnish, German, Spanish, Dutch, French, Italian, Polish and Brazilian Portuguese.
+  Thunderbird's own language is followed by default, and Behaviour has a selector for anyone
+  whose mail client and CRM disagree. This first pass covers the buttons, statuses, menu
+  entries and notifications; the setup walkthrough and the permission explanations stay in
+  English until a native speaker has read them.
+- **The right-click menu and the keyboard shortcut now file where the window would.** They
+  went straight to the sender's history, so the same message landed in two different places
+  depending on how you filed it. Both now try the Case named in the subject, then the Case the
+  thread belongs to, then the remembered record, and the notification says which of the three
+  answered.
+- **A reply is filed where the rest of its thread went, whatever kind of record that is.**
+  Matching by mail thread is no longer limited to Cases: if an earlier message in the
+  conversation was filed against an Account, a Contact or an Opportunity, a reply is offered
+  there too.
+- **Signature parsing, from real mail that parsed badly.** Four fixes, each from a message
+  that got it wrong: "Med venlig hilsen" and "Med vennlig hilsen" were not recognised as
+  sign-offs at all, which is most Danish and Norwegian mail, so nothing after them was read;
+  a company registration number in a legal footer ("Org.nr/Corp. Id. No: 556369-6631") was
+  filed as a work phone number, which is worse than an empty field; a `tel:` link wrapped
+  around a number hid it; and a Gmail attribution line that wraps before "wrote:" left two
+  lines of somebody else's mail inside the signature. Titles like "Associate" and
+  "Executive" are recognised now too.
 - **A reply is matched to its Case by the mail thread, not only by the subject.** SuiteCRM
   stamps the case number into the subject of mail it sends, and that was the only route, so
   the match was lost the moment the subject changed: an administrator edits the macro, a mail
@@ -38,10 +61,18 @@
 - Em dashes are gone from the interface, the documentation and the listing text.
 - Checksums are written by the build rather than by hand, so `dist/SHA256SUMS` cannot lag a
   release.
-- Test coverage for all of the above: 320 unit tests, and five new end-to-end steps that
+- **Every lint warning is gone, and the build now fails on the first new one.** Three were
+  real: two windows saving a preference at once could lose one of the two patches; pressing
+  *Change* twice quickly let the slower first lookup overwrite the second, so the window
+  showed one address with another's results; and switching between Lead and Contact while a
+  signature parsed could fill the new form from the old one.
+- A `commit-msg` and a `pre-commit` hook in `tools/hooks`, so a bad commit message or a
+  failing test stops the commit rather than the build.
+- Test coverage for all of the above: 395 unit tests, and five new end-to-end steps that
   create a Case on a live SuiteCRM, store the notification it would have sent, reply to it
   twice, and file both replies back onto the Case, once by subject and once by reference
-  chain with no number in the subject at all.
+  chain with no number in the subject at all. All 61 end-to-end steps pass against a live
+  instance.
 
 ## 0.4.3 (2026-09-10)
 

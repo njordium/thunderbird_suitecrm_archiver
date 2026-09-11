@@ -25,7 +25,7 @@ const LEGAL_SUFFIX_END =
 /** Openings and closings, never part of a signature's data. */
 const GREETING = /^(hi|hej|hello|hey|dear|good\s+(morning|afternoon|evening)|tack|thanks|thank\s+you|cheers)\b/i;
 
-const SIGN_OFF = /^(regards|best\s+regards|kind\s+regards|warm\s+regards|many\s+thanks|thanks|thank\s+you|sincerely|yours(\s+\w+)?|cheers|br|mvh|med\s+v(ä|a)nliga\s+h(ä|a)lsningar|v(ä|a)nliga\s+h(ä|a)lsningar|h(ä|a)lsningar|mit\s+freundlichen\s+gr(ü|u)(ß|ss)en|cordialement|saludos|hilsen|vennlig\s+hilsen)\b[,.!]?\s*$/i;
+const SIGN_OFF = /^(regards|best\s+regards|kind\s+regards|warm\s+regards|many\s+thanks|thanks|thank\s+you|sincerely|yours(\s+\w+)?|cheers|br|mvh|med\s+v(ä|a)nliga\s+h(ä|a)lsningar|v(ä|a)nliga\s+h(ä|a)lsningar|h(ä|a)lsningar|mit\s+freundlichen\s+gr(ü|u)(ß|ss)en|cordialement|saludos|(med\s+)?venn?lig\s+hilsen|(med\s+)?hilsen|(med\s+)?de\s+bedste\s+hilsner|ystävällisin\s+terveisin|terveisin)\b[,.!]?\s*$/i;
 
 /**
  * Lines that carry no contact data and actively mislead the extractors:
@@ -50,7 +50,7 @@ const isNoise = (line) => NOISE_LINE.some((re) => re.test(line));
 const TITLE_COMPOUND = /\b\p{L}*(chef|ansvarig|ledare|konsult|direkt(ö|o)r|sjef|leder|s(ä|a)ljare|utvecklare|handl(ä|a)ggare|f(ö|o)rvaltare|controller|revisor|r(å|a)dgivare)\b/iu;
 
 const TITLE_WORDS =
-  /\b(CEO|CTO|CFO|COO|CIO|CMO|VD|VP|SVP|EVP|President|Founder|Co-?founder|Owner|Partner|Director|Head\s+of|Chief|Manager|Chef|Lead|Principal|Senior|Junior|Engineer|Developer|Utvecklare|Architect|Arkitekt|Consultant|Konsult|Analyst|Analytiker|Specialist|Advisor|Rådgivare|Sales|Säljare|Account\s+Executive|Marketing|Product|Project|Projektledare|Program|Designer|Administrator|Coordinator|Samordnare|Ansvarig|Assistant|Officer|Supervisor|Controller|Recruiter|Researcher|Scientist|Auktoriserad|Verkst(ä|a)llande|Kontorschef|Redovisningskonsult|Inköpare|Upphandlare|Utredare)\b/iu;
+  /\b(CEO|CTO|CFO|COO|CIO|CMO|VD|VP|SVP|EVP|President|Founder|Co-?founder|Owner|Partner|Director|Head\s+of|Chief|Manager|Chef|Lead|Principal|Senior|Junior|Engineer|Developer|Utvecklare|Architect|Arkitekt|Consultant|Konsult|Analyst|Analytiker|Specialist|Advisor|Rådgivare|Sales|Säljare|Account\s+Executive|Marketing|Product|Project|Projektledare|Program|Designer|Administrator|Coordinator|Samordnare|Ansvarig|Assistant|Officer|Supervisor|Controller|Recruiter|Researcher|Scientist|Auktoriserad|Verkst(ä|a)llande|Kontorschef|Redovisningskonsult|Inköpare|Upphandlare|Utredare|Associate|Executive|Representative|Recruitment|Technician|Accountant|Solutions|Insights)\b/iu;
 
 const SOCIAL_HOST = /(linkedin|twitter|x\.com|facebook|instagram|youtube|github|mastodon|bsky)\./i;
 
@@ -97,6 +97,16 @@ function cleanLine(line) {
     .replace(/\s{2,}/g, " ")
     .trim();
 }
+
+/**
+ * Lines that carry a registration number rather than a telephone number.
+ *
+ * A legal footer ("Org.nr/Corp. Id. No: 556369-6631, VAT No: SE556369663101")
+ * is digits with human separators, which is exactly the shape a phone number
+ * has. One of these landed in phone_work from a real message.
+ */
+const REGISTRATION_LINE =
+  /\b(org\.?\s?nr|orgnr|org\.?\s?no|corp\.?\s?id|company\s+(no|number|reg)|reg\.?\s?no|registration\s+no|commercial\s+register|vat|moms|momsreg|cvr|business\s+id|y-tunnus|siret|siren|ust-?id|kvk|handelsregister)\b/i;
 
 const PHONE_LABEL = {
   mobile: /\b(m|mob|mobil|mobile|cell|cellular|gsm|handy)\b\s*[.:]?\s*$/i,
@@ -149,6 +159,9 @@ export function stripQuotedReply(text) {
     /^\s*-{5,}\s*$/,
     // "On … wrote:" and its Nordic, German, Dutch and French equivalents.
     /^\s*On .{5,120}\bwrote:\s*$/i,
+    // The same line, wrapped: Gmail breaks before "wrote:" when the address is long.
+    /^\s*On .{5,160}<[^>]+>\s*$/i,
+    /^\s*wrote:\s*$/i,
     /^\s*Den .{5,120}\b(skrev|wrote)\b.*:?\s*$/i,
     /^\s*(Am|Op) .{5,120}\b(schrieb|schreef)\b.*:?\s*$/i,
     /^\s*Le .{5,120}\ba écrit\b.*:?\s*$/i,
@@ -322,8 +335,12 @@ function extractPhones(block) {
 
   for (const rawLine of block.split(/\r?\n/)) {
     if (isNoise(rawLine)) continue;
+    if (REGISTRATION_LINE.test(rawLine)) continue;   // a legal footer, not a number to call
     // URLs carry timestamps and ids that look exactly like phone numbers.
-    const line = cleanLine(rawLine).replace(/https?:\/\/\S+/g, " ");
+    const line = cleanLine(rawLine)
+      .replace(/<(?:tel|callto):[^>]*>/gi, " ")     // "Mobile: +45 2213 6113<tel:+45%202213%206113>"
+      .replace(/<mailto:[^>]*>/gi, " ")
+      .replace(/https?:\/\/\S+/g, " ");
     if (!line) continue;
 
     let m;

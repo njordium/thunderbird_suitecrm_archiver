@@ -6,6 +6,7 @@ import { originPatternFor } from "../lib/url.js";
 import { describeProbe } from "../lib/probe.js";
 import { DEFAULT_CASE_MACRO, caseRefPattern } from "../lib/caseRef.js";
 import { moduleTitle } from "../lib/modules.js";
+import { useLocale, localise, t, LOCALES, activeLocale } from "../lib/i18n.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -71,6 +72,7 @@ async function refreshPrefs() {
   $("p-attachmentDestination").value = prefs.attachmentDestination || "smart";
   $("p-caseSubjectMacro").value = prefs.caseSubjectMacro || "";
   describeCaseMacro();
+  await renderLanguage(prefs);
 }
 
 /** Say whether the macro can identify a case, and show what it will match. */
@@ -216,8 +218,16 @@ bindPrefs();
 checkScheme();
 collapseSetupWhenConnected();
 refreshConnection();
-refreshPrefs();
-refreshModules().catch(() => {});
+(async () => {
+  try {
+    await useLocale((await call("getPrefs")).uiLanguage);
+    localise();
+  } catch {
+    // English is a working settings page.
+  }
+  await refreshPrefs();
+  refreshModules().catch(() => {});
+})();
 
 // --- About -----------------------------------------------------------------
 
@@ -618,6 +628,42 @@ $("btn-debug-report").addEventListener("click", async () => {
     debugReportText = "";
   }
   await refreshDebugState();
+});
+
+// --- Interface language -----------------------------------------------------
+
+/**
+ * Thunderbird's language is the default, and the override exists for the case
+ * that prompted this: a CRM and a mail client in different languages, or a
+ * person who would rather read the interface in their own.
+ */
+async function renderLanguage(prefs) {
+  const select = $("p-uiLanguage");
+  select.textContent = "";
+
+  const auto = document.createElement("option");
+  auto.value = "auto";
+  auto.textContent = t("languageAuto");
+  select.appendChild(auto);
+
+  for (const [code, name] of Object.entries(LOCALES)) {
+    const option = document.createElement("option");
+    option.value = code;
+    option.textContent = name;
+    select.appendChild(option);
+  }
+  select.value = prefs.uiLanguage || "auto";
+  $("language-note").textContent = t("languageActive", LOCALES[activeLocale()] || activeLocale());
+}
+
+$("p-uiLanguage").addEventListener("change", async (e) => {
+  const choice = e.target.value;
+  await call("setPrefs", { uiLanguage: choice });
+  await useLocale(choice);
+  localise();
+  // The select rebuilt itself in the new language, so read the preference back
+  // rather than trusting what is on screen.
+  await renderLanguage(await call("getPrefs"));
 });
 
 // --- Which modules are searched ----------------------------------------------

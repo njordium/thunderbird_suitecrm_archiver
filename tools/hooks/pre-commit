@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+# Refuse a commit that does not lint or does not pass its tests.
+#
+# tools/build.sh runs these too, but the build happens when you decide to
+# package, which can be well after the commit that broke something. Both are
+# quick enough to sit in front of every commit.
+#
+# Enable with:  git config core.hooksPath tools/hooks
+set -uo pipefail
+cd "$(dirname "$0")/../.."
+
+fail() { echo "pre-commit: $1" >&2; echo "Run it yourself to see the detail, or commit with --no-verify." >&2; exit 1; }
+
+if [ -x node_modules/.bin/eslint ]; then
+  node_modules/.bin/eslint src tests tools --max-warnings 0 >/dev/null 2>&1 \
+    || fail "eslint reported problems (node_modules/.bin/eslint src tests tools)"
+fi
+
+node --test tests/*.test.mjs >/dev/null 2>&1 \
+  || fail "unit tests failed (node --test tests/*.test.mjs)"
+
+exit 0

@@ -23,8 +23,9 @@ import { resolveAddress, findAccountsByDomain, expandRelated, searchRecords } fr
 import { parseContact } from "../lib/signature.js";
 import { readMessage, archiveMessage } from "../lib/archive.js";
 import { findThread, threadIdsOf } from "../lib/thread.js";
-import { findCaseNumber, findCaseByReferences } from "../lib/caseRef.js";
+import { findCaseNumber, findCaseByReferences, findThreadParent } from "../lib/caseRef.js";
 import { unwrapMessageList, unwrapMessageListAll } from "../lib/tbcompat.js";
+import { useLocale, t } from "../lib/i18n.js";
 import { tagMessage, untagMessage } from "../lib/tagging.js";
 import { buildRecord, defaultsFor, CREATABLE, dateTimeInDays } from "../lib/createFromEmail.js";
 import { recordToVCard, usableForAddressBook } from "../lib/vcard.js";
@@ -104,7 +105,12 @@ async function getOwnAddresses() {
   } catch (e) {
     log.warn("Could not enumerate identities:", e.message);
   }
-  ownAddressCache = [...out];
+  return adoptOwnAddresses([...out]);
+}
+
+/** Assign and return in one tick, with nothing awaited in between. */
+function adoptOwnAddresses(list) {
+  ownAddressCache = list;
   return ownAddressCache;
 }
 optional("accounts.onCreated/onDeleted", () => {
@@ -141,6 +147,11 @@ async function accountScope(header) {
  * delete something the user has long since forgotten about.
  */
 let lastArchive = null;
+
+/** Clear the undo record in one tick, so no await sits between read and write. */
+function forgetLastArchive() {
+  lastArchive = null;
+}
 
 /**
  * A task to come back to this, created alongside the archive.
@@ -516,6 +527,12 @@ const handlers = {
       if (patch.debugMode) await diag.loadPersisted();
       await diag.setEnabled(patch.debugMode);
     }
+    // The menu titles were built in the old language and will not change
+    // themselves.
+    if ("uiLanguage" in patch) {
+      await applyLanguage();
+      await refreshMenuTitles();
+    }
     return store.getPrefs();
   },
 
@@ -793,7 +810,9 @@ const handlers = {
         }
       }
 
-      return { number: number || null, found: null };
+      // No Case, but the thread may still say where it belongs.
+      const parent = await threadParentTarget(client, references);
+      return { number: number || null, found: null, threadParent: parent };
     } catch (e) {
       log.warn(`Could not resolve the case for this message:`, e.message);
       return { number: number || null, found: null, error: e.message };
@@ -856,7 +875,7 @@ const handlers = {
 
     for (const messageId of undo.messageIds) await untagMessage(messageId);
 
-    lastArchive = null;
+    forgetLastArchive();
     senderCache.invalidate(); domainCache.invalidate(); searchCache.clear();
     return { removed: removed.length, restored: restored.length, problems };
   },
@@ -1842,6 +1861,91 @@ const MENU_OPEN = "suitecrm-menu-open";
 const MENU_LAST = "suitecrm-menu-last";
 const MENU_CREATE = "suitecrm-menu-create";
 
+/**
+ * Where a quick action should file a message, with no window to choose in.
+ *
+ * The window has always preferred the Case a reply belongs to over the sender's
+ * history, and these paths did not, so the same message filed to two different
+ * places depending on whether you used the menu or the button. Order now
+ * matches the window: the Case the subject names, then the Case the thread
+ * belongs to, then the record this sender's mail went to last time.
+ */
+async function quickTarget(msg, { client, prefs }) {
+  if (prefs.matchCaseReferences) {
+    const number = findCaseNumber(msg.header.subject, prefs.caseSubjectMacro);
+    if (number) {
+      const rec = await client.getCaseByNumber(number, CASE_FIELDS);
+      if (rec) return caseTarget(rec, "subject");
+    }
+
+    const ids = [...threadIdsOf(msg.header, msg.full)]
+      .filter((id) => id && id !== msg.rfcMessageId);
+    const ref = ids.length ? await findCaseByReferences(client, ids, { log }) : null;
+    if (ref) {
+      const rec = await client.getRecord("Cases", ref.caseId, CASE_FIELDS);
+      if (rec) return caseTarget(rec, "references");
+    }
+
+    const parent = await threadParentTarget(client, ids);
+    if (parent) return parent;
+  }
+
+  const own = await getOwnAddresses();
+  const [primary] = buildCandidates(msg.header, { ownAddresses: own, includeCc: false });
+  if (!primary?.email) return null;
+  const map = await store.get("lastTargets", {});
+  const target = map[primary.email.toLowerCase()];
+  return target?.id ? { ...target, via: "remembered" } : null;
+}
+
+/**
+ * Resolve "where the rest of this thread went" into a labelled target.
+ *
+ * Any parent will do here, not just a Case: a reply belongs where the previous
+ * message in the conversation was filed, whether that was an Account, a
+ * Contact or an Opportunity.
+ */
+async function threadParentTarget(client, ids, { exclude = "Cases" } = {}) {
+  if (!ids.length) return null;
+  const found = await findThreadParent(client, ids, {
+    log,
+    accept: (parentType) => parentType !== exclude,
+  });
+  if (!found) return null;
+
+  try {
+    const rec = await client.getRecord(found.module, found.id);
+    if (!rec) return null;
+    return {
+      type: found.module,
+      id: found.id,
+      label: recordLabel({ ...rec, module: found.module }) || `${found.module} record`,
+      via: "thread",
+    };
+  } catch (e) {
+    // The ancestor named a record this user cannot read, or it is gone.
+    log.debug(`thread parent ${found.module}/${found.id} did not resolve: ${e.message}`);
+    return null;
+  }
+}
+
+function caseTarget(rec, via) {
+  return {
+    type: "Cases",
+    id: rec.id,
+    label: recordLabel(rec) || `Case ${rec.case_number}`,
+    via,
+  };
+}
+
+/** Why a quick action chose where it filed, for the notification. */
+function viaNote(via) {
+  if (via === "subject") return ` ${t("viaSubject")}`;
+  if (via === "references") return ` ${t("viaReferences")}`;
+  if (via === "thread") return ` ${t("viaThread")}`;
+  return "";
+}
+
 /** The remembered target for a selection, but only when they all agree. */
 async function rememberedFor(headers) {
   if (!headers.length) return null;
@@ -1864,7 +1968,7 @@ async function rememberedFor(headers) {
 optional("menus.create", () => {
   browser.menus.create({
     id: MENU_OPEN,
-    title: "Archive to SuiteCRM…",
+    title: t("menuOpen"),
     contexts: ["message_list"],
   });
   browser.menus.create({
@@ -1875,7 +1979,7 @@ optional("menus.create", () => {
   });
   browser.menus.create({
     id: MENU_CREATE,
-    title: "Create a record from this email…",
+    title: t("menuCreate"),
     contexts: ["message_list"],
   });
 
@@ -1883,12 +1987,22 @@ optional("menus.create", () => {
     const headers = unwrapMessageListAll(info.selectedMessages);
     let title = null;
 
-    if (headers.length) {
+    if (headers.length === 1) {
+      // Naming the Case costs nothing: the number is in the subject. Resolving
+      // it to a record is a CRM request, so that waits until the click.
+      const prefs = await store.getPrefs();
+      const number = prefs.matchCaseReferences
+        ? findCaseNumber(headers[0].subject, prefs.caseSubjectMacro)
+        : null;
+      if (number) title = t("menuFileAgainstCase", number);
+    }
+
+    if (!title && headers.length) {
       const target = await rememberedFor(headers);
       if (target) {
         title = headers.length > 1
-          ? `File ${headers.length} messages against ${target.label}`
-          : `File against ${target.label}`;
+          ? t("menuFileManyAgainst", headers.length, target.label)
+          : t("menuFileAgainst", target.label);
       }
     }
 
@@ -1910,11 +2024,18 @@ optional("menus.create", () => {
       }
       if (info.menuItemId !== MENU_LAST) return;
 
-      const target = await rememberedFor(headers);
-      if (!target) return;
-
       const client = await CrmClient.create();
       const prefs = await store.getPrefs();
+
+      let target;
+      if (headers.length === 1) {
+        const only = messageCache.get(headers[0].id) || (await readMessage(headers[0].id));
+        target = await quickTarget(only, { client, prefs });
+      } else {
+        target = await rememberedFor(headers);
+      }
+      if (!target) return;
+
       const done = [];
 
       for (const header of headers) {
@@ -1934,21 +2055,21 @@ optional("menus.create", () => {
         senderCache.invalidate(); domainCache.invalidate(); searchCache.clear();
         log.info(`menu: filed ${done.length} message(s) under ${target.type}/${target.id}`);
         await notify(
-          done.length > 1 ? `${done.length} messages filed` : "Message filed",
-          `Filed under ${target.label}.`
+          done.length > 1 ? t("notifManyFiled", done.length) : t("notifMessageFiled"),
+          `${t("notifFiledUnder", target.label)}${viaNote(target.via)}`
         );
       } else {
         // Every message was in an account the user turned off. Saying so beats
         // leaving them to wonder whether the click registered.
         await notify(
-          "Nothing filed",
+          t("notifNothingFiled"),
           "Those messages are in mail accounts this add-on is turned off for. " +
           "Check Mail accounts in the add-on's settings."
         );
       }
     } catch (e) {
       log.warn(`menu ${info.menuItemId} failed:`, e.message);
-      await notify("Could not file the message", e.message);
+      await notify(t("notifCouldNotFile"), e.message);
     }
   });
 });
@@ -1985,35 +2106,54 @@ optional("commands.onCommand", () =>
       if (!scope.allowed) {
         log.info(`archive-last: ${scope.accountName} is not enabled; ignoring.`);
         await notify(
-          "Nothing filed",
-          `${scope.accountName} is a mail account this add-on is turned off for.`
+          t("notifNothingFiled"),
+          t("notifAccountOff", scope.accountName)
         );
         return;
       }
 
-      const own = await getOwnAddresses();
-      const [primary] = buildCandidates(msg.header, { ownAddresses: own, includeCc: false });
-      if (!primary?.email) return;
-
-      const map = await store.get("lastTargets", {});
-      const target = map[primary.email.toLowerCase()];
-      if (!target?.id) {
-        log.info(`archive-last: nothing remembered for ${primary.email}; opening the window instead.`);
+      const client = await CrmClient.create();
+      const prefs = await store.getPrefs();
+      const target = await quickTarget(msg, { client, prefs });
+      if (!target) {
+        log.info("archive-last: nothing to file against; opening the window instead.");
         await browser.messageDisplayAction.openPopup();
         return;
       }
 
-      const client = await CrmClient.create();
       const res = await archiveMessage(client, msg, target);
-      if ((await store.getPrefs()).tagArchivedMessages) await tagMessage(msgHeader.id);
+      if (prefs.tagArchivedMessages) await tagMessage(msgHeader.id);
       rememberArchive([{ res, messageId: msgHeader.id }], target);
-      senderCache.invalidate(primary.email);
-      log.info(`archive-last: filed under ${target.type}/${target.id}`);
-      await notify("Message filed", `Filed under ${target.label}.`);
+      senderCache.invalidate(); domainCache.invalidate();
+      log.info(`archive-last: filed under ${target.type}/${target.id} (${target.via})`);
+      await notify(t("notifMessageFiled"), `${t("notifFiledUnder", target.label)}${viaNote(target.via)}`);
     } catch (e) {
       log.warn(`shortcut ${name} failed:`, e.message);
-      await notify("Could not file the message", e.message);
+      await notify(t("notifCouldNotFile"), e.message);
     }
   }));
+
+// The menus and notifications are built here, so this page needs the language
+// too. Re-read on a change, since the settings page can switch it while the
+// menus already exist.
+/** Rewrite the menu titles that were built in the previous language. */
+async function refreshMenuTitles() {
+  try {
+    await browser.menus?.update?.(MENU_OPEN, { title: t("menuOpen") });
+    await browser.menus?.update?.(MENU_CREATE, { title: t("menuCreate") });
+    browser.menus?.refresh?.();
+  } catch (e) {
+    log.debug("Could not relabel the menus:", e.message);
+  }
+}
+
+async function applyLanguage() {
+  try {
+    await useLocale((await store.getPrefs()).uiLanguage);
+  } catch (e) {
+    log.debug("Could not set the interface language:", e.message);
+  }
+}
+await applyLanguage();
 
 log.info("SuiteCRM Email Archiver background page ready.");

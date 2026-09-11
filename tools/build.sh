@@ -20,7 +20,7 @@ python3 tools/validate-manifest.py
 
 echo "→ Linting"
 if [ -x node_modules/.bin/eslint ]; then
-  node_modules/.bin/eslint src tests tools --max-warnings 20 || { echo "   lint FAILED"; exit 1; }
+  node_modules/.bin/eslint src tests tools --max-warnings 0 || { echo "   lint FAILED"; exit 1; }
   echo "   clean"
 else
   echo "   skipped (run: npm install)"
