@@ -10,6 +10,9 @@
   it and takes nothing else — you stay signed in and your settings stay put. The privacy
   policy had claimed no subject was ever kept locally, which was simply wrong, and now
   describes both, along with the settings export writing the client secret to a file.
+- **About has a Developer support button**, next to *What's new* and *Developer website*. It
+  opens the issue tracker. The address was in the README and on the store listing, neither of
+  which is in front of you at the moment something breaks.
 - **Two files no longer ship inside the add-on.** The icon's SVG drawing and a generated HTML
   copy of these release notes sat in `src/`, which is packaged wholesale, so both travelled in
   the .xpi without anything ever loading them. ATN's reviewers turned down 0.2.2 over exactly

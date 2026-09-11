@@ -220,6 +220,12 @@ refreshModules().catch(() => {});
 
 // --- About -----------------------------------------------------------------
 
+// Where a problem should actually go. The homepage is a company site, which is
+// no use to someone holding a bug, and until now nothing in the add-on pointed
+// at the issue tracker — the address only existed in the README and the store
+// listing, neither of which is in front of you when something breaks.
+const SUPPORT_URL = "https://github.com/njordium/thunderbird_suitecrm_archiver/issues";
+
 async function renderAbout() {
   const m = browser.runtime.getManifest();
   $("about-version").textContent = m.version;
@@ -237,6 +243,10 @@ async function renderAbout() {
   $("btn-home").hidden = !site;
   $("btn-home").addEventListener("click", () => {
     if (site) browser.tabs.create({ url: site });
+  });
+
+  $("btn-support").addEventListener("click", () => {
+    browser.tabs.create({ url: SUPPORT_URL });
   });
 
   const author = m.developer?.name || m.author;

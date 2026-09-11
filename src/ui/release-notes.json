@@ -7,6 +7,7 @@
   "t": "ul",
   "v": [
    "You can now delete what the add-on remembers about you. Two things were kept in your profile with no way to clear them short of uninstalling: which CRM record mail from each address was last filed against, which is what the right-click menu and Alt+Shift+A file against, and the subject of the last 30 emails you filed, for the Recent list. Behaviour now has Clear what is remembered, which says how many of each are there before you press it and takes nothing else \u2014 you stay signed in and your settings stay put. The privacy policy had claimed no subject was ever kept locally, which was simply wrong, and now describes both, along with the settings export writing the client secret to a file.",
+   "About has a Developer support button, next to What's new and Developer website. It opens the issue tracker. The address was in the README and on the store listing, neither of which is in front of you at the moment something breaks.",
    "Two files no longer ship inside the add-on. The icon's SVG drawing and a generated HTML copy of these release notes sat in src/, which is packaged wholesale, so both travelled in the .xpi without anything ever loading them. ATN's reviewers turned down 0.2.2 over exactly that: unused files make a review harder, can reveal details of the machine the package was built on, and pad the download. The drawing now lives in img/, the settings page keeps reading the JSON it always read, and the build fails if anything unreferenced appears in src/ again."
   ]
  },
