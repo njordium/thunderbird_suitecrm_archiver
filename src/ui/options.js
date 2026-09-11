@@ -6,7 +6,7 @@ import { originPatternFor } from "../lib/url.js";
 import { describeProbe } from "../lib/probe.js";
 import { DEFAULT_CASE_MACRO, caseRefPattern } from "../lib/caseRef.js";
 import { moduleTitle } from "../lib/modules.js";
-import { useLocale, localise, t, LOCALES, activeLocale } from "../lib/i18n.js";
+import { useLocale, localise, LOCALES, activeLocale } from "../lib/i18n.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -643,7 +643,7 @@ async function renderLanguage(prefs) {
 
   const auto = document.createElement("option");
   auto.value = "auto";
-  auto.textContent = t("languageAuto");
+  auto.textContent = "Follow Thunderbird";
   select.appendChild(auto);
 
   for (const [code, name] of Object.entries(LOCALES)) {
@@ -653,7 +653,7 @@ async function renderLanguage(prefs) {
     select.appendChild(option);
   }
   select.value = prefs.uiLanguage || "auto";
-  $("language-note").textContent = t("languageActive", LOCALES[activeLocale()] || activeLocale());
+  $("language-note").textContent = `Showing ${LOCALES[activeLocale()] || activeLocale()}.`;
 }
 
 $("p-uiLanguage").addEventListener("change", async (e) => {

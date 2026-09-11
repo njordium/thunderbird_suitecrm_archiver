@@ -145,17 +145,5 @@
   },
   "moduleTurnedOff": {
     "message": "Moduulista $1 ei voitu etsiä, joten se on poistettu käytöstä asetuksissa, joissa syy näkyy. Kaikki muu haettiin normaalisti."
-  },
-  "languageGroup": {
-    "message": "Käyttöliittymän kieli"
-  },
-  "languageAuto": {
-    "message": "Seuraa Thunderbirdia"
-  },
-  "languageActive": {
-    "message": "Näytetään $1."
-  },
-  "languageNote": {
-    "message": "Thunderbirdin oma kieli on käytössä, ellet valitse kieltä täällä. Valikot ja ilmoitukset seuraavat Thunderbirdia joka tapauksessa."
   }
 }

@@ -145,17 +145,5 @@
   },
   "moduleTurnedOff": {
     "message": "$1 kunne ikke søges og er derfor slået fra under Indstillinger, hvor årsagen vises. Alt andet blev søgt som normalt."
-  },
-  "languageGroup": {
-    "message": "Sprog i brugerfladen"
-  },
-  "languageAuto": {
-    "message": "Følg Thunderbird"
-  },
-  "languageActive": {
-    "message": "Viser $1."
-  },
-  "languageNote": {
-    "message": "Thunderbirds eget sprog bruges, medmindre du vælger et her. Menupunkter og meddelelser følger Thunderbird under alle omstændigheder."
   }
 }

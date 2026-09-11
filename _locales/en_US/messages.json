@@ -145,17 +145,5 @@
   },
   "moduleTurnedOff": {
     "message": "$1 could not be searched, so it has been turned off in Preferences, where the reason is shown. Everything else was searched normally."
-  },
-  "languageGroup": {
-    "message": "Interface language"
-  },
-  "languageAuto": {
-    "message": "Follow Thunderbird"
-  },
-  "languageActive": {
-    "message": "Showing $1."
-  },
-  "languageNote": {
-    "message": "Thunderbird's own language is used unless you choose one here. Menu entries and notifications follow Thunderbird either way."
   }
 }

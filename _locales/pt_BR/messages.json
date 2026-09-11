@@ -145,17 +145,5 @@
   },
   "moduleTurnedOff": {
     "message": "Não foi possível pesquisar em $1, por isso ele foi desativado nas preferências, onde o motivo é mostrado. Todo o restante foi pesquisado normalmente."
-  },
-  "languageGroup": {
-    "message": "Idioma da interface"
-  },
-  "languageAuto": {
-    "message": "Seguir o Thunderbird"
-  },
-  "languageActive": {
-    "message": "Exibindo $1."
-  },
-  "languageNote": {
-    "message": "O idioma do Thunderbird é usado a menos que você escolha um aqui. Os itens de menu e as notificações seguem o Thunderbird em qualquer caso."
   }
 }

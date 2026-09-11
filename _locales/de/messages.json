@@ -145,17 +145,5 @@
   },
   "moduleTurnedOff": {
     "message": "$1 konnte nicht durchsucht werden und wurde daher in den Einstellungen ausgeschaltet, wo der Grund steht. Alles andere wurde normal durchsucht."
-  },
-  "languageGroup": {
-    "message": "Sprache der Oberfläche"
-  },
-  "languageAuto": {
-    "message": "Thunderbird folgen"
-  },
-  "languageActive": {
-    "message": "Angezeigt wird $1."
-  },
-  "languageNote": {
-    "message": "Es wird die Sprache von Thunderbird verwendet, sofern Sie hier keine wählen. Menüeinträge und Benachrichtigungen folgen in jedem Fall Thunderbird."
   }
 }

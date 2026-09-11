@@ -145,17 +145,5 @@
   },
   "moduleTurnedOff": {
     "message": "Er kon niet worden gezocht in $1, dus is het uitgeschakeld in de voorkeuren, waar de reden staat. Al het andere is normaal doorzocht."
-  },
-  "languageGroup": {
-    "message": "Taal van de interface"
-  },
-  "languageAuto": {
-    "message": "Thunderbird volgen"
-  },
-  "languageActive": {
-    "message": "$1 wordt weergegeven."
-  },
-  "languageNote": {
-    "message": "De taal van Thunderbird wordt gebruikt tenzij u hier een taal kiest. Menu-items en meldingen volgen in elk geval Thunderbird."
   }
 }

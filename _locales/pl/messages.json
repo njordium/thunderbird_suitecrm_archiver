@@ -145,17 +145,5 @@
   },
   "moduleTurnedOff": {
     "message": "Nie udało się przeszukać $1, więc wyłączono go w preferencjach, gdzie podano powód. Wszystko inne przeszukano normalnie."
-  },
-  "languageGroup": {
-    "message": "Język interfejsu"
-  },
-  "languageAuto": {
-    "message": "Zgodnie z Thunderbirdem"
-  },
-  "languageActive": {
-    "message": "Wyświetlany język: $1."
-  },
-  "languageNote": {
-    "message": "Używany jest język Thunderbirda, o ile nie wybierzesz innego tutaj. Pozycje menu i powiadomienia zawsze podążają za Thunderbirdem."
   }
 }

@@ -18,8 +18,9 @@
   Bokmål, Finnish, German, Spanish, Dutch, French, Italian, Polish and Brazilian Portuguese.
   Thunderbird's own language is followed by default, and Behaviour has a selector for anyone
   whose mail client and CRM disagree. This first pass covers the buttons, statuses, menu
-  entries and notifications; the setup walkthrough and the permission explanations stay in
-  English until a native speaker has read them.
+  entries and notifications. The settings page stays in English, all of it, including the
+  language row itself: one paragraph in Swedish among English ones reads like a mistake
+  rather than a feature.
 - **The right-click menu and the keyboard shortcut now file where the window would.** They
   went straight to the sender's history, so the same message landed in two different places
   depending on how you filed it. Both now try the Case named in the subject, then the Case the
