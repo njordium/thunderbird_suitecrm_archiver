@@ -194,7 +194,7 @@ export function stripQuotedReply(text) {
  * the company name and a sentence became a job title. Returning nothing is
  * better than returning the message back as contact details.
  */
-export function extractSignatureBlock(text) {
+export function extractSignatureBlock(text, senderName = "") {
   const body = stripQuotedReply(text);
   const lines = body.split(/\r?\n/);
 
@@ -212,6 +212,25 @@ export function extractSignatureBlock(text) {
       // the name extractor prefers the header anyway.
       const block = after.join("\n").trim();
       if (block) return { block, delimited: false, signOff: true };
+    }
+  }
+
+  // No delimiter and no sign-off. Plenty of corporate mail ends that way: the
+  // client appends a block of images, a name, a title and a phone number with
+  // nothing to introduce it. The sender's own name is the anchor. Without it
+  // this would be guessing at the last few lines of a message, which is how
+  // body text ends up in a CRM record.
+  if (senderName) {
+    const wanted = senderName.toLowerCase().replace(/[^a-z]+/g, " ").trim();
+    const surname = wanted.split(" ").filter((w) => w.length > 2).pop();
+    const tail = Math.max(0, lines.length - 14);
+    for (let i = lines.length - 1; i >= tail; i--) {
+      const line = lines[i].toLowerCase().replace(/[^a-z]+/g, " ").trim();
+      if (!line || line.length > 60) continue;
+      const named = line === wanted || (surname && line.endsWith(surname) && line.split(" ").length <= 4);
+      if (!named) continue;
+      const block = lines.slice(i).join("\n").trim();
+      if (block) return { block, delimited: false, signOff: false, anchored: true };
     }
   }
 
@@ -444,9 +463,26 @@ export function homepageFromDomain(domain) {
 }
 
 /** Turn a domain into a plausible company name when nothing better exists. */
+/**
+ * Labels that are part of the mail plumbing or a region, never the company.
+ *
+ * nl.verizon.com was becoming the company "Nl". A country or a mail host in
+ * front of the real name is common in large organisations, so those labels are
+ * stepped over.
+ */
+const NON_COMPANY_LABEL =
+  /^(www|mail|smtp|mx|email|e?mailer|corp|corporate|group|emea|apac|amer|latam|eu|us|uk|nl|de|fr|se|no|dk|fi|es|it|pl|br|ch|at|be|ie|cz|pt|in|cn|jp|au|ca)$/i;
+
 function companyFromDomain(domain) {
   if (!domain || isConsumerDomain(domain)) return null;
-  const core = domain.replace(/^www\./, "").split(".")[0];
+
+  const labels = domain.toLowerCase().split(".").filter(Boolean);
+  // Drop the public suffix, roughly: the last label, and the one before it when
+  // it is itself a suffix piece such as co.uk or com.br.
+  const trimmed = labels.slice(0, /^(co|com|org|net|gov|ac|edu)$/i.test(labels.at(-2) || "")
+    ? -2 : -1);
+
+  const core = trimmed.find((label) => !NON_COMPANY_LABEL.test(label)) || trimmed[0];
   if (!core || core.length < 2) return null;
   return core.split(/[-_]/).map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
 }
@@ -472,19 +508,39 @@ function extractOrganisation(block, domain) {
     !/[?!]/.test(line) &&
     /[A-Za-zÀ-ÿ]/.test(line);
 
+  // A company line often carries something else after it: "Dell Technologies |
+  // Sweden", "Acme AB • Stockholm". Each segment is considered on its own, so
+  // the suffix does not have to be the last thing on the line.
+  const segments = (line) =>
+    line.split(/\s*[|•·]\s*/).map((part) => part.replace(/^[|•·\-\s]+/, "").trim()).filter(Boolean);
+
   for (const line of lines) {
-    if (plausible(line) && LEGAL_SUFFIX_END.test(line)) {
-      return { value: line.replace(/^[|•·\-\s]+/, "").trim(), confidence: HIGH };
+    if (!plausible(line)) continue;
+    for (const part of segments(line)) {
+      if (LEGAL_SUFFIX_END.test(part)) return { value: part, confidence: HIGH };
     }
   }
 
   // A line echoing the sender's domain, e.g. "Northwind Traders" for northwind.example.
   const core = domain ? domain.replace(/^www\./, "").split(".")[0].toLowerCase() : "";
-  if (core.length > 3) {
+  // A line echoing the sender's domain. Two forms are worth having: the name on
+  // its own ("Northwind Traders" for northwind.example), and the name the
+  // company actually writes, which is usually the domain plus a word or two
+  // ("Dell Technologies" for dell.com, "7N A/S" for 7n.com). The domain core
+  // can be as short as two characters, which is why this no longer insists on
+  // four: 7n.com was getting "7n" while the signature said "7N A/S".
+  if (core.length >= 2) {
     for (const line of lines) {
       if (!plausible(line) || line.split(/\s+/).length > 6) continue;
-      if (line.toLowerCase().replace(/[^a-z0-9]/g, "") === core) {
-        return { value: line, confidence: HIGH };
+      for (const part of segments(line)) {
+        const flat = part.toLowerCase().replace(/[^a-z0-9]/g, "");
+        if (flat === core) return { value: part, confidence: HIGH };
+
+        // The expanded form, but not a postal address that happens to start
+        // with the company name: those run long and carry a street number.
+        if (flat.startsWith(core) && part.split(/\s+/).length <= 4 && !/\d{2,}/.test(part)) {
+          return { value: part, confidence: MEDIUM };
+        }
       }
     }
   }
@@ -635,7 +691,7 @@ export function parseContact({ author, bodyText = "", vcard = null, isAuthor = t
     put("last_name", n.last_name, HIGH);
   }
 
-  let { block, delimited, signOff } = extractSignatureBlock(bodyText);
+  let { block, delimited, signOff } = extractSignatureBlock(bodyText, mailbox.name);
 
   // Does this block actually belong to the sender?
   //

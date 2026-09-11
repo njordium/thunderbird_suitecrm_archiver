@@ -427,3 +427,75 @@ test("the Nordic sign-offs people actually write are recognised", () => {
       `"${signoff}" was not recognised as a sign-off, so nothing after it was read`);
   }
 });
+
+test("a signature with no sign-off is still read, anchored on the sender's name", () => {
+  // Corporate mail that ends in a block of images, a name and a title, with
+  // nothing to introduce it. This parsed to nothing at all before.
+  const body = [
+    "Hi Kim,", "",
+    "Are you available for a short call about the assignment?", "",
+    "[line.png]", "[logo.png]",
+    "Mia Sonne", "Recruitment Specialist",
+    "Mobile: +45 2213 6113<tel:+45%202213%206113>",
+    "Email: mia@example.dk<mailto:mia@example.dk>", "",
+    "Example A/S",
+  ].join("\n");
+  const r = parseContact({ author: "Mia Sonne <mia@example.dk>", bodyText: body });
+  assert.equal(r.fields.account_name, "Example A/S");
+  assert.equal(r.fields.title, "Recruitment Specialist");
+  assert.equal(r.fields.phone_mobile, "+45 2213 6113");
+});
+
+test("the anchored fallback does not reach into a quoted reply", () => {
+  const body = [
+    "Thanks, passing this on.", "",
+    "On Mon, 7 Sep 2026 at 21:34, Someone Else <someone@other.example>", "wrote:", "",
+    "> Kind regards,", "> Mia Sonne", "> Head of Nothing Whatsoever",
+    "> Other Company AB", "> +46 733 27 27 15",
+  ].join("\n");
+  const r = parseContact({ author: "Mia Sonne <mia@example.dk>", bodyText: body });
+  assert.notEqual(r.fields.title, "Head of Nothing Whatsoever");
+  assert.notEqual(r.fields.account_name, "Other Company AB");
+  assert.ok(!String(r.fields.phone_mobile || r.fields.phone_work || "").includes("733"));
+});
+
+test("a company line carrying a region is read without it", () => {
+  const body = [
+    "Kind regards,", "", "Tobias Helmer", "Country Marketing Manager",
+    "Acme Technologies | Sweden", "+4670 726 88 46",
+  ].join("\n");
+  const r = parseContact({ author: "Tobias Helmer <tobias@acme.example>", bodyText: body });
+  assert.equal(r.fields.account_name, "Acme Technologies");
+});
+
+test("the company the sender writes beats the one guessed from the domain", () => {
+  const body = ["Kind regards,", "", "Ann Example", "Adviser", "7N A/S", "+45 20 11 22 33"].join("\n");
+  const r = parseContact({ author: "Ann Example <ann@7n.com>", bodyText: body });
+  assert.equal(r.fields.account_name, "7N A/S", "the two-letter domain guess won instead");
+});
+
+test("a postal address starting with the company name is not the company", () => {
+  const body = [
+    "Kind regards,", "", "Tobias Helmer", "Country Marketing Manager",
+    "Acme AB, Storgatan 1, SE-169 70 Solna, Sweden",
+  ].join("\n");
+  const r = parseContact({ author: "Tobias Helmer <tobias@acme.example>", bodyText: body });
+  assert.ok(!/Storgatan|169/.test(String(r.fields.account_name)),
+    `the street address became the company name: ${r.fields.account_name}`);
+});
+
+test("a country or mail label in front of the domain is not the company", () => {
+  const body = ["Kind regards,", "", "Eric Krol", "Sales Executive"].join("\n");
+  const cases = {
+    "nl.verizon.example": "Verizon",
+    "se.dell.example": "Dell",
+    "mail.acme.co.uk": "Acme",
+    "acme.com.br": "Acme",
+    "emea.bigco.example": "Bigco",
+    "nordwind.example": "Nordwind",
+  };
+  for (const [domain, expected] of Object.entries(cases)) {
+    const r = parseContact({ author: `Eric Krol <eric@${domain}>`, bodyText: body });
+    assert.equal(r.fields.account_name, expected, `${domain} gave the wrong company`);
+  }
+});

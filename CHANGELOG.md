@@ -38,6 +38,20 @@
   around a number hid it; and a Gmail attribution line that wraps before "wrote:" left two
   lines of somebody else's mail inside the signature. Titles like "Associate" and
   "Executive" are recognised now too.
+- **The company is taken from the signature, not guessed from the domain.** A sender at
+  7n.com became "7n" and one at dell.com became "Dell", while their own signatures said
+  "7N A/S" and "Dell Technologies". A company line is now read even when something follows
+  it on the same line ("Dell Technologies | Sweden"), the domain may be as short as two
+  characters, and a country or mail label in front of the real name is stepped over, so
+  nl.verizon.com is Verizon rather than "Nl". A postal address that happens to start with
+  the company name is still not the company. Everything here is marked as guessed, so the
+  create form asks you to confirm it.
+- **A signature with no sign-off at all is now read.** Plenty of corporate mail ends in a
+  block of images, a name, a title and a phone number with nothing to introduce it, and all
+  of that was being thrown away. The sender's own name is the anchor, without which this
+  would be guessing at the end of a message, which is how body text ends up in a CRM record.
+  A test covers the case that matters: it must not reach into a quoted reply and file
+  somebody else's title and phone number against your correspondent.
 - **A reply is matched to its Case by the mail thread, not only by the subject.** SuiteCRM
   stamps the case number into the subject of mail it sends, and that was the only route, so
   the match was lost the moment the subject changed: an administrator edits the macro, a mail
