@@ -85,7 +85,7 @@ code {
 #setup-card.is-collapsed .steps,
 #setup-card.is-collapsed > p.muted { display: none; }
 #setup-card.is-collapsed h2::after {
-  content: ", already done"; color: var(--ok); text-transform: none; letter-spacing: 0;
+  content: "already done"; color: var(--ok); text-transform: none; letter-spacing: 0;
 }
 
 h2.with-toggle { display: flex; align-items: center; justify-content: space-between; gap: 10px; }

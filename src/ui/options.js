@@ -35,7 +35,7 @@ const PREF_KEYS = [
 ];
 
 function fmt(ts) {
-  if (!ts) return ", ";
+  if (!ts) return "-";
   const d = new Date(ts);
   const days = Math.round((ts - Date.now()) / 864e5);
   if (days > 1) return `${d.toLocaleDateString()} (about ${days} days)`;
@@ -53,7 +53,7 @@ async function refreshConnection() {
 
   if (signedIn) {
     $("si-url").textContent = status.baseUrl;
-    $("si-user").textContent = status.username || ", ";
+    $("si-user").textContent = status.username || "-";
     $("si-access").textContent = fmt(status.accessExpiresAt);
     $("si-refresh").textContent = fmt(status.refreshExpiresAt);
   } else if (status.baseUrl) {
@@ -246,7 +246,7 @@ async function renderAbout() {
     const info = await browser.runtime.getBrowserInfo();
     $("about-host").textContent = `${info.name} ${info.version}`;
   } catch {
-    $("about-host").textContent = ", ";
+    $("about-host").textContent = "-";
   }
 
   // developer.url takes precedence, matching what the Details tab links to.
@@ -653,7 +653,10 @@ async function renderLanguage(prefs) {
     select.appendChild(option);
   }
   select.value = prefs.uiLanguage || "auto";
-  $("language-note").textContent = `Showing ${LOCALES[activeLocale()] || activeLocale()}.`;
+  const following = select.value === "auto";
+  $("language-note").textContent = following
+    ? `Thunderbird is set to ${LOCALES[activeLocale()] || activeLocale()}.`
+    : "";
 }
 
 $("p-uiLanguage").addEventListener("change", async (e) => {
