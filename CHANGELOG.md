@@ -1,16 +1,59 @@
 # Changelog
 
-## 0.4.3 — 2026-09-10
+## 0.4.4 (2026-09-11)
+
+- **A module the CRM refuses is now turned off instead of failing on every message.** Filing
+  a message warned "Could not search Prospects" over and over, using SuiteCRM's internal name
+  for a module the settings call Targets, which read like a complaint about a module you do
+  not have. When a search fails the add-on now checks that module once, and if the CRM
+  refuses a plain read too, it stops searching it, unticks it in Preferences and marks it
+  there with the reason, including the HTTP status. A module that answers a plain read is left
+  alone, since that failure was about one request. A 500 or a dead connection takes three
+  failures in a row before the module goes, every module failing at once is read as the CRM
+  being unreachable rather than as five broken modules, and the last remaining module is
+  never turned off. *Find more modules* re-tests anything
+  marked and clears the mark when access comes back, so a revoked role shows up as something
+  you can see and fix rather than a warning that never stops.
+- **A reply is matched to its Case by the mail thread, not only by the subject.** SuiteCRM
+  stamps the case number into the subject of mail it sends, and that was the only route, so
+  the match was lost the moment the subject changed: an administrator edits the macro, a mail
+  system rewrites the line, or the customer trims it. The add-on now also follows the
+  `References` chain, where SuiteCRM's own outbound case mail is already stored against the
+  Case, and says which route found the match. Up to five ancestors are checked, nearest
+  first, so a long thread cannot turn one lookup into thirty requests.
+- **Filing sent mail no longer ignores your module choice.** The automatic sent-mail path
+  searched the four built-in modules whatever Preferences said, so it both queried modules
+  you had turned off and kept asking the CRM for one it had already refused.
+- **Every module name shown to you is the one the settings use.** "Prospects" was reaching
+  the interface raw in warnings; it is SuiteCRM's internal name for Targets.
+- **The sent-mail setting says what it does.** "File sent mail automatically" read as a noun
+  phrase before it read as an instruction. It is now "Add sent mail to SuiteCRM
+  automatically", and the explanation drops a double negative.
+- **The interface says "file" where it used to say "archive".** Thunderbird has its own
+  Archive button, which moves mail to a local folder, so a window offering to "Archive" a
+  message was describing something it does not do. "Archive" now appears only where SuiteCRM
+  is named in the same breath, which is where it cannot be mistaken.
+- *Find more modules* is now *Re-scan modules*, since it re-tests refused modules as well as
+  looking for new ones.
+- Em dashes are gone from the interface, the documentation and the listing text.
+- Checksums are written by the build rather than by hand, so `dist/SHA256SUMS` cannot lag a
+  release.
+- Test coverage for all of the above: 320 unit tests, and five new end-to-end steps that
+  create a Case on a live SuiteCRM, store the notification it would have sent, reply to it
+  twice, and file both replies back onto the Case, once by subject and once by reference
+  chain with no number in the subject at all.
+
+## 0.4.3 (2026-09-10)
 
 - **You can now delete what the add-on remembers about you.** Two things were kept in your
   profile with no way to clear them short of uninstalling: which CRM record mail from each
   address was last filed against, which is what the right-click menu and `Alt+Shift+A` file
   against, and the subject of the last 30 emails you filed, for the *Recent* list. Behaviour
   now has *Clear what is remembered*, which says how many of each are there before you press
-  it and takes nothing else — you stay signed in and your settings stay put. The privacy
+  it and takes nothing else, you stay signed in and your settings stay put. The privacy
   policy had claimed no subject was ever kept locally, which was simply wrong, and now
   describes both, along with the settings export writing the client secret to a file.
-- **About has a Developer support button**, next to *What's new* and *Developer website*. It
+- **About has a Developer Support button**, next to *What's new* and *Developer website*. It
   opens the issue tracker. The address was in the README and on the store listing, neither of
   which is in front of you at the moment something breaks.
 - **Two files no longer ship inside the add-on.** The icon's SVG drawing and a generated HTML
@@ -21,14 +64,14 @@
   reading the JSON it always read, and the build fails if anything unreferenced appears in
   `src/` again.
 
-## 0.4.2 — 2026-09-10
+## 0.4.2 (2026-09-10)
 
 - **Fixed the context menu doing nothing.** It read the selected messages with a helper that
   returns one message rather than a list, so the click handler saw no messages and stopped,
   two of the three menu entries hid themselves, the keyboard shortcut failed, and the
   in-message CRM strip stopped appearing. All four are the same mistake, introduced in 0.4.0.
 
-## 0.4.1 — 2026-09-10
+## 0.4.1 (2026-09-10)
 
 - **The context menu now works when the toolbar button has not been placed.** It opened the
   window by asking the toolbar button to show its popup, which quietly declines when the
@@ -38,7 +81,7 @@
   entry and the keyboard shortcut archived silently, so success and failure looked identical.
   They now report the record filed under, or the reason nothing was.
 
-## 0.4.0 — 2026-09-10
+## 0.4.0 (2026-09-10)
 
 - **Right-click a message, or several, to file them.** The window opens whether or not the
   toolbar button has been placed, and filing without a window now says what happened, or
@@ -65,7 +108,7 @@
   that shape serves its site. Not added when the mail host already has a subdomain, where it
   would invent an address nobody serves.
 
-## 0.3.0 — 2026-09-10
+## 0.3.0 (2026-09-10)
 
 - **A reply to case mail is now filed against the Case.** SuiteCRM stamps the case number
   into the subject of email it sends about a Case, so the reply comes back carrying it.
@@ -81,22 +124,22 @@
   the languages the add-on already handles. The message in Thunderbird is never modified,
   and an edited subject applies to that one email rather than to a whole thread.
 
-## 0.2.3 — 2026-09-10
+## 0.2.3 (2026-09-10)
 
 - Switching **Record a detailed log** off now discards what it recorded, rather than
   leaving it in your profile until *Clear log* was pressed. Passwords, secrets and tokens
   were never recorded in the first place, but the log did hold email addresses and CRM
   URLs, and the switch implied it was gone.
 
-## 0.2.2 — 2026-09-10
+## 0.2.2 (2026-09-10)
 
 - Wording clarifications. No functional change.
 
-## 0.2.1 — 2026-09-10
+## 0.2.1 (2026-09-10)
 
 - Documentation and packaging updates, including screenshots. No functional change.
 
-## 0.2.0 — 2026-09-10
+## 0.2.0 (2026-09-10)
 
 First release.
 
@@ -105,7 +148,7 @@ First release.
 - Your CRM password is used once to obtain a token and is **never stored**. Only a
   refresh token is kept, and it is replaced each time it is used.
 - Access tokens last an hour and renew silently. The sign-in window is a month and
-  resets on every use, so ordinary use means never signing in again — and a
+  resets on every use, so ordinary use means never signing in again, and a
   Thunderbird upgrade does not sign you out.
 - The CRM address is detected automatically, whether the API sits at `/Api` or
   `/legacy/Api`.
@@ -115,7 +158,7 @@ First release.
   same time** for the sender's address. No module to choose, no search to type.
 - A single match is pre-selected, so archiving is one further click.
 - On a message **you sent**, the first **To:** recipient is the default target rather than
-  the sender — who is you, and of no use to the CRM.
+  the sender, who is you, and of no use to the CRM.
 - *Change* lists the other people on the message, **To: first and Cc: after**, since To: is
   who the message was addressed to. Each is labelled with how many CRM records they already
   have. Only people on the target's domain are grouped as colleagues; other domains sit
@@ -125,7 +168,7 @@ First release.
   Opportunity, Quote, Case or Project instead.
 - **Create record…** turns the email into a Case, Opportunity, Meeting or follow-up Task
   linked to the selected record, filing the email against it at the same time. Only the
-  kinds SuiteCRM will actually link are offered — a Case needs an Account behind it, so it
+  kinds SuiteCRM will actually link are offered, a Case needs an Account behind it, so it
   is not offered for a Target or an unconverted Lead, and the picker says why rather than
   quietly leaving them out.
 - An email already archived is re-filed against the new record rather than duplicated.
@@ -147,7 +190,7 @@ First release.
 - Anything the parser is not sure about is highlighted for you to confirm, so a guess
   is never saved silently.
 - A website guessed from the sender's email domain is filled in and marked as a guess for
-  you to confirm. The add-on never contacts it — no third-party site is ever fetched, and
+  you to confirm. The add-on never contacts it, no third-party site is ever fetched, and
   the only site permission it asks for is your own CRM.
 - The signature is located by its sign-off ("Regards," and the like) rather than by
   guessing at the last few lines, so a greeting or the message body is never mistaken for
@@ -164,7 +207,7 @@ First release.
 - Existing Accounts on the sender's domain are offered, so a Contact can be linked to
   the right company instead of creating a duplicate Account.
 - Someone merely copied on the message never inherits the sender's job title, phone
-  numbers or address — only company details, which the whole domain shares.
+  numbers or address, only company details, which the whole domain shares.
 
 ### Safeguards
 - An email whose `Message-ID` matches one already archived is only re-filed when the sender
@@ -199,8 +242,8 @@ First release.
   every account in the profile.
 
 ### Troubleshooting
-- A **Test connection** button reports which layer is failing — host permission not granted,
-  granted but blocked, or the CRM genuinely unreachable — rather than a bare network error.
+- A **Test connection** button reports which layer is failing, host permission not granted,
+  granted but blocked, or the CRM genuinely unreachable, rather than a bare network error.
 - **Record a detailed log**, off by default, captures what the add-on does and every request
   it makes, then exports it as a text file to save or copy.
 - The report is written to be safe to share. Passwords, client secrets and access tokens are

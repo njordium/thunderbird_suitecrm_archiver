@@ -18,12 +18,12 @@ import { CrmClient, CrmError } from "../lib/crm.js";
 import { buildCandidates, allAddresses, parseMailbox, domainOf, isConsumerDomain } from "../lib/addresses.js";
 import { originPatternFor, isMixedContentRisk } from "../lib/url.js";
 import { API_SUFFIXES, classifyAttempt } from "../lib/probe.js";
-import { accountAllowed, MODULE_LABEL, recordLabel, MODULE_FIELDS, DIRECT_MODULES, CASE_FIELDS } from "../lib/modules.js";
+import { accountAllowed, MODULE_LABEL, recordLabel, MODULE_FIELDS, DIRECT_MODULES, CASE_FIELDS, moduleTitle, moduleVerdict } from "../lib/modules.js";
 import { resolveAddress, findAccountsByDomain, expandRelated, searchRecords } from "../lib/resolver.js";
 import { parseContact } from "../lib/signature.js";
 import { readMessage, archiveMessage } from "../lib/archive.js";
-import { findThread } from "../lib/thread.js";
-import { findCaseNumber } from "../lib/caseRef.js";
+import { findThread, threadIdsOf } from "../lib/thread.js";
+import { findCaseNumber, findCaseByReferences } from "../lib/caseRef.js";
 import { unwrapMessageList, unwrapMessageListAll } from "../lib/tbcompat.js";
 import { tagMessage, untagMessage } from "../lib/tagging.js";
 import { buildRecord, defaultsFor, CREATABLE, dateTimeInDays } from "../lib/createFromEmail.js";
@@ -42,8 +42,8 @@ setLogSink((level, args) => diag.record(level, args));
  *
  * A background script is a single top-level program: if any statement throws,
  * everything after it never runs. Registering this last meant that one optional
- * listener failing — an API the profile does not expose, a permission not
- * granted — left the popup with "Receiving end does not exist" and the whole
+ * listener failing, an API the profile does not expose, a permission not
+ * granted, left the popup with "Receiving end does not exist" and the whole
  * add-on dead, rather than one feature missing.
  */
 browser.runtime.onMessage.addListener((message, sender) => {
@@ -116,7 +116,7 @@ optional("accounts.onCreated/onDeleted", () => {
  * Is this message in an account the user enabled?
  *
  * This scopes what the add-on acts on. It is not a Thunderbird permission
- * boundary — messagesRead covers the whole profile either way — so it is
+ * boundary, messagesRead covers the whole profile either way, so it is
  * deliberately fail-open when the account cannot be determined.
  */
 async function accountScope(header) {
@@ -160,7 +160,7 @@ async function createFollowUp(client, msg, parent, days, archived) {
     return { id: created?.id || null, due: due.slice(0, 10) };
   } catch (e) {
     log.warn("Could not create the follow-up task:", e.message);
-    (archived.warnings ||= []).push(`The email was archived, but the follow-up task could not be created: ${e.message}`);
+    (archived.warnings ||= []).push(`The email was filed, but the follow-up task could not be created: ${e.message}`);
     return null;
   }
 }
@@ -271,7 +271,7 @@ const handlers = {
     //
     // The scheme is checked on the raw value, before normalising. normaliseBaseUrl
     // prepends https:// to anything whose scheme it does not recognise, which
-    // turns "file:///etc/passwd" into "https://file:///etc/passwd" — a URL that
+    // turns "file:///etc/passwd" into "https://file:///etc/passwd", a URL that
     // then passes a protocol check while meaning nothing. Rejecting first gives
     // the user a clear answer instead of a puzzling address.
     const raw = String(parsed.baseUrl).trim();
@@ -319,7 +319,7 @@ const handlers = {
    *   removeInvisibleModules()                   the global $modInvisList
    *
    * So the list genuinely differs per user, which is the useful part. But the
-   * third filter is global, and $modInvisList contains Prospects — so Targets
+   * third filter is global, and $modInvisList contains Prospects, so Targets
    * never appears here even for an administrator, while the add-on searches it
    * successfully. Treating this list as the whole truth would make Targets
    * vanish from the settings while still working, hence the built-in four are
@@ -330,10 +330,28 @@ const handlers = {
    * accurate than discovering the refusal later, and it means one person's
    * settings do not offer another person's modules.
    */
-  async listCrmModules() {
+  async listCrmModules({ recheck = false } = {}) {
     const client = await CrmClient.create();
     const chosen = (await store.getPrefs()).searchModules;
-    const base = { builtIn: DIRECT_MODULES, extra: [], labels: {}, selected: chosen };
+
+    // A rescan is the moment to re-test what the CRM refused before. Access
+    // comes back: a role is corrected, a module is re-enabled. Clearing the
+    // mark here is what makes the settings page a place to check rather than a
+    // place that remembers one bad day for ever.
+    let trouble = await getModuleTrouble();
+    if (recheck && Object.keys(trouble).length) {
+      const still = {};
+      for (const name of Object.keys(trouble)) {
+        const read = await verifyModule(client, name);
+        if (!read.readSucceeded) {
+          still[name] = { ...trouble[name], error: read.error, status: read.status, at: Date.now() };
+        }
+      }
+      trouble = still;
+      await store.set("moduleTrouble", trouble);
+    }
+
+    const base = { builtIn: DIRECT_MODULES, extra: [], labels: {}, selected: chosen, trouble };
 
     let entries;
     try {
@@ -402,7 +420,7 @@ const handlers = {
   /**
    * Diagnose a connection failure precisely. "NetworkError" alone cannot tell
    * apart a missing host permission, a blocked plaintext request, and a server
-   * that is genuinely unreachable — so probe and report which it is.
+   * that is genuinely unreachable, so probe and report which it is.
    */
   async probeConnection({ baseUrl }) {
     const base = auth.normaliseBaseUrl(baseUrl);
@@ -513,8 +531,8 @@ const handlers = {
   /**
    * What the profile is holding on to, for the settings page to report.
    *
-   * Both keys exist to offer something back — a remembered record to file
-   * against, a Recent list — so the count is the honest way to show what that
+   * Both keys exist to offer something back, a remembered record to file
+   * against, a Recent list, so the count is the honest way to show what that
    * costs: how many addresses, and how many subjects.
    */
   async historySize() {
@@ -602,7 +620,7 @@ const handlers = {
 
   /**
    * Everything the popup needs on open: the message, who it could be filed
-   * against, and — for the default address — the CRM lookup already done.
+   * against, and, for the default address, the CRM lookup already done.
    */
   async prepareMessage({ messageId }) {
     const t0 = Date.now();
@@ -634,18 +652,26 @@ const handlers = {
       ? findCaseNumber(msg.header.subject, prefs.caseSubjectMacro)
       : null;
 
+    // The ancestors of this reply, for when the subject no longer carries the
+    // number. Reading them is free here; turning one into a Case is a request,
+    // so that happens in lookupCase alongside everything else.
+    const caseRefs = prefs.matchCaseReferences
+      ? [...threadIdsOf(msg.header, msg.full)].filter((id) => id && id !== msg.rfcMessageId)
+      : [];
+
     const timings = { readMessage: tRead - t0, total: Date.now() - t0 };
     log.debug(`prepareMessage: read ${timings.readMessage}ms, total ${timings.total}ms`);
 
     // Thread discovery is NOT done here. It runs a subject query across every
     // account and then reads each candidate, which took ~2s on a mailbox with
-    // sixteen accounts — all of it before the popup could render. The popup
+    // sixteen accounts, all of it before the popup could render. The popup
     // asks for it separately, once it is on screen.
     return {
       messageId,
       subject: msg.header.subject,
       date: msg.header.date,
       caseRef,
+      caseRefs,
       candidates,
       attachmentCount: msg.attachments.filter((a) => !a.contentId).length,
       hasVCard: Boolean(msg.vcard),
@@ -742,15 +768,35 @@ const handlers = {
    * because a reference to a deleted Case is an ordinary thing to find in old
    * mail and must not stop the window working.
    */
-  async lookupCase({ number }) {
-    if (!number) return { found: null };
+  async lookupCase({ number, references = [] }) {
+    if (!number && !references.length) return { found: null };
     try {
       const client = await CrmClient.create();
-      const rec = await client.getCaseByNumber(number, CASE_FIELDS);
-      return { number, found: rec ? { ...rec, module: "Cases" } : null };
+
+      // The subject number first: one request, and it is what SuiteCRM
+      // intends. The reference chain is the fallback, for a subject that has
+      // lost the macro somewhere between the CRM and the reply.
+      if (number) {
+        const rec = await client.getCaseByNumber(number, CASE_FIELDS);
+        if (rec) return { number, found: { ...rec, module: "Cases" }, via: "subject" };
+      }
+
+      const ref = await findCaseByReferences(client, references, { log });
+      if (ref) {
+        const rec = await client.getRecord("Cases", ref.caseId, CASE_FIELDS);
+        if (rec) {
+          return {
+            number: rec.case_number ?? number ?? null,
+            found: { ...rec, module: "Cases" },
+            via: "references",
+          };
+        }
+      }
+
+      return { number: number || null, found: null };
     } catch (e) {
-      log.warn(`Could not resolve case ${number}:`, e.message);
-      return { number, found: null, error: e.message };
+      log.warn(`Could not resolve the case for this message:`, e.message);
+      return { number: number || null, found: null, error: e.message };
     }
   },
 
@@ -763,13 +809,15 @@ const handlers = {
       resolveCached(email).then((r) => r ?? resolveAddress(client, email, { modules })),
       accountsForDomain(client, email),
     ]);
-    return { ...resolved, accountsByDomain: accounts };
+    const failures = (await reviewFailures(client, resolved.failures, modules))
+      .map((f) => ({ ...f, title: moduleTitle(f.module) }));
+    return { ...resolved, failures, accountsByDomain: accounts };
   },
 
   /**
    * Undo the last archive.
    *
-   * Deletes only what that archive created — never a record that already
+   * Deletes only what that archive created, never a record that already
    * existed. Re-filing an email that was already in the CRM changes its parent
    * rather than creating anything, so undoing it must restore the old parent,
    * not delete somebody else's email.
@@ -879,7 +927,7 @@ const handlers = {
   /**
    * Create a Lead straight from the compose window, from just a name and address.
    * There is no signature to read here, so this deliberately fills in nothing it
-   * cannot see — a stub the user completes later beats invented details.
+   * cannot see, a stub the user completes later beats invented details.
    */
   async createLeadForAddress({ email, name }) {
     const client = await CrmClient.create();
@@ -903,7 +951,7 @@ const handlers = {
    * Guessing https://<email domain> is right most of the time and wrong often
    * enough to be worth checking before it lands in the CRM. The check needs a
    * host permission for that specific site, which the caller requests from a
-   * real click — we never reach out to a third party without that, and never
+   * real click, we never reach out to a third party without that, and never
    * send credentials or cookies.
    */
   /**
@@ -913,7 +961,7 @@ const handlers = {
    * fetched a guessed website to confirm it, which took a host permission for
    * each sender's domain, so checking twenty senders left twenty standing grants
    * in the Permissions tab for a one-second fetch each. That check now opens the
-   * page in the browser and asks for nothing, but the old grants persist — this
+   * page in the browser and asks for nothing, but the old grants persist, this
    * finds them so Settings can offer to clear them.
    */
   async strayHostPermissions() {
@@ -958,7 +1006,7 @@ const handlers = {
 
   /**
    * Create a Case, Opportunity, Meeting or Task from the email, then archive the
-   * email against it — so the record and the correspondence that started it are
+   * email against it, so the record and the correspondence that started it are
    * linked from the moment it exists.
    */
   async createFromEmail({ messageId, kind, form, parent, archive: alsoArchive = true }) {
@@ -1260,7 +1308,7 @@ const handlers = {
 
     for (let i = 0; i < ids.length; i++) {
       const id = ids[i];
-      onProgress(`Archiving message ${i + 1} of ${ids.length}…`);
+      onProgress(`Filing message ${i + 1} of ${ids.length}…`);
       try {
         const msg = messageCache.get(id) || (await readMessage(id));
         const res = await archiveMessage(client, msg, parent, {
@@ -1277,7 +1325,7 @@ const handlers = {
         done.push({ res, messageId: id });
       } catch (e) {
         combined.thread.skipped++;
-        combined.warnings.push(`Message ${i + 1} of ${ids.length} could not be archived: ${e.message}`);
+        combined.warnings.push(`Message ${i + 1} of ${ids.length} could not be filed: ${e.message}`);
       }
     }
     rememberArchive(done, parent);
@@ -1305,7 +1353,7 @@ const COMPOSE_SCRIPT_ID = "suitecrm-compose";
 /**
  * Register the message-display script at runtime rather than through the
  * manifest. The `message_display_scripts` manifest key only exists from
- * Thunderbird 151, and the floor here is 140 — but the stronger reason is that
+ * Thunderbird 151, and the floor here is 140, but the stronger reason is that
  * registering at runtime lets the setting genuinely unregister the script,
  * where the manifest key would leave it injected and self-hiding.
  */
@@ -1339,7 +1387,7 @@ async function doSyncBannerScript() {
 
     // scripting.messageDisplay is the only route under Manifest V3. Its
     // predecessor, browser.messageDisplayScripts, is max_manifest_version 2, so
-    // there is nothing to fall back to — say so rather than failing silently.
+    // there is nothing to fall back to, say so rather than failing silently.
     log.warn("scripting.messageDisplay is unavailable; the in-message banner cannot be shown.");
   } catch (e) {
     log.warn("Could not register the in-message banner:", e.message);
@@ -1419,6 +1467,108 @@ async function effectiveModules() {
   return clean.length ? clean : DIRECT_MODULES;
 }
 
+/**
+ * Modules this CRM will not let this user search, with the reason.
+ *
+ * Kept beside the preference rather than inside it: the tick is the user's
+ * choice, this is what the server said about it. Preferences reads it to mark
+ * the module, and "Re-scan modules" re-tests and clears it.
+ */
+async function getModuleTrouble() {
+  const t = await store.get("moduleTrouble", {});
+  return t && typeof t === "object" ? t : {};
+}
+
+/**
+ * Confirm a failed module really is out of reach before acting on it.
+ *
+ * The failing request filters on an address, so it could have gone wrong for
+ * reasons that say nothing about the module. One plain read settles it: if
+ * that is refused too, the module is genuinely unavailable to this user.
+ */
+async function verifyModule(client, module) {
+  try {
+    await client.getRecords(module, { size: 1 });
+    return { readSucceeded: true };
+  } catch (e) {
+    return {
+      readSucceeded: false,
+      status: e?.status ?? null,
+      error: e?.message || String(e),
+    };
+  }
+}
+
+/**
+ * Act on the failures a lookup reported.
+ *
+ * Verify each failed module once. One that is genuinely gone is unticked, so
+ * the same warning does not arrive on every message, and recorded so the
+ * settings page can show why. A module that answers a plain read is left
+ * alone: that failure was about the request, not the module.
+ */
+async function reviewFailures(client, failures, searched = []) {
+  if (!failures?.length) return failures || [];
+
+  // Everything failing at once is the CRM being unreachable, not a fact about
+  // any one module. Turning them all off over a restart or a lost connection
+  // would leave the add-on searching nothing and the user hunting for why.
+  if (searched.length && failures.length >= searched.length) {
+    log.warn("Every module failed, so this is the CRM and not the modules; nothing turned off.");
+    return failures;
+  }
+
+  const trouble = await getModuleTrouble();
+  const prefs = await store.getPrefs();
+  const current = Array.isArray(prefs.searchModules) ? prefs.searchModules : DIRECT_MODULES;
+  const disabled = [];
+
+  for (const f of failures) {
+    const read = await verifyModule(client, f.module);
+    const verdict = moduleVerdict({ ...read, strikes: trouble[f.module]?.strikes || 0 });
+
+    if (verdict.action === "keep") {
+      // It answers a plain read, so the module is there. Forget earlier strikes.
+      if (trouble[f.module]) delete trouble[f.module];
+      continue;
+    }
+
+    trouble[f.module] = {
+      error: read.error,
+      status: read.status,
+      strikes: verdict.strikes,
+      at: Date.now(),
+      disabled: verdict.action === "disable",
+    };
+
+    // Never leave nothing to search: an add-on that looks up no modules at all
+    // is indistinguishable from one that is broken.
+    if (verdict.action === "disable" && current.filter((m) => !disabled.includes(m) && m !== f.module).length) {
+      disabled.push(f.module);
+      f.disabled = true;
+    } else if (verdict.action === "disable") {
+      trouble[f.module].disabled = false;
+      log.warn(`${f.module} keeps failing, but it is the only module left, so it stays on.`);
+    }
+  }
+
+  await store.set("moduleTrouble", trouble);
+
+  if (disabled.length) {
+    // Materialise the default before removing from it, or an untick would have
+    // nothing to be absent from and the module would come straight back.
+    await store.setPrefs({ searchModules: current.filter((m) => !disabled.includes(m)) });
+
+    // Everything cached was answered with the old module set, failure included.
+    // Left in place, the next message would show the same warning from memory
+    // after the module had already been turned off.
+    senderCache.invalidate(); domainCache.invalidate(); searchCache.clear();
+    log.warn(`Turned off ${disabled.join(", ")}: the CRM will not let this account search them.`);
+  }
+
+  return failures;
+}
+
 async function cachedSearch(term, modules, size) {
   const exact = searchCache.get(term);
   if (exact) return exact;
@@ -1439,7 +1589,7 @@ async function cachedSearch(term, modules, size) {
   return searchCache.set(term, found, { complete: !truncated });
 }
 
-/** Accounts matching a domain — asked on every popup open, rarely different. */
+/** Accounts matching a domain, asked on every popup open, rarely different. */
 const domainCache = new LookupCache();
 
 async function accountsForDomain(client, email) {
@@ -1521,7 +1671,7 @@ optional("tabs.onRemoved", () =>
  * listener added inside an async block is dropped when the background page
  * suspends, and the address book disappears with it.
  *
- * Queries live rather than keeping a local copy — always current, nothing on
+ * Queries live rather than keeping a local copy, always current, nothing on
  * disk, and no sync logic to get wrong. The cost is that autocomplete needs the
  * CRM to be reachable, which is the honest trade.
  */
@@ -1562,7 +1712,7 @@ optional("addressBooks.provider.onSearchRequest", () =>
 /**
  * File outbound mail automatically, but only against a record that already
  * exists. Creating records from unattended sending is how a CRM fills with
- * entries nobody reviewed, so this never creates anything — it files, or it
+ * entries nobody reviewed, so this never creates anything, it files, or it
  * does nothing and says so in the log.
  */
 optional("compose.onAfterSend", () =>
@@ -1589,7 +1739,12 @@ optional("compose.onAfterSend", () =>
       if (!target) continue;
 
       const client = await CrmClient.create();
-      const resolved = await resolveAddress(client, target.email);
+      // The same modules the rest of the add-on searches. Left to its default
+      // this filed against modules the user had turned off, and kept asking
+      // the CRM for one it had already refused.
+      const resolved = await resolveAddress(client, target.email, {
+        modules: await effectiveModules(),
+      });
       if (!resolved.found) {
         log.info(`archive-on-send: ${target.email} is not in the CRM; not filing.`);
         continue;
@@ -1605,7 +1760,7 @@ optional("compose.onAfterSend", () =>
       log.info(`archive-on-send: filed under ${module}/${record.id}`);
     }
   } catch (e) {
-    // Never let this surface as an error during sending — the mail has gone.
+    // Never let this surface as an error during sending, the mail has gone.
     log.warn("archive-on-send failed:", e.message);
   }
   }));
@@ -1655,8 +1810,7 @@ async function notify(title, message) {
  *
  * openPopup does not throw when it cannot work. Its own contract says it
  * "returns false if the popup could not be opened because the action has no
- * popup, is of type menu, is disabled or has been removed from the toolbar" —
- * and the message-display button is on a customisable toolbar, so on a fresh
+ * popup, is of type menu, is disabled or has been removed from the toolbar", * and the message-display button is on a customisable toolbar, so on a fresh
  * profile where nobody has placed it, this quietly returns false. Ignoring that
  * is why the menu item appeared to do nothing at all.
  *
@@ -1780,21 +1934,21 @@ optional("menus.create", () => {
         senderCache.invalidate(); domainCache.invalidate(); searchCache.clear();
         log.info(`menu: filed ${done.length} message(s) under ${target.type}/${target.id}`);
         await notify(
-          done.length > 1 ? `${done.length} messages archived` : "Message archived",
+          done.length > 1 ? `${done.length} messages filed` : "Message filed",
           `Filed under ${target.label}.`
         );
       } else {
         // Every message was in an account the user turned off. Saying so beats
         // leaving them to wonder whether the click registered.
         await notify(
-          "Nothing archived",
+          "Nothing filed",
           "Those messages are in mail accounts this add-on is turned off for. " +
           "Check Mail accounts in the add-on's settings."
         );
       }
     } catch (e) {
       log.warn(`menu ${info.menuItemId} failed:`, e.message);
-      await notify("Could not archive", e.message);
+      await notify("Could not file the message", e.message);
     }
   });
 });
@@ -1831,7 +1985,7 @@ optional("commands.onCommand", () =>
       if (!scope.allowed) {
         log.info(`archive-last: ${scope.accountName} is not enabled; ignoring.`);
         await notify(
-          "Nothing archived",
+          "Nothing filed",
           `${scope.accountName} is a mail account this add-on is turned off for.`
         );
         return;
@@ -1855,10 +2009,10 @@ optional("commands.onCommand", () =>
       rememberArchive([{ res, messageId: msgHeader.id }], target);
       senderCache.invalidate(primary.email);
       log.info(`archive-last: filed under ${target.type}/${target.id}`);
-      await notify("Message archived", `Filed under ${target.label}.`);
+      await notify("Message filed", `Filed under ${target.label}.`);
     } catch (e) {
       log.warn(`shortcut ${name} failed:`, e.message);
-      await notify("Could not archive", e.message);
+      await notify("Could not file the message", e.message);
     }
   }));
 

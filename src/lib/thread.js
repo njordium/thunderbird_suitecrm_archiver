@@ -87,7 +87,7 @@ export async function findThread(messageId, { maxMessages = MAX_THREAD } = {}) {
   if (subject) {
     let candidates = [];
     // Scope to the message's own account. Unscoped, this searches every account
-    // in the profile — on a mailbox with sixteen of them that alone took about
+    // in the profile, on a mailbox with sixteen of them that alone took about
     // two seconds, and a conversation does not span accounts anyway.
     const accountId = header?.folder?.accountId;
     const scoped = accountId ? { subject, accountId } : { subject };

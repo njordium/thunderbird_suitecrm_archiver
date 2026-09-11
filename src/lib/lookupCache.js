@@ -49,7 +49,7 @@ export class LookupCache {
     return value;
   }
 
-  /** Drop one address, or everything — used after creating or archiving. */
+  /** Drop one address, or everything, used after creating or archiving. */
   invalidate(email = null) {
     if (email === null) this.entries.clear();
     else this.entries.delete(this.#key(email));

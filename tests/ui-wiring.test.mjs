@@ -5,7 +5,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-// A button that looks pressable and does nothing is worse than no button — it was
+// A button that looks pressable and does nothing is worse than no button, it was
 // a real defect here once. These checks tie the markup and its script together:
 // every button in the page must be wired up, and every element the script reaches
 // for must exist in the page.
@@ -28,7 +28,7 @@ for (const [htmlFile, jsFile] of PAIRS) {
   const referenced = new Set([...js.matchAll(/\$\("([^"]+)"\)/g)].map((m) => m[1]));
 
   test(`${htmlFile}: every button is referenced by ${jsFile}`, () => {
-    assert.ok(buttonIds.length > 0, "no buttons found — the parser is wrong, not the page");
+    assert.ok(buttonIds.length > 0, "no buttons found, the parser is wrong, not the page");
     const orphans = buttonIds.filter((id) => !referenced.has(id) && !js.includes(`"${id}"`));
     assert.deepEqual(orphans, [], `buttons with no code behind them: ${orphans.join(", ")}`);
   });
@@ -51,7 +51,7 @@ test("every host permission request derives its origin from the CRM address", ()
   const js = read("options.js");
   const calls = [...js.matchAll(/permissions\.request\(\{\s*origins:\s*\[([^\]]+)\]/g)]
     .map((m) => m[1].trim());
-  assert.ok(calls.length > 0, "the parser found no requests — check the pattern, not the code");
+  assert.ok(calls.length > 0, "the parser found no requests, check the pattern, not the code");
   for (const arg of calls) {
     assert.match(arg, /^origin$|originPatternFor\(\$\("in-url"\)\.value\)/,
       `permission requested for something other than the CRM host: ${arg}`);

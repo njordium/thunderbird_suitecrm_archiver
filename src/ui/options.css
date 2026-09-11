@@ -85,7 +85,7 @@ code {
 #setup-card.is-collapsed .steps,
 #setup-card.is-collapsed > p.muted { display: none; }
 #setup-card.is-collapsed h2::after {
-  content: " — already done"; color: var(--ok); text-transform: none; letter-spacing: 0;
+  content: ", already done"; color: var(--ok); text-transform: none; letter-spacing: 0;
 }
 
 h2.with-toggle { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
@@ -118,6 +118,10 @@ h2.with-toggle { display: flex; align-items: center; justify-content: space-betw
 .module-list { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 4px 0 8px; }
 .module-list label { display: flex; gap: 5px; align-items: center; color: var(--fg); }
 .module-list .is-extra { color: var(--accent); }
+.module-list .is-refused { color: var(--muted); }
+.module-list .mod-bad {
+  color: var(--danger); font-weight: 600; cursor: help;
+}
 
 .probe {
   margin: 10px 0 0; padding: 10px 12px;

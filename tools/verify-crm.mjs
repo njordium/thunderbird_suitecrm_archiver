@@ -102,7 +102,7 @@ async function tokenRequest(payload, apiB = apiBase) {
   const text = await res.text();
   let body = null;
   try { body = JSON.parse(text); } catch {
-    throw new Error(`Non-JSON response (HTTP ${res.status}) — the API is probably not at ${apiB}`);
+    throw new Error(`Non-JSON response (HTTP ${res.status}), the API is probably not at ${apiB}`);
   }
   if (!res.ok || body.error) {
     throw new Error(`${body.error || res.status}: ${body.hint || body.error_description || body.message || ""}`);
@@ -112,7 +112,7 @@ async function tokenRequest(payload, apiB = apiBase) {
 
 // ---------------------------------------------------------------------------
 
-console.log(`\nSuiteCRM V8 verification — ${base}\n${"─".repeat(60)}`);
+console.log(`\nSuiteCRM V8 verification, ${base}\n${"─".repeat(60)}`);
 
 console.log("\n\x1b[1m1. Discovery & authentication\x1b[0m");
 
@@ -144,7 +144,7 @@ const authed = await step("Password grant → access token", async () => {
 if (!authed) { summarise(); process.exit(1); }
 
 await step("Refresh token rotates (the whole point of the design)", async () => {
-  if (!refreshToken) throw new Error("No refresh token was issued — check the client is a Password client.");
+  if (!refreshToken) throw new Error("No refresh token was issued, check the client is a Password client.");
   const body = await tokenRequest({
     grant_type: "refresh_token",
     client_id: CFG.clientId, client_secret: CFG.clientSecret,
@@ -153,7 +153,7 @@ await step("Refresh token rotates (the whole point of the design)", async () => 
   const rotated = body.refresh_token && body.refresh_token !== refreshToken;
   token = body.access_token;
   refreshToken = body.refresh_token || refreshToken;
-  return rotated ? "new refresh token issued — rotation confirmed" : "WARNING: refresh token was NOT rotated";
+  return rotated ? "new refresh token issued, rotation confirmed" : "WARNING: refresh token was NOT rotated";
 });
 
 console.log("\n\x1b[1m2. Read endpoints\x1b[0m");
@@ -175,7 +175,7 @@ await step("GET /V8/meta/modules", async () => {
 console.log("\n\x1b[1m3. The email→record lookup (the critical path)\x1b[0m");
 
 for (const mod of ["Contacts", "Leads", "Accounts", "Prospects"]) {
-  await step(`GET /V8/module/${mod}?filter[email1][eq] — the email_addr_bean_rel join`, async () => {
+  await step(`GET /V8/module/${mod}?filter[email1][eq], the email_addr_bean_rel join`, async () => {
     const probe = PROBE_EMAIL || "verify-probe-no-such-address@example.invalid";
     const r = await api("GET", `/module/${mod}`, {
       query: { filter: { email1: { eq: probe } }, page: { size: 3 } },
@@ -202,7 +202,7 @@ await step("filter on a plain field (no email join)", async () => {
 await step("CONFIRM email2 is unusable (known SuiteCRM bug)", async () => {
   try {
     await api("GET", "/module/Contacts", { query: { filter: { email2: { eq: "x@y.z" } }, page: { size: 1 } } });
-    return "email2 filter did NOT error on this build — the docs note may not apply here";
+    return "email2 filter did NOT error on this build, the docs note may not apply here";
   } catch (e) {
     return `errors as expected, so the client is right to avoid it (${e.message.slice(0, 110)})`;
   }
@@ -239,7 +239,7 @@ if (!DO_WRITE) {
   const stamp = Date.now();
   let contactId = null, emailId = null, noteId = null;
 
-  await step("POST /V8/module — create a throwaway Contact", async () => {
+  await step("POST /V8/module, create a throwaway Contact", async () => {
     const r = await api("POST", "/module", {
       body: { data: { type: "Contacts", attributes: {
         first_name: "ZZVerify", last_name: `Probe${stamp}`,
@@ -261,7 +261,7 @@ if (!DO_WRITE) {
       return "round-trip confirmed";
     });
 
-    await step("POST /V8/module — create an Email under it", async () => {
+    await step("POST /V8/module, create an Email under it", async () => {
       const r = await api("POST", "/module", {
         body: { data: { type: "Emails", attributes: {
           name: "Verification probe",
@@ -278,12 +278,12 @@ if (!DO_WRITE) {
     });
 
     if (emailId) {
-      await step("POST relationships — link Email to Contact", async () =>
+      await step("POST relationships, link Email to Contact", async () =>
         api("POST", `/module/Emails/${emailId}/relationships`, {
           body: { data: { type: "Contacts", id: contactId } },
         }).then(() => "linked"));
 
-      await step("POST /V8/module — Note with a base64 attachment", async () => {
+      await step("POST /V8/module, Note with a base64 attachment", async () => {
         const r = await api("POST", "/module", {
           body: { data: { type: "Notes", attributes: {
             name: "verify.txt", parent_type: "Emails", parent_id: emailId,
@@ -292,10 +292,10 @@ if (!DO_WRITE) {
           } } },
         });
         noteId = r?.data?.id;
-        return `id=${noteId} — upload path works`;
+        return `id=${noteId}, upload path works`;
       });
 
-      await step("GET relationships — Contact → Opportunities (lazy expansion)", async () => {
+      await step("GET relationships, Contact → Opportunities (lazy expansion)", async () => {
         const r = await api("GET", `/module/Contacts/${contactId}/relationships/opportunities`);
         return `link traversable; ${Array.isArray(r?.data) ? r.data.length : 0} related`;
       }, { optional: true });

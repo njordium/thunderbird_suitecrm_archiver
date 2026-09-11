@@ -56,6 +56,12 @@ PYEOF
 
 python3 tools/gen-update-manifest.py "$VERSION" "$OUT"
 
+# Checksums are published beside each release, and a hand-maintained list is a
+# list that lags: dist/SHA256SUMS still named 0.4.2 two releases later. Written
+# here, it cannot describe anything but what was just built.
+(cd dist && sha256sum "$(basename "$OUT")" > SHA256SUMS)
+echo "   dist/SHA256SUMS  ($(cut -c1-12 < dist/SHA256SUMS)…)"
+
 echo "→ Built $OUT ($(du -h "$OUT" | cut -f1))"
 echo
 echo "Install: Thunderbird → Add-ons → gear icon → Install Add-on From File…"

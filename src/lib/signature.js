@@ -22,7 +22,7 @@ const HIGH = "high", MEDIUM = "medium", LOW = "low";
 const LEGAL_SUFFIX_END =
   /\b(AB|HB|KB|AS|A\/S|ApS|Oy|Oyj|GmbH|mbH|AG|Ltd|Limited|LLC|L\.L\.C|Inc|Corp|Co|PLC|B\.V|N\.V|S\.A|SARL|S\.R\.L|SpA|Pty|Group|Holding|Holdings|Consulting|Technologies|Solutions|Partners|Labs|Systems|Software|Ventures)\b\.?\s*$/i;
 
-/** Openings and closings — never part of a signature's data. */
+/** Openings and closings, never part of a signature's data. */
 const GREETING = /^(hi|hej|hello|hey|dear|good\s+(morning|afternoon|evening)|tack|thanks|thank\s+you|cheers)\b/i;
 
 const SIGN_OFF = /^(regards|best\s+regards|kind\s+regards|warm\s+regards|many\s+thanks|thanks|thank\s+you|sincerely|yours(\s+\w+)?|cheers|br|mvh|med\s+v(ä|a)nliga\s+h(ä|a)lsningar|v(ä|a)nliga\s+h(ä|a)lsningar|h(ä|a)lsningar|mit\s+freundlichen\s+gr(ü|u)(ß|ss)en|cordialement|saludos|hilsen|vennlig\s+hilsen)\b[,.!]?\s*$/i;
@@ -206,7 +206,7 @@ export function extractSignatureBlock(text) {
 }
 
 // ---------------------------------------------------------------------------
-// vCard (preferred when present — structured beats heuristics)
+// vCard (preferred when present, structured beats heuristics)
 // ---------------------------------------------------------------------------
 
 export function parseVCard(raw) {
@@ -272,7 +272,7 @@ const NAME_SUFFIX = /^(PhD|Ph\.D\.?|MD|M\.D\.?|MBA|MSc|BSc|CPA|Esq\.?|Jr\.?|Sr\.
 export function splitPersonName(full) {
   let cleaned = String(full || "").replace(/\s*\((.*?)\)\s*/g, " ").trim();
 
-  // "Doe, Jane" — the Last, First form that Exchange global address lists use.
+  // "Doe, Jane", the Last, First form that Exchange global address lists use.
   // Distinguish it from "Jane Doe, PhD", where the tail is a credential.
   const comma = cleaned.indexOf(",");
   if (comma > 0) {
@@ -287,7 +287,7 @@ export function splitPersonName(full) {
         last_name: head,
       };
     }
-    cleaned = head; // just a credential — drop it
+    cleaned = head; // just a credential, drop it
   }
 
   const parts = cleaned.split(/\s+/).filter(Boolean);
@@ -310,9 +310,9 @@ export function splitPersonName(full) {
 /**
  * Phone numbers, but only where there is a reason to believe it is one.
  *
- * A bare run of digits is NOT accepted. Signatures are full of them — inline
+ * A bare run of digits is NOT accepted. Signatures are full of them, inline
  * image placeholders like `[signature_4149225487]`, certification numbers,
- * tracking ids in link query strings — and treating those as phone numbers put
+ * tracking ids in link query strings, and treating those as phone numbers put
  * pure noise into the CRM. A number now needs a label ("M:", "Tel"), an
  * international prefix, or human separators before it counts.
  */
@@ -536,12 +536,12 @@ function extractAddress(block) {
   const streetAt = [], postcodeAt = [];
 
   lines.forEach((line, i) => {
-    // "Storgatan 12", "12 Baker Street" — words plus a house number.
+    // "Storgatan 12", "12 Baker Street", words plus a house number.
     if (/^[\p{L}][\p{L}\s.\-]{2,40}\s+\d{1,4}\s*[A-Za-z]?$/u.test(line) ||
         /^\d{1,4}\s+[\p{L}][\p{L}\s.\-]{2,40}$/u.test(line)) {
       streetAt.push(i);
     }
-    // "114 55 Stockholm" or "12345 Springfield" — a postcode then a place.
+    // "114 55 Stockholm" or "12345 Springfield", a postcode then a place.
     if (/^(\d{3}\s?\d{2}|\d{4,6})\s+[\p{L}][\p{L}\s\-]{1,40}$/u.test(line)) {
       postcodeAt.push(i);
     }
@@ -600,7 +600,7 @@ export function parseContact({ author, bodyText = "", vcard = null, isAuthor = t
   // 1. The header address is ground truth.
   put("email1", mailbox.email, HIGH);
 
-  // 2. A vCard, if attached, beats every heuristic below — but it describes the
+  // 2. A vCard, if attached, beats every heuristic below, but it describes the
   //    sender. For a colleague, take only the company-level fields from it.
   const card = vcard ? parseVCard(vcard) : null;
   if (card) {
@@ -639,7 +639,7 @@ export function parseContact({ author, bodyText = "", vcard = null, isAuthor = t
   const sigLines = block.split(/\r?\n/).map((l) => l.trim());
 
   // 4. Name from the signature, when the header gave us nothing. Skipped for a
-  //    colleague — the name in the signature is the writer's.
+  //    colleague, the name in the signature is the writer's.
   if (!fields.first_name && !fields.last_name && isAuthor) {
     for (let i = 0; i < sigLines.length; i++) {
       if (looksLikePersonName(sigLines[i])) {
@@ -685,7 +685,7 @@ export function parseContact({ author, bodyText = "", vcard = null, isAuthor = t
   }
 
   // 6a. No website in the signature is common, but the email domain is almost
-  //     always the company's site. Derive it — low confidence, so the form
+  //     always the company's site. Derive it, low confidence, so the form
   //     highlights it, and the user can have it checked before saving.
   if (!fields.website && domain && !isConsumerDomain(domain)) {
     const guessed = homepageFromDomain(domain);

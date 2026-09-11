@@ -9,7 +9,7 @@ nobody imports, a name nothing uses, a file nothing loads, an id in the markup
 that no script or stylesheet mentions, a class no page carries, a locale string
 nothing asks for, and a permission with no call behind it.
 
-Matching is textual and deliberately generous — a name that appears anywhere
+Matching is textual and deliberately generous, a name that appears anywhere
 counts as used. That makes false negatives possible and false positives rare,
 which is the right way round for something that suggests deletions.
 """
@@ -106,7 +106,7 @@ report("HTML ids referenced from neither JS nor CSS", hits)
 
 # Scoped to the page the stylesheet belongs to, not to the whole add-on. A class
 # alive in options.css and dead in popup.css is exactly the case a global search
-# misses, and it is the case that actually arises — a control gets removed from
+# misses, and it is the case that actually arises, a control gets removed from
 # one page while the same class name lives on elsewhere.
 hits = []
 for c in css:
@@ -131,7 +131,7 @@ for c in css:
     # Only two forms are decidable by reading text. A class written into a
     # literal ("field-note is-ok") shows both names together. A class added
     # through classList could land on any element, so those are left alone
-    # rather than guessed at — a false accusation here costs more than a miss.
+    # rather than guessed at, a false accusation here costs more than a miss.
     for m in re.finditer(r"^\s*\.([a-zA-Z][\w-]+)\.([a-zA-Z][\w-]+)\b", text[c], re.M):
         a, b = m.group(1), m.group(2)
         if re.search(rf"classList\.\w+\(\s*[\"'`]{re.escape(b)}\b", scope):
@@ -149,7 +149,7 @@ messages = root / "_locales/en/messages.json"
 if messages.exists():
     for k in json.loads(messages.read_text()):
         # __MSG_name__ is the only way a message is read, so a plain word
-        # boundary would miss it — the leading underscore is a word character.
+        # boundary would miss it, the leading underscore is a word character.
         if f"__MSG_{k}__" not in mani_raw and not re.search(rf"getMessage\(\s*[\"'`]{re.escape(k)}\b", blob_all):
             hits.append(k)
 report("locale messages never referenced", hits)
@@ -175,4 +175,4 @@ for p in mani.get("permissions", []):
         hits.append(f"{p}  (nothing matches /{pat}/)")
 report("manifest permissions with no matching API call", hits)
 
-print(f"{total} candidate(s). Each needs a human decision — the matching is textual.")
+print(f"{total} candidate(s). Each needs a human decision, the matching is textual.")

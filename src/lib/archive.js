@@ -6,7 +6,7 @@
  * chosen parent record, with its attachments as related Notes.
  *
  * The field mapping and the message_id de-duplication strategy are the
- * conventional ones for SuiteCRM's Emails module, and correct — see
+ * conventional ones for SuiteCRM's Emails module, and correct, see
  * docs/RESEARCH.md for what the API actually accepts.
  */
 
@@ -18,7 +18,7 @@ import * as store from "./store.js";
 /**
  * Fields to read back for de-duplication.
  *
- * `from_addr` is accepted on write but NEVER returned by the V8 API — it is a
+ * `from_addr` is accepted on write but NEVER returned by the V8 API, it is a
  * non-db field populated from a relationship. `from_addr_name` is the readable
  * one. Asking for the wrong one silently yields undefined, which made the
  * sender cross-check below accept everything.
@@ -240,7 +240,7 @@ export function sameSender(rec, msg) {
   const ours = senderAddress(msg.header.author);
   if (theirs && ours) return theirs === ours;
 
-  // No readable sender on the stored record — fall back to the send time, which
+  // No readable sender on the stored record, fall back to the send time, which
   // the API does return. A minute of slack absorbs rounding and timezone edges.
   const theirTime = Date.parse(rec.date_sent_received);
   const ourTime = msg.header.date ? new Date(msg.header.date).getTime() : NaN;

@@ -12,8 +12,8 @@
  *
  * NOTE ON SECRETS: a WebExtension has no OS keychain access. clientSecret and
  * refreshToken live in storage.local, which is plain-text on disk inside the
- * Thunderbird profile. Far better than keeping the CRM password itself — a
- * refresh token is revocable and rotates on every use — but it is not a secret
+ * Thunderbird profile. Far better than keeping the CRM password itself, a
+ * refresh token is revocable and rotates on every use, but it is not a secret
  * vault. The reasoning behind that trade-off is in docs/RESEARCH.md.
  */
 
@@ -31,7 +31,7 @@ const DEFAULT_PREFS = {
    * Which accounts the archiving button works in.
    *
    *   null      every account, including ones added later (the default)
-   *   [ids...]  exactly these accounts — an empty array means none
+   *   [ids...]  exactly these accounts, an empty array means none
    *
    * `null` rather than `[]` for "all", because `[]` has to be available to mean
    * "none"; otherwise unticking every account would silently re-enable them all.
@@ -53,7 +53,7 @@ const DEFAULT_PREFS = {
   showComposeStatus: true,
   archiveOnSend: false,
   crmAddressBook: true,
-  // "smart" | "always" | "never" — where attachments are stored.
+  // "smart" | "always" | "never", where attachments are stored.
   attachmentDestination: "smart",
   logLevel: "info",
 };
@@ -79,8 +79,8 @@ export const setTokens = (t) => set("tokens", t);
 export const clearTokens = () => remove("tokens");
 
 /**
- * Preferences are read constantly — several times per archive, once per badge
- * lookup, once per displayed message — and every read was a separate
+ * Preferences are read constantly, several times per archive, once per badge
+ * lookup, once per displayed message, and every read was a separate
  * storage.local round trip. They change rarely, so hold them in memory and drop
  * the copy whenever anything writes, including from another window.
  */
@@ -99,7 +99,7 @@ export async function setPrefs(patch) {
   return next;
 }
 
-/** Forget the cached copy — for tests, and when storage changes elsewhere. */
+/** Forget the cached copy, for tests, and when storage changes elsewhere. */
 function invalidatePrefs() { prefsCache = null; }
 
 // The settings page and the popup are separate contexts writing the same key,

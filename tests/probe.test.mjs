@@ -105,12 +105,12 @@ test("a /legacy/Api instance is reported as such", () => {
 
 test("reached but ungranted leads with the server being fine", () => {
   const r = describeProbe(ok({ granted: false }));
-  assert.equal(r.tone, "warn", "not a failure — nothing is broken");
+  assert.equal(r.tone, "warn", "not a failure, nothing is broken");
   assert.match(r.verdict, /The server is fine/);
   assert.match(r.verdict, /one step left/);
 });
 
-test("after prompting, the advice is to accept the prompt — not to press Sign in", () => {
+test("after prompting, the advice is to accept the prompt, not to press Sign in", () => {
   const r = describeProbe(ok({ granted: false }), { askedNow: true });
   assert.match(r.fixes[0], /choose Allow/);
   assert.doesNotMatch(r.fixes[0], /Press Sign in/,
@@ -176,7 +176,7 @@ test("https is reported as encrypted with no caveat", () => {
   const rows = Object.fromEntries(describeProbe(ok({
     insecure: false, mixedContentRisk: false,
   })).rows.map(([k, v]) => [k, v]));
-  assert.equal(rows.transport, "https — encrypted");
+  assert.equal(rows.transport, "https, encrypted");
 });
 
 test("the access row names the host, and its tone follows the state", () => {

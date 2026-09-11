@@ -12,7 +12,7 @@
  * Enum values are a hazard: /meta/fields reports a field's type and whether it is
  * required, but NOT its permitted values, and those differ between SuiteCRM
  * versions and customised installs. So this sets only what it can be sure of and
- * lets the bean's own defaults fill in status, priority and the like — except
+ * lets the bean's own defaults fill in status, priority and the like, except
  * where the field is genuinely required, where a widely-present default is used
  * and shown to the user before saving.
  */
@@ -46,7 +46,7 @@ export const CREATABLE = {
 
 /**
  * Which kinds can actually be linked to the record the email is being filed
- * against. SuiteCRM decides this, not us, and it is not uniform — verified
+ * against. SuiteCRM decides this, not us, and it is not uniform, verified
  * against a live instance by attempting each relationship:
  *
  *   Case         -> Lead    400 "Link field has not found in Case ... for Lead"
@@ -59,7 +59,7 @@ export const CREATABLE = {
  *
  * Cases and Opportunities hang off an Account. A Contact or an Account supplies
  * one directly. A *converted* Lead carries account_id as well, so it supplies
- * one too — which is why an unconverted Lead can take an Opportunity (through
+ * one too, which is why an unconverted Lead can take an Opportunity (through
  * the leads relationship) but not a Case.
  *
  * Offering a kind that cannot be linked would create records attached to
@@ -88,10 +88,10 @@ export function unavailableReason(parent) {
 
   const label = missing.map((k) => CREATABLE[k].label).join(" and ");
   if (parent.type === "Prospects") {
-    return `${label} cannot be created against a Target — SuiteCRM has no relationship ` +
+    return `${label} cannot be created against a Target, SuiteCRM has no relationship ` +
            `between them. Convert the Target first if you need one.`;
   }
-  return `${label} cannot be created against a Lead that has not been converted — ` +
+  return `${label} cannot be created against a Lead that has not been converted, ` +
          `SuiteCRM attaches ${missing.length > 1 ? "them" : "it"} to an Account, and an ` +
          `unconverted Lead has none. Convert the Lead first if you need one.`;
 }

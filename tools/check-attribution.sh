@@ -20,7 +20,7 @@ SELF="check-attribution.sh"
 found=0
 
 # The commit-msg hook passes the message git is about to record. Nothing is in
-# git log yet at that point, so the message has to be read directly — and it is
+# git log yet at that point, so the message has to be read directly, and it is
 # the only thing worth reading, since a hook that scanned the whole repository
 # would refuse a commit over something the commit does not touch. Comment lines
 # are dropped first: git strips them, and `git commit -v` puts the entire diff

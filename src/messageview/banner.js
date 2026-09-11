@@ -6,7 +6,7 @@
  *
  * This is the passive half of the add-on: context without a click. It runs as a
  * message display script, so it lives in the message's own document and must not
- * assume anything about that page — hence its own namespaced class names, no
+ * assume anything about that page, hence its own namespaced class names, no
  * global styles, and everything built with createElement rather than innerHTML,
  * because the surrounding document is untrusted email content.
  */

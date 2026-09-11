@@ -9,7 +9,7 @@ Thunderbird's Customise Toolbar palette does not reliably rasterise an SVG, so
 the button shows up blank. PNGs are generated here rather than committed as
 opaque binaries, so the icon stays editable: change the drawing below and re-run.
 
-Pure Python — no image libraries are available in this environment. Shapes are
+Pure Python, no image libraries are available in this environment. Shapes are
 drawn analytically at 4x and box-downsampled, which gives clean antialiasing.
 """
 import math, struct, zlib, pathlib

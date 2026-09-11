@@ -26,4 +26,4 @@ if base:
 
 doc = {"addons": {"suitecrm-archiver@njordium.com": {"updates": [entry]}}}
 pathlib.Path("dist/updates.json").write_text(json.dumps(doc, indent=2) + "\n")
-print("   dist/updates.json" + ("" if base else "  (template — set UPDATE_BASE to activate)"))
+print("   dist/updates.json" + ("" if base else "  (template, set UPDATE_BASE to activate)"))

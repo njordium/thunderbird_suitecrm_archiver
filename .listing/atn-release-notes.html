@@ -4,7 +4,7 @@ First public release.
 
 <ul>
 <li>Files an email into an existing SuiteCRM <strong>Lead, Contact, Account or Target</strong>. One click searches all four at the same time for the sender's address, so there is no module to pick and no search to type.</li>
-<li>Files a reply to case mail against the <strong>Case</strong> it belongs to. SuiteCRM stamps the case number into the subject of email it sends about a Case, so the reply comes back carrying it — and that works even when the sender matches no CRM record at all, which is where an address lookup is weakest.</li>
+<li>Files a reply to case mail against the <strong>Case</strong> it belongs to. SuiteCRM stamps the case number into the subject of email it sends about a Case, so the reply comes back carrying it, and that works even when the sender matches no CRM record at all, which is where an address lookup is weakest.</li>
 <li>Creates a <strong>Lead, or a Contact under an Account</strong>, when the sender is not in the CRM yet. The form is filled in from their signature block, the message headers and any attached vCard, all parsed locally. Guessed fields are marked for you to confirm.</li>
 <li>Stores attachments as Notes or Documents, archives a whole conversation in one action, and dates the CRM record by when the message was sent so the activity timeline stays in order.</li>
 <li>Turns an email into a <strong>Case, Opportunity, Meeting or follow-up Task</strong> linked to the record, offering only the kinds SuiteCRM will actually link.</li>
@@ -21,17 +21,17 @@ First public release.
 
 <b>What it keeps, and how to remove it</b>
 
-Two things are remembered in your Thunderbird profile so they can be offered back to you: which CRM record mail from an address was last filed against, which is what the remembered-record shortcut files against, and the subject of each of the last 30 emails you filed, for the <em>Recent</em> list. Neither is sent anywhere, both are bounded, and <em>Clear what is remembered</em> in the settings deletes them — it says how many of each are there first, and it does not sign you out. A full privacy policy is in the repository as <code>docs/PRIVACY.md</code>.
+Two things are remembered in your Thunderbird profile so they can be offered back to you: which CRM record mail from an address was last filed against, which is what the remembered-record shortcut files against, and the subject of each of the last 30 emails you filed, for the <em>Recent</em> list. Neither is sent anywhere, both are bounded, and <em>Clear what is remembered</em> in the settings deletes them. It says how many of each are there first, and it does not sign you out. A full privacy policy is in the repository as <code>docs/PRIVACY.md</code>.
 
 <b>Signing in</b>
 
 Uses the SuiteCRM <strong>V8 REST API</strong> with OAuth2. Your CRM password is exchanged once for tokens and never stored. Only a rotating refresh token is kept, so a Thunderbird upgrade does not sign you out, and an administrator can revoke access by deleting a single token.
 
-One OAuth2 client serves a whole organisation, so an administrator can <strong>export the connection settings</strong> — CRM address, client id and secret — to a file for colleagues. Each person still signs in with their own username and password. The file holds no token and no username, and importing fills the form rather than connecting, so nothing can silently repoint the add-on at another server.
+One OAuth2 client serves a whole organisation, so an administrator can <strong>export the connection settings</strong>, CRM address, client id and secret, to a file for colleagues. Each person still signs in with their own username and password. The file holds no token and no username, and importing fills the form rather than connecting, so nothing can silently repoint the add-on at another server.
 
 <b>Fits your CRM and your role</b>
 
-You can choose which modules are searched: fewer means faster lookups, and a customised SuiteCRM can add its own. What is offered depends on <strong>your own access</strong> — SuiteCRM reports the modules you may list and view, so you are never offered one you would be refused, and a colleague with a different role sees a different list. The CRM's own labels are used, so a custom module reads properly.
+You can choose which modules are searched: fewer means faster lookups, and a customised SuiteCRM can add its own. What is offered depends on <strong>your own access</strong>: SuiteCRM reports the modules you may list and view, so you are never offered one you would be refused, and a colleague with a different role sees a different list. The CRM's own labels are used, so a custom module reads properly.
 
 <b>What you need</b>
 

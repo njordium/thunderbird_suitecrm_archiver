@@ -6,7 +6,7 @@ import assert from "node:assert/strict";
 
 /**
  * Preferences are read many times per archive. They are memoised, so the tests
- * that matter are about the copy being dropped when it should be — a stale
+ * that matter are about the copy being dropped when it should be, a stale
  * preference is worse than a slow one.
  */
 function mockBrowser() {

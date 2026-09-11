@@ -6,7 +6,7 @@
  *
  * DIRECT: the bean owns an `email1` field, so ModuleService's email-join
  * branch can resolve an address straight to records. This is the real,
- * verified capability — see docs/RESEARCH.md.
+ * verified capability, see docs/RESEARCH.md.
  *
  * INDIRECT: no address of its own. These are reached by traversing a
  * relationship from a matched Contact or Account. A name-LIKE search against
@@ -15,6 +15,60 @@
  */
 
 export const DIRECT_MODULES = ["Contacts", "Leads", "Accounts", "Prospects"];
+
+/**
+ * Plural display names for the built-in four.
+ *
+ * SuiteCRM calls the Targets module "Prospects" internally, so that is the name
+ * the API takes and the name a failure comes back under. Showing it raw made a
+ * warning about a module nobody has heard of: the settings said Targets while
+ * the error said Prospects. Everything user-facing goes through here.
+ */
+export const MODULE_TITLES = {
+  Contacts: "Contacts", Leads: "Leads", Accounts: "Accounts", Prospects: "Targets",
+};
+
+/** What to call a module in front of a person, given the CRM's own labels. */
+export function moduleTitle(name, labels = {}) {
+  return MODULE_TITLES[name] || labels?.[name] || name;
+}
+
+/**
+ * Whether a per-module search failure means the module is out of reach for
+ * good, as opposed to one request going wrong.
+ *
+ * A revoked ACL answers 403, a module removed in Studio answers 404, and a
+ * module the API does not recognise answers 400. Those are facts about this
+ * user and this CRM, and retrying them every lookup only produces the same
+ * warning again. A 5xx, a timeout or a network error is the other kind: the
+ * module may be perfectly fine a minute later, so nothing is turned off.
+ */
+export function failureIsPermanent({ status = null } = {}) {
+  return status === 400 || status === 403 || status === 404;
+}
+
+export const STRIKES_BEFORE_DISABLING = 3;
+
+/**
+ * What to do about a module whose search failed, once a plain read has been
+ * tried as well.
+ *
+ * Three outcomes, because the failures are not alike. A read that succeeds
+ * means the module is fine and that one query went wrong, so nothing changes.
+ * A read refused with a definitive status is a fact about this user's access,
+ * so the module goes. Anything else, a 500 or a connection that died, might be
+ * the server having a moment, and turning a module off over one bad minute
+ * would be its own bug: it takes three separate lookups before we accept it.
+ */
+export function moduleVerdict({ readSucceeded = false, status = null, strikes = 0 } = {}) {
+  if (readSucceeded) return { action: "keep", strikes: 0 };
+  if (failureIsPermanent({ status })) return { action: "disable", strikes: strikes + 1 };
+
+  const next = strikes + 1;
+  return next >= STRIKES_BEFORE_DISABLING
+    ? { action: "disable", strikes: next }
+    : { action: "strike", strikes: next };
+}
 
 export const MODULE_LABEL = {
   Contacts: "Contact",
@@ -30,7 +84,7 @@ export const MODULE_LABEL = {
   Documents: "Document",
 };
 
-/** Fields to request per module — keeps payloads small and predictable. */
+/** Fields to request per module, keeps payloads small and predictable. */
 export const MODULE_FIELDS = {
   Contacts: ["id", "first_name", "last_name", "title", "account_name", "account_id",
              "email1", "phone_work", "phone_mobile", "assigned_user_name", "date_modified"],
@@ -98,7 +152,7 @@ export function recordLabel(rec) {
   return person || rec.name || rec.document_name || rec.id;
 }
 
-/** Who owns the record — often the deciding factor between two matches. */
+/** Who owns the record, often the deciding factor between two matches. */
 export function recordOwner(rec) {
   return rec?.assigned_user_name || "";
 }
@@ -121,7 +175,7 @@ export function recordSubtitle(rec) {
  *
  * The Emails bean stores addresses through a relationship, so `from_addr` and
  * friends are bean properties rather than columns and never appear in the field
- * list — yet writing them is the only way to record who an email was from. A
+ * list, yet writing them is the only way to record who an email was from. A
  * naive "drop anything meta does not know" filter therefore throws away the
  * sender and every recipient, silently. Keep these regardless.
  */
@@ -139,7 +193,7 @@ export const UPLOAD_FIELDS = ["filename", "filecontents"];
  * Should the add-on act on a message in this account?
  *
  * The encoding matters: `null` means every account, including ones added later,
- * while an array lists exactly which ones — and an empty array means none. If
+ * while an array lists exactly which ones, and an empty array means none. If
  * "all" were also `[]`, unticking every account would silently re-enable them.
  *
  * @param {null|string[]} enabled

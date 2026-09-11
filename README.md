@@ -14,7 +14,7 @@
 > parsed email signatures, attachments as Notes, whole-thread archiving, and no runtime
 > dependencies.
 
-Archive an email into a SuiteCRM Lead, Contact, Account or related record — without choosing
+Archive an email into a SuiteCRM Lead, Contact, Account or related record, without choosing
 a module or typing a search first. The sender's address is already in the message, so the
 add-on uses it: one click searches every address-bearing module at once and offers what it
 found.
@@ -27,7 +27,7 @@ for you to confirm.
 
 ## Screenshots
 
-The archiving window when the sender is not in the CRM yet — the address is already
+The archiving window when the sender is not in the CRM yet, the address is already
 resolved, so the only decision left is Lead or Contact.
 
 ![The archiving window](img/sea_create_lead.png)
@@ -39,7 +39,7 @@ with a count in the footer, so nothing uncertain is saved without being seen.
 | --- | --- |
 | ![Creating a Lead](img/sea_create_lead_details.png) | ![Creating a Contact](img/sea_create_contact_details.png) |
 
-Settings — the connection, with a generator for the OAuth2 client secret; what the add-on
+Settings, the connection, with a generator for the OAuth2 client secret; what the add-on
 does as you read and compose; and which mail accounts it acts in.
 
 | | |
@@ -63,7 +63,7 @@ does as you read and compose; and which mail accounts it acts in.
 - **Sent mail targets the recipient, not you.** On a message you sent, the first To:
   recipient is the default, because the sender is you and of no use to the CRM.
 - **Related records reached through real relationships.** Contacts and Accounts expand in
-  place so the email can be filed against a linked Opportunity, Quote, Case or Project — not
+  place so the email can be filed against a linked Opportunity, Quote, Case or Project, not
   found by a name-LIKE guess that rarely matches.
 - **It remembers.** Where you last filed mail from an address is pre-selected next time, and
   a *Recently archived* list is one click away.
@@ -98,14 +98,14 @@ does as you read and compose; and which mail accounts it acts in.
   other domains belongs to someone else and is discarded.
 - **Uncertain fields are marked, never saved quietly.** Anything guessed is highlighted with
   a count before you save. Swedish, Norwegian and Danish signatures are handled, including
-  compound job titles and labelled phone numbers — `M:`, `Mobil:`, `Tel:`, `Direkt:`, `Fax:`
+  compound job titles and labelled phone numbers, `M:`, `Mobil:`, `Tel:`, `Direkt:`, `Fax:`
   each land in the right CRM field, and `Växel:` is recognised as a switchboard rather than
   filed as someone's direct line.
 - **Possible duplicates are surfaced first**, so a second record for someone who already
   exists takes a deliberate click.
 - **Or turn the email into work.** *Create record…* makes a Case, Opportunity, Meeting or
   follow-up Task linked to the selected record and files the email against it in the same
-  action — offering only the kinds SuiteCRM will actually link.
+  action, offering only the kinds SuiteCRM will actually link.
 
 ### Signing in
 
@@ -116,13 +116,13 @@ does as you read and compose; and which mail accounts it acts in.
   silently; the sign-in window is a month and resets on every use, so ordinary use means
   never signing in again.
 - **Revocation without collateral damage.** An administrator deletes that one token under
-  *Active OAuth2 Tokens* and Thunderbird is locked out at once — no password change, nothing
+  *Active OAuth2 Tokens* and Thunderbird is locked out at once, no password change, nothing
   else disturbed.
 - **The API path is detected automatically**, whether it sits at `/Api` or `/legacy/Api`.
 
 ### Safeguards
 
-- **One host permission, for your CRM only.** No third-party site is ever contacted — a
+- **One host permission, for your CRM only.** No third-party site is ever contacted, a
   website guessed from the sender's domain is filled in for you to check, not fetched.
 - **No `innerHTML` anywhere.** Every value from an email or the CRM reaches the page as text,
   so a crafted signature cannot execute in an extension page.
@@ -144,7 +144,7 @@ does as you read and compose; and which mail accounts it acts in.
    with how many CRM records they already have.
 5. Nobody found? Create a **Lead** or a **Contact under an Account**, with the form pre-filled
    from the signature block, the message headers, and any attached vCard. Fields the parser is
-   unsure of are highlighted for you to confirm — nothing uncertain is saved silently.
+   unsure of are highlighted for you to confirm, nothing uncertain is saved silently.
 
 Contacts and Accounts can be expanded in place to file the email against a linked
 Opportunity, Quote, Case or Project instead.
@@ -153,7 +153,7 @@ Opportunity, Quote, Case or Project instead.
 
 They do different jobs, and the difference is not obvious from the labels.
 
-**Archive to `<module>`** files *this email* against the selected record — the message, its
+**Archive to `<module>`** files *this email* against the selected record, the message, its
 attachments, and the message's own sent date if that option is ticked. It appears in that
 record's history in SuiteCRM. This is the ordinary action.
 
@@ -162,7 +162,7 @@ one. It opens a second screen offering four, each pre-filled from the message:
 
 | Kind | Name | Other fields |
 | --- | --- | --- |
-| Case | subject | — |
+| Case | subject |, |
 | Opportunity | subject | amount `0`, close date +30 days, stage `Prospecting` |
 | Meeting | subject | tomorrow 09:00, 1 hour |
 | Follow-up task | `Follow up: <subject>` | due +3 days, 09:00 |
@@ -195,13 +195,13 @@ additionally have a `leads` relationship, which is why an unconverted Lead can
 take one. Targets relate to neither.
 
 **A kind that cannot be linked is not offered.** The picker shows only what will
-actually attach, and says why the others are missing — a Case created against a
+actually attach, and says why the others are missing, a Case created against a
 Target would otherwise be attached to nobody, under a form claiming it was linked.
 If you need one, convert the Lead or Target in SuiteCRM first.
 
 ## Setup
 
-The CRM needs a one-time OAuth2 client. See **[docs/SETUP.md](docs/SETUP.md)** — it also
+The CRM needs a one-time OAuth2 client. See **[docs/SETUP.md](docs/SETUP.md)**, it also
 records the current state of the test instance.
 
 Then verify the server end-to-end before touching Thunderbird:
@@ -243,7 +243,7 @@ npm test                  # 301 unit tests, no CRM required
 git config core.hooksPath tools/hooks   # once per clone, see below
 ```
 
-`tools/build.sh` refuses to package an add-on carrying a tool-attribution marker — in the
+`tools/build.sh` refuses to package an add-on carrying a tool-attribution marker, in the
 tree, in a commit message, in commit authorship, or inside the `.xpi`. By the time the build
 says so a bad commit message is already in history and only a rewrite gets it out, so the
 `commit-msg` hook in `tools/hooks` checks the message you are writing instead. Setting
@@ -256,7 +256,7 @@ and point at `manifest.json`.
 ## Why the password grant, and not a redirect flow
 
 SuiteCRM registers an `AuthCodeGrant` on its OAuth2 server but exposes **no `/authorize`
-route** — there is no endpoint that can issue an authorization code, so
+route**, there is no endpoint that can issue an authorization code, so
 `identity.launchWebAuthFlow` has nothing to point at. Upstream issue
 [#7854](https://github.com/salesagility/SuiteCRM/issues/7854) has been open since 2019.
 
@@ -271,7 +271,7 @@ Full reasoning, with the source that proves it: **[docs/RESEARCH.md](docs/RESEAR
 manifest.json           MV3, event page, no service worker
 src/background/         all CRM traffic (keeps requests out of CORS scope)
 src/lib/auth.js         OAuth2, single-flight refresh, token rotation
-src/lib/crm.js          V8 client — the filter contract lives here
+src/lib/crm.js          V8 client, the filter contract lives here
 src/lib/resolver.js     parallel multi-module address lookup
 src/lib/signature.js    local-only contact extraction (vCard > signature > headers)
 src/lib/archive.js      Emails record, message_id de-dup, attachments as Notes
@@ -282,7 +282,7 @@ docs/RESEARCH.md        what was learned from the SuiteCRM and Thunderbird sourc
 
 ## Licence
 
-**Mozilla Public License 2.0** — the same licence as Thunderbird itself. See
+**Mozilla Public License 2.0**, the same licence as Thunderbird itself. See
 [LICENSE](LICENSE).
 
 MPL is file-level copyleft: you may use, modify and redistribute this, including

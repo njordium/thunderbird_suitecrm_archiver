@@ -68,7 +68,7 @@ const CONSUMER_DOMAINS = new Set([
 ]);
 export const isConsumerDomain = (d) => CONSUMER_DOMAINS.has(String(d || "").toLowerCase());
 
-/** Strip common no-reply / automation senders — never worth a CRM record. */
+/** Strip common no-reply / automation senders, never worth a CRM record. */
 const NOREPLY = /^(no-?reply|do-?not-?reply|donotreply|bounce|mailer-daemon|postmaster|notifications?|automated|auto-?confirm|support-?bot)([.\-_+]|$)/i;
 export const isNoReply = (email) => NOREPLY.test(localPartOf(email));
 
@@ -77,14 +77,14 @@ export const isNoReply = (email) => NOREPLY.test(localPartOf(email));
  *
  * Ranking, highest first:
  *
- *   1. **To:** recipients — the people the message is actually addressed to.
- *   2. **Cc:** recipients — copied in, so secondary.
+ *   1. **To:** recipients, the people the message is actually addressed to.
+ *   2. **Cc:** recipients, copied in, so secondary.
  *   3. Bcc, which is rare and usually only visible on your own sent mail.
  *
  * The default target is the sender, because for received mail that is who wrote
  * to you. **Except on mail you sent yourself**: there the sender is one of your
  * own identities and worth nothing to a CRM, so the first To: recipient becomes
- * the default — which is exactly the person the message was for.
+ * the default, which is exactly the person the message was for.
  *
  * Colleagues are grouped by the *target's* domain, not blindly by the sender's,
  * so the grouping still makes sense once the target moves.
@@ -144,7 +144,7 @@ export function buildCandidates({ author, recipients = [], ccList = [], bccList 
   };
 }
 
-/** Every address in the message, deduped — used for "who else is in the CRM". */
+/** Every address in the message, deduped, used for "who else is in the CRM". */
 export function allAddresses(header) {
   const out = new Map();
   for (const m of [

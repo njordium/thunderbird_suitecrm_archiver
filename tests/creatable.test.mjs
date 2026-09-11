@@ -89,7 +89,7 @@ const msg = { header: { subject: "Credit check", author: "A <a@b.se>" }, bodyTex
 test("an Opportunity from a Lead is related to that Lead", () => {
   const spec = buildRecord("Opportunities", msg, { parent: lead });
   assert.deepEqual(spec.relate, [{ module: "Leads", id: "l1" }],
-    "the leads relationship exists and the API accepts it — it must be used");
+    "the leads relationship exists and the API accepts it, it must be used");
 });
 
 test("an Opportunity from a converted Lead links both ways", () => {
@@ -121,7 +121,7 @@ test("activities take any parent, including a Target", () => {
 
 // creatableFor() decides on parent.accountId, which the popup takes from the
 // resolved record. If the resolver stops asking Leads for account_id, every
-// converted Lead silently loses the Case option and nothing else breaks — so
+// converted Lead silently loses the Case option and nothing else breaks, so
 // the request list is asserted here rather than left implicit.
 test("the resolver asks Leads for account_id", async () => {
   const { MODULE_FIELDS } = await import("../src/lib/modules.js");

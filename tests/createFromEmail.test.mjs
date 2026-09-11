@@ -54,9 +54,9 @@ test("a follow-up Task names what it is following up", () => {
 
 test("what the user typed always beats the default", () => {
   const r = buildRecord("Opportunities", MSG, {
-    form: { name: "Rubix — annual licence", amount: "48000", sales_stage: "Negotiation/Review" },
+    form: { name: "Rubix, annual licence", amount: "48000", sales_stage: "Negotiation/Review" },
   });
-  assert.equal(r.attributes.name, "Rubix — annual licence");
+  assert.equal(r.attributes.name, "Rubix, annual licence");
   assert.equal(r.attributes.amount, "48000");
   assert.equal(r.attributes.sales_stage, "Negotiation/Review");
 });

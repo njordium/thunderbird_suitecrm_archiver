@@ -8,7 +8,7 @@ import { generateSecret, entropyBits, assessSecret } from "../src/lib/secret.js"
 
 globalThis.crypto ??= webcrypto;
 
-test("a generated secret is 64 lowercase hex characters — 256 bits", () => {
+test("a generated secret is 64 lowercase hex characters, 256 bits", () => {
   const s = generateSecret();
   assert.equal(s.length, 64);
   assert.match(s, /^[0-9a-f]{64}$/);
@@ -30,7 +30,7 @@ test("the length is clamped to something sane", () => {
 // is worthless. Failing loudly is the only acceptable behaviour.
 test("with no cryptographic source it refuses rather than inventing one", () => {
   // Node defines globalThis.crypto as a getter, so a plain assignment is
-  // silently ignored — the first version of this test passed without ever
+  // silently ignored, the first version of this test passed without ever
   // removing the source it claimed to remove.
   const original = Object.getOwnPropertyDescriptor(globalThis, "crypto");
   Object.defineProperty(globalThis, "crypto", { value: undefined, configurable: true });

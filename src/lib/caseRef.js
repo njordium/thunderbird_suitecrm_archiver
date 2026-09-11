@@ -128,3 +128,43 @@ export function findCaseNumber(subject, macro = DEFAULT_CASE_MACRO) {
 export function looksLikeReply(subject) {
   return /^\s*(re|aw|sv|vs|fwd?|vb|antw)\s*:/i.test(String(subject || ""));
 }
+
+/**
+ * Find the Case a reply belongs to from its reference chain.
+ *
+ * The subject macro is the documented route and it costs nothing, but it only
+ * works while the macro survives: an administrator changes
+ * `inbound_email_case_subject_macro`, a mailing system rewrites the subject, or
+ * the person replying trims it. `References` is not edited by hand in the same
+ * way, and SuiteCRM stored its own outbound case mail as an `Emails` record
+ * carrying that Message-ID with the Case as its parent. So any ancestor of this
+ * reply can name the Case even when the subject no longer does.
+ *
+ * Nearest ancestor first, since the message being replied to is the likeliest
+ * to be the case mail, and bounded, so an old thread cannot turn one lookup
+ * into thirty requests.
+ */
+export async function findCaseByReferences(client, ids, { max = 5, log = null } = {}) {
+  const chain = [...(ids || [])].filter(Boolean);
+  // The chain runs oldest to newest, so the immediate parent is at the end.
+  const nearestFirst = chain.reverse().slice(0, max);
+
+  for (const messageId of nearestFirst) {
+    let records = [];
+    try {
+      records = await client.getRecords("Emails", {
+        filter: { message_id: { eq: messageId } },
+        fields: ["id", "name", "parent_type", "parent_id"],
+        size: 1,
+      });
+    } catch (e) {
+      // One unreadable ancestor must not stop the rest of the chain.
+      log?.debug?.(`Case reference lookup failed for ${messageId}: ${e.message}`);
+      continue;
+    }
+
+    const hit = (records || []).find((r) => r?.parent_type === "Cases" && r?.parent_id);
+    if (hit) return { caseId: hit.parent_id, viaMessageId: messageId };
+  }
+  return null;
+}

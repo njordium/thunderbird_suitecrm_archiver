@@ -9,7 +9,7 @@
  * No module dropdown, no manual search.
  */
 
-import { MODULE_LABEL, recordLabel, recordSubtitle, recordOwner } from "../lib/modules.js";
+import { MODULE_LABEL, moduleTitle, recordLabel, recordSubtitle, recordOwner } from "../lib/modules.js";
 import { timeAgo } from "../lib/humanTime.js";
 import { unwrapMessageList } from "../lib/tbcompat.js";
 import { creatableFor, unavailableReason } from "../lib/createFromEmail.js";
@@ -202,11 +202,11 @@ async function init() {
       return state.prepared.noneEnabled
         ? showAuthPromptCustom(
             "No accounts are enabled",
-            "Every mail account is switched off for archiving. Tick the ones you want " +
+            "Every mail account is switched off for filing. Tick the ones you want " +
             "under Mail accounts in the add-on's settings.")
         : showAuthPromptCustom(
             "This account is not enabled",
-            `Archiving is switched off for "${state.prepared.accountName}". ` +
+            `Filing is switched off for "${state.prepared.accountName}". ` +
             `Enable it under Mail accounts in the add-on's settings.`);
     }
 
@@ -352,7 +352,7 @@ function updateArchiveLabel() {
   if (state.archiveSelection) n = state.selectedIds.length;
   else if (state.wholeThread && total > 1) n = total;
 
-  btn.textContent = n > 1 ? `Archive ${n} messages to ${target}` : `Archive to ${target}`;
+  btn.textContent = n > 1 ? `File ${n} messages under ${target}` : `File under ${target}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -370,8 +370,8 @@ function renderAddressBar() {
   const label = document.querySelector(".addr-current .label");
   if (label) {
     label.textContent = c.sentByMe && active === c.primary
-      ? "Archiving for (recipient of your message)"
-      : "Archiving for";
+      ? "Filing for (recipient of your message)"
+      : "Filing for";
   }
 
   // Only offer the switch when there is somebody to switch to.
@@ -467,13 +467,17 @@ async function selectAddress(email, name) {
     const [lookup, memory, caseHit] = await Promise.all([
       call("lookupAddress", { email }),
       call("recallTarget", { email }).catch(() => null),
-      state.prepared?.caseRef
-        ? call("lookupCase", { number: state.prepared.caseRef }).catch(() => null)
+      (state.prepared?.caseRef || state.prepared?.caseRefs?.length)
+        ? call("lookupCase", {
+            number: state.prepared.caseRef,
+            references: state.prepared.caseRefs || [],
+          }).catch(() => null)
         : Promise.resolve(null),
     ]);
     state.lookup = lookup;
     state.lastTarget = memory?.target || null;
     state.caseHit = caseHit?.found || null;
+    state.caseVia = caseHit?.via || null;
     renderResults();
   } catch (e) {
     $("results").textContent = "";
@@ -497,7 +501,12 @@ async function selectAddress(email, name) {
 function renderCaseRef(rec) {
   const wrap = el("div", "mod-group case-ref");
   const head = el("div", "mod-head");
-  head.textContent = `Case #${rec.case_number}, from the subject line`;
+  // Where the match came from, because the two are worth telling apart: a
+  // subject number is SuiteCRM's own marker, while a reference chain match
+  // means the subject had lost it and the thread was followed instead.
+  head.textContent = state.caseVia === "references"
+    ? `Case #${rec.case_number}, from the reply chain`
+    : `Case #${rec.case_number}, from the subject line`;
   wrap.appendChild(head);
 
   const card = el("div", "rec");
@@ -523,8 +532,13 @@ function renderResults() {
   if (state.caseHit) box.appendChild(renderCaseRef(state.caseHit));
 
   if (r.failures.length) {
-    const names = r.failures.map((f) => f.module).join(", ");
-    setStatus($("status"), `Could not search ${names}. Other modules were searched normally.`, "warn");
+    // The name the settings page uses, not SuiteCRM's internal one: a warning
+    // about "Prospects" sends people looking for a module they do not have.
+    const names = r.failures.map((f) => f.title || moduleTitle(f.module)).join(", ");
+    const off = r.failures.some((f) => f.disabled);
+    setStatus($("status"), off
+      ? `${names} could not be searched, so it has been turned off in Preferences, where the reason is shown. Everything else was searched normally.`
+      : `Could not search ${names}. Other modules were searched normally.`, "warn");
   }
 
   if (!r.found) return state.searchTerm ? renderNoSearchHits() : renderNotFound();
@@ -552,7 +566,9 @@ function renderResults() {
   if (state.caseHit) {
     selectRecord({ ...state.caseHit, module: "Cases" });
     setStatus($("status"),
-      `Pre-selected Case #${state.caseHit.case_number}, referenced in the subject.`, "info");
+      state.caseVia === "references"
+        ? `Pre-selected Case #${state.caseHit.case_number}, from the thread this reply belongs to.`
+        : `Pre-selected Case #${state.caseHit.case_number}, referenced in the subject.`, "info");
     return;
   }
 
@@ -565,7 +581,7 @@ function renderResults() {
 
   if (remembered) {
     selectRecord(remembered, { remembered: true });
-    setStatus($("status"), `Pre-selected — where you filed the last email from ${state.activeEmail}.`, "info");
+    setStatus($("status"), `Pre-selected: where you filed the last email from ${state.activeEmail}.`, "info");
   } else if (flat.length === 1) {
     selectRecord(flat[0]);
   }
@@ -754,13 +770,13 @@ function renderNotFound() {
   wrap.appendChild(actions);
 
   const hint = el("p", "muted small",
-    "Or search above by name or company — useful when someone writes from a personal address.");
+    "Or search above by name or company. Useful when someone writes from a personal address.");
   wrap.appendChild(hint);
 
   if (state.lookup.accountsByDomain?.length) {
     const n = state.lookup.accountsByDomain.length;
     wrap.appendChild(el("p", "muted small",
-      `${n} Account${n > 1 ? "s" : ""} on this domain already exist${n > 1 ? "" : "s"} — a new Contact can be linked to one.`));
+      `${n} Account${n > 1 ? "s" : ""} on this domain already exist${n > 1 ? "" : "s"}, a new Contact can be linked to one.`));
   }
   box.appendChild(wrap);
 }
@@ -775,7 +791,7 @@ async function renderRecent() {
     const { entries } = await call("recentArchives");
     box.textContent = "";
     if (!entries.length) {
-      box.appendChild(el("div", "muted small", "Nothing archived yet in this session."));
+      box.appendChild(el("div", "muted small", "Nothing filed yet in this session."));
       return;
     }
     for (const e of entries) {
@@ -790,14 +806,14 @@ async function renderRecent() {
     }
   } catch (e) {
     box.textContent = "";
-    box.appendChild(el("div", "muted small", `Could not read recent archives: ${e.message}`));
+    box.appendChild(el("div", "muted small", `Could not read what was filed recently: ${e.message}`));
   }
 }
 
 $("btn-recent").addEventListener("click", () => {
   const panel = $("recent");
   panel.hidden = !panel.hidden;
-  $("btn-recent").textContent = panel.hidden ? "Recently archived" : "Hide recent";
+  $("btn-recent").textContent = panel.hidden ? "Recently filed" : "Hide recent";
   if (!panel.hidden) renderRecent();
 });
 
@@ -846,11 +862,11 @@ function renderCreateForm() {
   const sourceText = {
     "vcard": "Pre-filled from the attached vCard.",
     "signature-delimited": "Pre-filled from the sender's signature block.",
-    "signature-heuristic": "Pre-filled from the end of the message — confirm the guessed fields.",
+    "signature-heuristic": "Pre-filled from the end of the message. Confirm the guessed fields.",
     "headers-only": "No signature found; only the address is known.",
     "colleague-of-sender":
       "This person was copied on the message, so only company details were taken " +
-      "from the sender's signature — the job title and phone numbers are the sender's.",
+      "from the sender's signature, the job title and phone numbers are the sender's.",
   }[source] || "";
   $("create-source").textContent = sourceText;
 
@@ -864,7 +880,7 @@ function renderCreateForm() {
 
   const reviewCount = needsReview.filter((k) => FORM_FIELDS.includes(k)).length;
   $("review-hint").textContent = reviewCount
-    ? `${reviewCount} field${reviewCount > 1 ? "s" : ""} were guessed — confirm before saving`
+    ? `${reviewCount} field${reviewCount > 1 ? "s" : ""} were guessed, confirm before saving`
     : "";
 
   const note = $("website-note");
@@ -1029,7 +1045,7 @@ const CONFIRM_ABOVE = 10;
 async function doArchive() {
   if (!state.selected) return;
 
-  // A big archive is slow and hard to unpick, so ask once — and say what it
+  // A big archive is slow and hard to unpick, so ask once, and say what it
   // actually involves, since "40 messages" and "40 messages with 96
   // attachments" are different propositions.
   const count = state.archiveSelection ? state.selectedIds.length
@@ -1041,14 +1057,14 @@ async function doArchive() {
       ? " Attachments will be uploaded for each one."
       : "";
     const ok = confirm(
-      `Archive ${count} messages to ${state.selected.label}?` + atts +
+      `File ${count} messages under ${state.selected.label}?` + atts +
       "\n\nThis can take a while, and only the last message can be undone."
     );
     if (!ok) return;
     state.confirmedBulk = true;
   }
 
-  setLoading(true, "Archiving…");
+  setLoading(true, "Filing…");
   try {
     if (state.activeEmail && state.selected) {
       call("rememberTarget", { email: state.activeEmail, target: state.selected }).catch(() => {});
@@ -1077,7 +1093,7 @@ async function doArchive() {
 function renderDone(res) {
   showView("done");
   $("btn-open-record").hidden = false;
-  $("done-title").textContent = res.updated ? "Re-filed" : "Archived";
+  $("done-title").textContent = res.updated ? "Re-filed" : "Filed";
 
   const bits = [];
   if (res.recordKind) {
@@ -1095,9 +1111,9 @@ function renderDone(res) {
   }
   if (res.thread) {
     $("done-title").textContent = res.thread.mode === "selection"
-      ? "Selected messages archived" : "Conversation archived";
+      ? "Selected messages filed" : "Conversation filed";
     bits.push(`${res.thread.archived} of ${res.thread.total} messages filed under ${state.selected.label}.`);
-    if (res.thread.skipped) bits.push(`${res.thread.skipped} could not be archived.`);
+    if (res.thread.skipped) bits.push(`${res.thread.skipped} could not be filed.`);
   } else {
     bits.push(res.updated
       ? `This email was already in SuiteCRM; it now also sits under ${state.selected.label}.`
@@ -1121,7 +1137,7 @@ function renderDone(res) {
 
 /**
  * Undo is offered while the window is open and no longer. It deletes only what
- * the archive created — an email that was already in the CRM is put back where
+ * the archive created, an email that was already in the CRM is put back where
  * it was filed, never deleted.
  */
 $("btn-undo").addEventListener("click", async () => {
@@ -1141,7 +1157,7 @@ $("btn-undo").addEventListener("click", async () => {
     note.textContent = (bits.join(", ") || "Nothing needed undoing") +
       (r.problems.length ? `. ${r.problems.join(" ")}` : ".");
     btn.hidden = true;
-    $("done-title").textContent = "Archive undone";
+    $("done-title").textContent = "Filing undone";
     $("btn-open-record").hidden = true;
   } catch (e) {
     note.className = "status is-error";
@@ -1270,7 +1286,7 @@ async function openRecordForm(kind) {
 
   $("record-target").textContent = target
     ? `Linked to ${MODULE_LABEL[target.type] || target.type} · ${target.label}`
-    : "No record selected — it will not be linked to anyone.";
+    : "No record selected, so it will not be linked to anyone.";
 
   const why = unavailableReason(target);
   $("record-unavailable").textContent = why;
@@ -1297,7 +1313,7 @@ async function openRecordForm(kind) {
     $("r-date_due").value = toLocalInput(values.date_due);
 
     $("record-hint").textContent = kind === "Opportunities"
-      ? "Stage and amount are starting points — adjust them in SuiteCRM."
+      ? "Stage and amount are starting points. Adjust them in SuiteCRM."
       : "";
   } catch (e) {
     setStatus($("record-status"), e.message, "error");

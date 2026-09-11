@@ -8,8 +8,8 @@
  * tools/verify-crm.mjs checks that the *server* behaves. This checks that *our
  * code* behaves: it loads the real auth, crm, resolver, signature and archive
  * modules, hands them a synthetic Thunderbird message through a mock `browser`
- * global, and drives the whole flow — sign in, resolve the sender across
- * modules, create records, archive with attachments, de-duplicate — then reads
+ * global, and drives the whole flow, sign in, resolve the sender across
+ * modules, create records, archive with attachments, de-duplicate, then reads
  * everything back out of the CRM to confirm it landed, and deletes it.
  *
  *   CRM_URL=... CRM_CLIENT_ID=... CRM_CLIENT_SECRET=... \
@@ -413,7 +413,7 @@ await step("re-filing records the previous parent, so undo can restore it", asyn
   const before = await client.getRecord("Emails", emailId);
   const res = await archiveMessage(client, msg, { type: "Contacts", id: contactId, label: "Anna" });
   assert.ok(res.updated, "should have re-filed rather than created");
-  assert.ok(res.previousParent, "no previous parent captured — undo would delete instead of restore");
+  assert.ok(res.previousParent, "no previous parent captured, undo would delete instead of restore");
   assert.equal(res.previousParent.id, before.parent_id);
 
   // Put it back, exactly as undo would.
@@ -527,6 +527,164 @@ await step("a case reference in a subject resolves to the right Case", async () 
 await step("a case number nobody has used resolves to nothing, not an error", async () => {
   const found = await client.getCaseByNumber("99999999", ["id", "name"]);
   assert.equal(found, null, "an unused case number must be absent, not a failure");
+  return "absent, as it should be";
+});
+
+// ---------------------------------------------------------------------------
+// The whole round trip, the way it happens in life: SuiteCRM emails a customer
+// about a Case, the customer replies, and the reply has to land back on that
+// Case. The notification is recreated here as the Emails record SuiteCRM
+// stores for its own outbound mail, because that record, with its Message-ID
+// and the Case as parent, is what makes the reference chain work.
+//
+// Both routes are exercised against the live server: the subject macro, and a
+// reply whose subject has lost it.
+// ---------------------------------------------------------------------------
+const CASE_STAMP = `${STAMP}`;
+let caseId = null, caseNumber = null, outboundId = null;
+
+await step("a Case and the notification SuiteCRM would have sent for it", async () => {
+  const { findCaseNumber } = await import("../src/lib/caseRef.js");
+
+  const created = await client.createRecord("Cases", {
+    name: `E2E round trip ${CASE_STAMP}`,
+    status: "Open_New",
+    priority: "P2",
+    description: "Created by tools/e2e.mjs to exercise reply matching.",
+  });
+  caseId = created.id;
+  cleanup.push({ module: "Cases", id: caseId });
+
+  const back = await client.getRecord("Cases", caseId, ["id", "name", "case_number"]);
+  caseNumber = String(back.case_number);
+  assert.ok(caseNumber && caseNumber !== "undefined", "SuiteCRM did not assign a case number");
+
+  // What SuiteCRM records when it mails the customer: subject macro, its own
+  // Message-ID, parented to the Case.
+  outboundId = `suitecrm-case-${caseNumber}-${CASE_STAMP}@crm.example`;
+  const outbound = await client.createRecord("Emails", {
+    name: `[CASE:${caseNumber}] ${back.name}`,
+    message_id: outboundId,
+    parent_type: "Cases",
+    parent_id: caseId,
+    // SuiteCRM's own values for mail it sent, rather than the add-on's
+    // "archived": this record stands in for the notification, not for
+    // something we filed.
+    type: "out",
+    status: "sent",
+  });
+  cleanup.push({ module: "Emails", id: outbound.id });
+
+  const stored = await client.getRecord("Emails", outbound.id, ["id", "message_id", "parent_type", "parent_id"]);
+  assert.equal(stored.parent_type, "Cases", "the notification is not parented to the Case");
+  assert.equal(stored.parent_id, caseId);
+  assert.equal(findCaseNumber(stored.name ?? `[CASE:${caseNumber}] x`), caseNumber);
+  return `Case #${caseNumber} (${caseId.slice(0, 8)}…), notification ${outbound.id.slice(0, 8)}…`;
+});
+
+/** A reply to the notification, shaped as Thunderbird would hand it over. */
+function stageReply({ id, subject, references }) {
+  const rfcId = `<reply-${id}-${CASE_STAMP}@customer.example>`;
+  messages.set(id, {
+    header: {
+      id,
+      subject,
+      author: `Customer Contact <customer.${CASE_STAMP}@customer.example>`,
+      recipients: [`Support <${CFG.username}>`],
+      ccList: [], bccList: [],
+      date: new Date("2026-09-10T08:15:00Z"),
+      headerMessageId: rfcId,
+      folder: { accountId: "account1" },
+    },
+    full: {
+      contentType: "text/plain",
+      headers: {
+        "message-id": [rfcId],
+        references: [references.map((r) => `<${r}>`).join(" ")],
+        "in-reply-to": [`<${references[references.length - 1]}>`],
+      },
+      parts: [{ contentType: "text/plain", body: "The printer is still jammed. Thanks." }],
+    },
+    attachments: [],
+  });
+  return rfcId;
+}
+
+await step("a reply carrying the macro is filed against the Case", async () => {
+  const { findCaseNumber } = await import("../src/lib/caseRef.js");
+  const { CASE_FIELDS } = await import("../src/lib/modules.js");
+
+  stageReply({ id: 5101, subject: `Re: [CASE:${caseNumber}] E2E round trip ${CASE_STAMP}`,
+               references: [outboundId] });
+  const reply = await readMessage(5101);
+
+  const number = findCaseNumber(reply.header.subject);
+  assert.equal(number, caseNumber, "the macro did not survive the reply subject");
+
+  const target = await client.getCaseByNumber(number, CASE_FIELDS);
+  assert.ok(target, "the case number did not resolve against the live CRM");
+  assert.equal(target.id, caseId, "resolved to a different Case");
+
+  const res = await archiveMessage(client, reply, { type: "Cases", id: caseId, label: `Case ${caseNumber}` });
+  assert.ok(res.emailId, "the reply was not filed");
+  cleanup.push({ module: "Emails", id: res.emailId });
+
+  const stored = await client.getRecord("Emails", res.emailId, ["id", "parent_type", "parent_id", "message_id"]);
+  assert.equal(stored.parent_type, "Cases", "the filed reply is not on a Case");
+  assert.equal(stored.parent_id, caseId, "the filed reply is on the wrong Case");
+  return `subject route: reply ${res.emailId.slice(0, 8)}… parented to Case #${caseNumber}`;
+});
+
+await step("a reply whose subject lost the macro is still found, by its references", async () => {
+  const { findCaseNumber, findCaseByReferences } = await import("../src/lib/caseRef.js");
+  const { threadIdsOf } = await import("../src/lib/thread.js");
+  const { CASE_FIELDS } = await import("../src/lib/modules.js");
+
+  // The same conversation, with the number stripped from the subject: an
+  // administrator changed the macro, or the customer's mail client rewrote it.
+  stageReply({ id: 5102, subject: `Re: E2E round trip ${CASE_STAMP}`, references: [outboundId] });
+  const reply = await readMessage(5102);
+
+  assert.equal(findCaseNumber(reply.header.subject), null,
+    "the subject still carries a number, so this is not testing the fallback");
+
+  const ids = [...threadIdsOf(reply.header, reply.full)].filter((i) => i !== reply.rfcMessageId);
+  assert.ok(ids.includes(outboundId), `the reference chain lost the notification id: ${ids.join(", ")}`);
+
+  const ref = await findCaseByReferences(client, ids);
+  assert.ok(ref, "the reference chain did not resolve to anything");
+  assert.equal(ref.caseId, caseId, "the reference chain resolved to a different Case");
+
+  const target = await client.getRecord("Cases", ref.caseId, CASE_FIELDS);
+  assert.equal(String(target.case_number), caseNumber);
+
+  const res = await archiveMessage(client, reply, { type: "Cases", id: ref.caseId, label: `Case ${caseNumber}` });
+  assert.ok(res.emailId, "the reply was not filed");
+  cleanup.push({ module: "Emails", id: res.emailId });
+
+  const stored = await client.getRecord("Emails", res.emailId, ["id", "parent_type", "parent_id"]);
+  assert.equal(stored.parent_type, "Cases");
+  assert.equal(stored.parent_id, caseId);
+  return `reference route: reply ${res.emailId.slice(0, 8)}… parented to Case #${caseNumber} with no number in the subject`;
+});
+
+await step("the Case now holds both replies and the notification", async () => {
+  const emails = await client.getRecords("Emails", {
+    filter: { parent_id: { eq: caseId } },
+    fields: ["id", "name", "message_id", "parent_type"],
+    size: 20,
+  });
+  const mine = emails.filter((e) => e.parent_type === "Cases");
+  assert.ok(mine.length >= 3,
+    `expected the notification and two replies on the Case, found ${mine.length}`);
+  return `${mine.length} email(s) on Case #${caseNumber}: ` +
+         mine.map((e) => (e.name || "(no subject)").slice(0, 38)).join(" | ");
+});
+
+await step("an unrelated reference chain does not attach to the Case", async () => {
+  const { findCaseByReferences } = await import("../src/lib/caseRef.js");
+  const found = await findCaseByReferences(client, [`nothing-like-this-${CASE_STAMP}@elsewhere.example`]);
+  assert.equal(found, null, "a chain with no CRM mail in it must not resolve to a Case");
   return "absent, as it should be";
 });
 

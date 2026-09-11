@@ -57,7 +57,7 @@ body = "\n".join(out)
 
 # Also emit the same content as structured data. The settings page builds its
 # "What's new" panel from this rather than assigning HTML to innerHTML, which
-# Thunderbird's review linter flags — and which would be a real hazard the day
+# Thunderbird's review linter flags, and which would be a real hazard the day
 # this file stops being purely ours.
 import json
 blocks = []
@@ -95,7 +95,7 @@ print(f"   release notes: {len(blocks)} blocks (json)")
 
 # Standalone page for update_info_url, which Thunderbird loads in its own frame.
 standalone = f"""<!DOCTYPE html>
-<html><head><meta charset="utf-8"><title>SuiteCRM Email Archiver — Release Notes</title>
+<html><head><meta charset="utf-8"><title>SuiteCRM Email Archiver, Release Notes</title>
 <style>
  body {{ font: 13px/1.5 system-ui, sans-serif; margin: 16px; color: #1b1d21; }}
  h2 {{ font-size: 15px; }} h3 {{ font-size: 12.5px; margin: 14px 0 4px; }}

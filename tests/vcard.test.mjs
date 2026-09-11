@@ -7,7 +7,7 @@ import { recordToVCard, escapeValue, usableForAddressBook } from "../src/lib/vca
 
 test("delimiters in a value are escaped, not left to split the field", () => {
   // Written with explicit char codes: the previous version asserted "a\;b",
-  // which in a JS literal is just "a;b" — the same mistake the implementation
+  // which in a JS literal is just "a;b", the same mistake the implementation
   // made, so the test passed while the escape did nothing.
   const BS = String.fromCharCode(92);
 
@@ -32,7 +32,7 @@ test("a semicolon in a name does not shift the N and ORG components", () => {
   const n = v.split("\r\n").find((l) => l.startsWith("N:"));
   const org = v.split("\r\n").find((l) => l.startsWith("ORG:"));
 
-  // Exactly four delimiters in N — family;given;additional;prefixes;suffixes.
+  // Exactly four delimiters in N, family;given;additional;prefixes;suffixes.
   const unescapedSemis = (line) => line.replace(/\\;/g, "").split(";").length - 1;
   assert.equal(unescapedSemis(n), 4, `N has the wrong component count: ${n}`);
   assert.equal(unescapedSemis(org), 0, `ORG gained a component: ${org}`);

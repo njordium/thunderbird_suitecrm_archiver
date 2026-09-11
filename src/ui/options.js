@@ -5,6 +5,7 @@ import { generateSecret, assessSecret } from "../lib/secret.js";
 import { originPatternFor } from "../lib/url.js";
 import { describeProbe } from "../lib/probe.js";
 import { DEFAULT_CASE_MACRO, caseRefPattern } from "../lib/caseRef.js";
+import { moduleTitle } from "../lib/modules.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -33,13 +34,13 @@ const PREF_KEYS = [
 ];
 
 function fmt(ts) {
-  if (!ts) return "—";
+  if (!ts) return ", ";
   const d = new Date(ts);
   const days = Math.round((ts - Date.now()) / 864e5);
   if (days > 1) return `${d.toLocaleDateString()} (about ${days} days)`;
   const mins = Math.round((ts - Date.now()) / 60000);
   if (mins > 0) return `${d.toLocaleTimeString()} (${mins} min)`;
-  return `${d.toLocaleString()} — expired, will renew on next use`;
+  return `${d.toLocaleString()}, expired, will renew on next use`;
 }
 
 async function refreshConnection() {
@@ -51,7 +52,7 @@ async function refreshConnection() {
 
   if (signedIn) {
     $("si-url").textContent = status.baseUrl;
-    $("si-user").textContent = status.username || "—";
+    $("si-user").textContent = status.username || ", ";
     $("si-access").textContent = fmt(status.accessExpiresAt);
     $("si-refresh").textContent = fmt(status.refreshExpiresAt);
   } else if (status.baseUrl) {
@@ -118,7 +119,7 @@ $("login-form").addEventListener("submit", async (e) => {
 
   // Ask for the host permission FIRST, before any await. The user's click grants
   // a transient activation that permissions.request() requires, and awaiting
-  // anything at all — including a message to the background page — spends it.
+  // anything at all, including a message to the background page, spends it.
   // Requesting a permission already held resolves true without prompting, so
   // there is no need to check permissions.contains() beforehand.
   let origin = "", granted = false, permissionError = null;
@@ -164,7 +165,7 @@ $("login-form").addEventListener("submit", async (e) => {
     status.className = "status is-info";
     status.textContent = res.hasRefreshToken
       ? `Signed in. API at ${res.apiBase}. You should not need to sign in again.`
-      : `Signed in at ${res.apiBase}, but the server issued no refresh token — ` +
+      : `Signed in at ${res.apiBase}, but the server issued no refresh token, ` +
         `check that this is a Password client, or you will be signed out hourly.`;
     await refreshConnection();
   } catch (err) {
@@ -222,7 +223,7 @@ refreshModules().catch(() => {});
 
 // Where a problem should actually go. The homepage is a company site, which is
 // no use to someone holding a bug, and until now nothing in the add-on pointed
-// at the issue tracker — the address only existed in the README and the store
+// at the issue tracker, the address only existed in the README and the store
 // listing, neither of which is in front of you when something breaks.
 const SUPPORT_URL = "https://github.com/njordium/thunderbird_suitecrm_archiver/issues";
 
@@ -235,7 +236,7 @@ async function renderAbout() {
     const info = await browser.runtime.getBrowserInfo();
     $("about-host").textContent = `${info.name} ${info.version}`;
   } catch {
-    $("about-host").textContent = "—";
+    $("about-host").textContent = ", ";
   }
 
   // developer.url takes precedence, matching what the Details tab links to.
@@ -261,7 +262,7 @@ $("btn-notes").addEventListener("click", async () => {
     try {
       // Built from structured data rather than assigned as HTML. The file is
       // ours, but innerHTML is the wrong habit for a privileged page and
-      // Thunderbird's review linter flags it — the day this content comes from
+      // Thunderbird's review linter flags it, the day this content comes from
       // anywhere else, the mistake would already be made.
       const res = await fetch(browser.runtime.getURL("src/ui/release-notes.json"));
       const blocks = await res.json();
@@ -379,7 +380,7 @@ async function saveAccounts() {
   const picked = boxes.filter((b) => b.checked).map((b) => b.dataset.accountId);
 
   // All ticked is stored as null, meaning "no restriction", so accounts added
-  // later still work. Anything else is the explicit list — including none at all,
+  // later still work. Anything else is the explicit list, including none at all,
   // which must stay distinguishable from "all".
   const value = picked.length === boxes.length ? null : picked;
   await call("setPrefs", { enabledAccounts: value });
@@ -392,7 +393,7 @@ function updateAccountHint(total) {
   $("account-hint").textContent = on === total
     ? `All ${total} enabled, including any added later`
     : on === 0
-      ? "None enabled — the button will not work anywhere"
+      ? "None enabled, the button will not work anywhere"
       : `${on} of ${total} enabled`;
 }
 
@@ -412,7 +413,7 @@ renderAccounts();
 
 /**
  * The permission prompt is part of signing in, so this row stays hidden during
- * the normal flow — it would just duplicate what Sign in already does.
+ * the normal flow, it would just duplicate what Sign in already does.
  *
  * It appears in one case only: already signed in, but the host permission has
  * since been withdrawn (from the add-on's Permissions tab, say). Without a
@@ -485,7 +486,7 @@ $("btn-probe").addEventListener("click", async () => {
   // Ask for access FIRST, before any await, for the same reason Sign in does:
   // the click's transient activation is what permissions.request() needs, and a
   // message to the background page spends it. This is also the difference
-  // between a test that reports a problem and a test that resolves it — the
+  // between a test that reports a problem and a test that resolves it, the
   // permission is required to reach the CRM, so a test that cannot obtain it
   // can only ever tell the user to press a different button.
   // Requesting one already held resolves true without prompting.
@@ -621,14 +622,10 @@ $("btn-debug-report").addEventListener("click", async () => {
 
 // --- Which modules are searched ----------------------------------------------
 
-const MODULE_TITLES = {
-  Contacts: "Contacts", Leads: "Leads", Accounts: "Accounts", Prospects: "Targets",
-};
-
 // Rendered from whatever the last discovery found, so the built-in four are
 // always present even before anyone presses the button, and even if the CRM is
 // unreachable.
-let moduleState = { builtIn: [], extra: [], labels: {}, selected: null };
+let moduleState = { builtIn: [], extra: [], labels: {}, selected: null, trouble: {} };
 
 function renderModules() {
   const box = $("module-list");
@@ -650,10 +647,27 @@ function renderModules() {
     tick.addEventListener("change", saveModules);
 
     // The CRM's own label, which is localised and the only sensible name for a
-    // custom module. MODULE_TITLES covers the built-in four, where "Targets"
+    // custom module. The built-in four are named centrally, where "Targets"
     // reads better than SuiteCRM's internal "Prospects".
-    const title = MODULE_TITLES[name] || moduleState.labels?.[name] || name;
+    const title = moduleTitle(name, moduleState.labels);
     label.append(tick, document.createTextNode(title));
+
+    // A module the CRM refused. Marked rather than hidden: someone whose
+    // access was revoked should see that it happened and be able to take it up
+    // on their own side, not find the module quietly missing.
+    const bad = moduleState.trouble?.[name]?.disabled ? moduleState.trouble[name] : null;
+    if (bad) {
+      const mark = document.createElement("span");
+      mark.className = "mod-bad";
+      mark.textContent = "\u2715";
+      mark.title = bad.status
+        ? `The CRM refused this module (HTTP ${bad.status}): ${bad.error}`
+        : `The CRM refused this module: ${bad.error}`;
+      mark.setAttribute("aria-label", `${title}: refused by the CRM`);
+      label.append(mark);
+      label.classList.add("is-refused");
+    }
+
     box.appendChild(label);
   }
 }
@@ -681,12 +695,22 @@ async function refreshModules({ discover = false } = {}) {
   const note = $("module-note");
   if (discover) note.textContent = "Asking the CRM…";
   try {
-    const res = await call("listCrmModules");
+    const res = await call("listCrmModules", { recheck: discover });
     moduleState = {
       builtIn: res.builtIn, extra: res.extra || [],
-      labels: res.labels || {}, selected: res.selected,
+      labels: res.labels || {}, selected: res.selected, trouble: res.trouble || {},
     };
     renderModules();
+
+    const refused = Object.entries(moduleState.trouble)
+      .filter(([, t]) => t?.disabled)
+      .map(([m]) => moduleTitle(m, moduleState.labels));
+    if (refused.length) {
+      note.textContent = `${refused.join(", ")} ${refused.length === 1 ? "was" : "were"} ` +
+        `refused by the CRM and turned off. Hover the mark for the reason. ` +
+        `Fix the access in SuiteCRM, then press Re-scan modules to re-test.`;
+      return;
+    }
     note.textContent = res.error
       ? `Could not ask the CRM for more modules (${res.error}).`
       : discover
@@ -773,7 +797,7 @@ $("btn-debug-save").addEventListener("click", async () => {
     await browser.downloads.download({ url, filename, saveAs: true });
     note.textContent = `Saved as ${filename}`;
   } catch (e) {
-    note.textContent = `Could not save (${e.message}) — use Copy to clipboard instead.`;
+    note.textContent = `Could not save (${e.message}), use Copy to clipboard instead.`;
   } finally {
     // Give the download a moment to start before revoking the URL.
     setTimeout(() => URL.revokeObjectURL(url), 60_000);
@@ -787,7 +811,7 @@ $("btn-debug-copy").addEventListener("click", async () => {
     await navigator.clipboard.writeText(debugReportText);
     note.textContent = "Copied to the clipboard.";
   } catch (e) {
-    note.textContent = `Could not copy (${e.message}) — select the text below instead.`;
+    note.textContent = `Could not copy (${e.message}), select the text below instead.`;
   }
 });
 
@@ -847,7 +871,7 @@ refreshDebugState();
 /**
  * Checking a guessed website needs access to that one site. That access is now
  * handed back as soon as the check finishes, but grants made before that change
- * are still held — one per sender ever checked — so offer to release them.
+ * are still held, one per sender ever checked, so offer to release them.
  */
 async function refreshStrayPermissions() {
   const box = $("stray-perms");
@@ -940,7 +964,7 @@ $("btn-gen-secret").addEventListener("click", async () => {
 /**
  * The secret has to travel from here into SuiteCRM's Change Secret field, and a
  * stored one cannot be read back out of SuiteCRM afterwards. Selecting text out
- * of a password input is fiddly, so offer the copy directly — it stays useful
+ * of a password input is fiddly, so offer the copy directly, it stays useful
  * long after the generate step, when the field is filled from saved settings.
  */
 $("btn-copy-secret").addEventListener("click", async () => {
@@ -962,7 +986,7 @@ $("btn-copy-secret").addEventListener("click", async () => {
     $("in-client-secret").type = "text";
     $("btn-show-secret").textContent = "hide";
     note.className = "field-note is-warn";
-    note.textContent = `Could not reach the clipboard (${e.message}). The secret is shown now — copy it by hand.`;
+    note.textContent = `Could not reach the clipboard (${e.message}). The secret is shown now, copy it by hand.`;
   }
 });
 

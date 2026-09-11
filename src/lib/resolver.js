@@ -62,7 +62,7 @@ export async function resolveAddress(client, email, { modules = DIRECT_MODULES }
  * Find Accounts that plausibly own a domain, for "create a Contact under the
  * right Account" when the person themselves is unknown.
  *
- * Skipped for consumer domains — matching every gmail.com address to an
+ * Skipped for consumer domains, matching every gmail.com address to an
  * Account whose contact happens to use Gmail would be noise.
  */
 export async function findAccountsByDomain(client, email) {
@@ -122,7 +122,7 @@ export async function expandRelated(client, record) {
  * Free-text search, for when the address lookup finds nothing.
  *
  * A known contact writing from a personal address, a shared info@ mailbox, a
- * domain that changed at a rebrand — the automatic lookup misses all of these,
+ * domain that changed at a rebrand, the automatic lookup misses all of these,
  * and without this the only way forward is creating a duplicate.
  *
  * Searches names and company names per module, since SuiteCRM has no

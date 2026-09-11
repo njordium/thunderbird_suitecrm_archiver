@@ -9,7 +9,7 @@
  * company name would otherwise split the record into the wrong fields.
  */
 
-/** RFC 6350 §3.4 — escape the characters that delimit vCard values. */
+/** RFC 6350 §3.4, escape the characters that delimit vCard values. */
 export function escapeValue(text) {
   return String(text ?? "")
     .replace(/\\/g, "\\\\")

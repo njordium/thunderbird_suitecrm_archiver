@@ -243,7 +243,7 @@ const SEEDED_MODULES = ["Cases", "Opportunities", "Contacts", "Leads", "Accounts
 
 // ---------------------------------------------------------------------------
 
-console.log(`\nSynthetic CRM data — ${CFG.url}\n${"─".repeat(58)}`);
+console.log(`\nSynthetic CRM data, ${CFG.url}\n${"─".repeat(58)}`);
 
 for (const suffix of ["/Api", "/legacy/Api"]) {
   const base = CFG.url.replace(/\/+$/, "") + suffix;
@@ -349,4 +349,4 @@ console.log("Created: " + Object.entries(counts).map(([k, v]) => `${v} ${k}`).jo
 console.log(`\nAll records are marked "${TAG}" in their description.`);
 console.log("Remove them with:  node tools/seed-crm.mjs --remove");
 console.log(`\nA contact who also writes from a personal address, for testing manual search:`);
-console.log(`   ${PERSONAL_ADDRESS.who} — ${PERSONAL_ADDRESS.address} (not in the CRM by design)\n`);
+console.log(`   ${PERSONAL_ADDRESS.who}, ${PERSONAL_ADDRESS.address} (not in the CRM by design)\n`);

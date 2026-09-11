@@ -8,7 +8,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; img-src 'self' data:;">
   <link rel="stylesheet" href="popup.css">
   <link rel="stylesheet" href="options.css">
-  <title>SuiteCRM Email Archiver — Settings</title>
+  <title>SuiteCRM Email Archiver Settings</title>
 </head>
 <body class="options">
 
@@ -25,7 +25,7 @@
       <div class="kv"><span>Stays signed in until</span><b id="si-refresh"></b></div>
       <p class="muted small">
         Every time the add-on is used the sign-in window is extended by another month.
-        Your password is not stored — only a rotating refresh token.
+        Your password is not stored, only a rotating refresh token.
       </p>
       <div class="actions">
         <button id="btn-signout" class="btn">Sign out</button>
@@ -62,7 +62,7 @@
       </div>
       <p class="muted small">
         Created in SuiteCRM under Admin → OAuth2 Clients and Tokens. It must be a
-        <b>Password</b> client — only that kind issues the refresh token.
+        <b>Password</b> client. Only that kind issues the refresh token.
       </p>
       <div class="note" id="secret-guidance" hidden>
         <b>Generated. Now put the same value in SuiteCRM:</b>
@@ -121,8 +121,8 @@
         Name it something recognisable, such as <em>Thunderbird</em>.
         <div class="note">
           It must be a <b>Password</b> client. A Client Credentials client issues no refresh
-          token, so you would be signed out every hour — and every archived email would be
-          attributed to one shared API user instead of to you.
+          token, so you would be signed out every hour, and every email you filed would be
+          attributed to one shared API user rather than to you.
         </div>
       </li>
       <li>
@@ -132,7 +132,7 @@
         <em>Change Secret</em> field.
         <div class="note">
           This matters more than it looks. SuiteCRM stores the secret as
-          <code>hash('sha256', $secret)</code> — one round of a fast hash, with no salt and
+          <code>hash('sha256', $secret)</code>, one round of a fast hash, with no salt and
           no iterations. Against a copy of the database a memorable secret falls to a
           wordlist in seconds, and an unsalted digest can be looked up in a precomputed
           table. A random 256-bit value is immune to both however it is stored.
@@ -142,7 +142,7 @@
         <b>Copy it before you save.</b>
         SuiteCRM keeps only the hash, so it can never be shown again. <em>copy</em>, beside
         the field, puts it back on the clipboard at any time. If it is lost, edit the client
-        and set a new one — leaving the field blank keeps the existing secret rather than
+        and set a new one. Leaving the field blank keeps the existing secret rather than
         clearing it.
       </li>
       <li>
@@ -164,8 +164,8 @@
         <p>
           The usual way to connect a mail client to SuiteCRM is its legacy
           <code>v4_1</code> endpoint, which means keeping your CRM <b>password in plain
-          text</b> inside the Thunderbird profile, permanently — it has to, because
-          logging in again is the only way to recover once the server expires the
+          text</b> inside the Thunderbird profile, permanently. It has to, because logging
+          in again is the only way to recover once the server expires the
           session. That is also why such a connection appears to drop you on an upgrade.
         </p>
         <p>
@@ -183,13 +183,13 @@
         <p>
           The practical gain is <b>revocation without collateral damage</b>: if a laptop goes
           missing, an administrator deletes that one token and Thunderbird is locked out at
-          once — no password change, nothing else you use is disturbed.
+          once. No password change, and nothing else you use is disturbed.
         </p>
         <p class="muted">
           One honest limitation: this is OAuth2's <em>password grant</em>, not a browser
           redirect flow. SuiteCRM registers an authorization-code grant but ships no
           <code>/authorize</code> endpoint, so there is nothing to redirect to. Your password
-          therefore still passes through the add-on once — it simply is not kept.
+          therefore still passes through the add-on once. It simply is not kept.
         </p>
       </div>
     </details>
@@ -200,7 +200,7 @@
     <h2>Behaviour</h2>
 
     <div class="group-title">Attachments</div>
-    <label class="toggle"><input type="checkbox" id="p-archiveAttachments"> Archive attachments as Notes</label>
+    <label class="toggle"><input type="checkbox" id="p-archiveAttachments"> Store attachments as Notes</label>
     <label class="toggle"><input type="checkbox" id="p-skipInlineImages"> Skip images embedded in the message body</label>
     <p class="muted small indent">
       Signature logos and pictures placed inside the text, as opposed to files the sender
@@ -221,7 +221,7 @@
     </p>
     <label class="toggle"><input type="checkbox" id="p-renameBlockedAttachments"> Append <code>.txt</code> to attachments SuiteCRM refuses to store</label>
     <p class="muted small indent">
-      SuiteCRM blocks certain extensions via <code>upload_badext</code> — including
+      SuiteCRM blocks certain extensions via <code>upload_badext</code>, including
       <code>.html</code> and <code>.js</code>. Without this, such attachments are reported as skipped.
     </p>
 
@@ -243,10 +243,10 @@
     </p>
 
     <label class="toggle">
-      <input type="checkbox" id="p-tagArchivedMessages"> Tag archived messages in Thunderbird
+      <input type="checkbox" id="p-tagArchivedMessages"> Tag filed messages in Thunderbird
     </label>
     <p class="muted small indent">
-      Adds a <b>SuiteCRM</b> tag on success, so archived mail is coloured in the list and can
+      Adds a <b>SuiteCRM</b> tag on success, so filed mail is coloured in the list and can
       be filtered or searched. Rename or recolour it in Thunderbird's own tag settings.
     </p>
 
@@ -256,14 +256,14 @@
     </label>
     <p class="muted small indent">
       A strip at the top of the compose window, with a one-click Create Lead when they are
-      not — the moment that is cheap, rather than remembering afterwards.
+      not, at the moment that is cheap rather than something to remember afterwards.
     </p>
     <label class="toggle">
-      <input type="checkbox" id="p-archiveOnSend"> File sent mail automatically
+      <input type="checkbox" id="p-archiveOnSend"> Add sent mail to SuiteCRM automatically
     </label>
     <p class="muted small indent">
-      After sending, file the message against the recipient's existing CRM record.
-      It never creates records on its own: if the recipient is unknown, it does nothing.
+      After you send a message, it is filed against the recipient's existing CRM record.
+      Nothing new is ever created: if the recipient is not in the CRM, nothing happens.
     </p>
 
     <label class="toggle">
@@ -272,7 +272,7 @@
     <p class="muted small indent">
       Adds a read-only <b>SuiteCRM</b> address book, so typing a name in To: finds Contacts
       and Leads from the CRM. It queries live and keeps no local copy, so nothing goes stale
-      and nothing is stored on disk — but autocomplete needs the CRM to be reachable.
+      and nothing is stored on disk, but autocomplete needs the CRM to be reachable.
     </p>
 
     <div class="group-title" style="margin-top:16px">Modules searched</div>
@@ -282,7 +282,7 @@
     </p>
     <div id="module-list" class="module-list muted small indent">Loading…</div>
     <div class="actions indent">
-      <button type="button" id="btn-refresh-modules" class="btn">Find more modules</button>
+      <button type="button" id="btn-refresh-modules" class="btn">Re-scan modules</button>
       <span class="muted small" id="module-note"></span>
     </div>
 
@@ -317,11 +317,11 @@
     <div class="group-title" style="margin-top:16px">Who the email is filed against</div>
     <p class="muted small">
       For a message you received, the <b>sender</b> is used by default. For a message
-      <b>you sent</b>, the first <b>To:</b> recipient is used instead — the sender there is
+      <b>you sent</b>, the first <b>To:</b> recipient is used instead, since the sender there is
       you, which is no use to the CRM.
     </p>
     <p class="muted small">
-      <b>Change</b> in the archiving window lists the other people on the message so you can
+      <b>Change</b> in the filing window lists the other people on the message so you can
       file against one of them instead. <b>To:</b> recipients come first, since they are who
       the message was addressed to; <b>Cc:</b> recipients follow as secondary. Only people
       sharing the target's email domain are grouped as colleagues, and your own addresses are
@@ -359,7 +359,7 @@
   <section class="card">
     <h2>Mail accounts</h2>
     <p class="muted small">
-      Which accounts the archiving button should work in. Messages in any account left
+      Which accounts the filing button should work in. Messages in any account left
       unticked are ignored, and the button reports that the account is not enabled.
     </p>
     <div class="acct-toolbar">
@@ -373,7 +373,7 @@
     <div class="note">
       This narrows what the add-on <em>acts on</em>, not what Thunderbird lets it read.
       Add-on permissions are granted for the whole profile, so <code>messagesRead</code>
-      still covers every account — Thunderbird has no per-account permission to grant.
+      still covers every account, because Thunderbird has no per-account permission to grant.
       Treat this as scoping the feature, not as a security boundary.
     </div>
   </section>
@@ -382,20 +382,20 @@
     <h2>Permissions this add-on uses</h2>
     <dl class="perms">
       <dt>Read messages <span class="perm-id">messagesRead</span></dt>
-      <dd>To read the message you are archiving — its sender, body, and attachments.</dd>
+      <dd>To read the message you are filing: its sender, body and attachments.</dd>
       <dt>Read accounts <span class="perm-id">accountsRead</span></dt>
       <dd>To learn your own email addresses, so you are never offered as the person to
-          archive against.</dd>
+          file against.</dd>
       <dt>Storage <span class="perm-id">storage</span></dt>
       <dd>To keep your CRM address and the refresh token. Your password is never stored.</dd>
       <dt>Downloads <span class="perm-id">downloads</span></dt>
       <dd>Only to save a debug report when you ask for one. Nothing is downloaded otherwise.</dd>
       <dt>Access to your CRM <span class="perm-id">optional</span></dt>
-      <dd>Requested for your CRM's host only, when you sign in — not for every site.
+      <dd>Requested for your CRM's host only, when you sign in, not for every site.
           Thunderbird does not allow a port to be named in a permission, so the grant
           covers that host on any port. It can be withdrawn any time under the
           Permissions tab. This is the only site access the add-on ever asks for. A
-          website guessed from a sender's email domain is never contacted — it is
+          website guessed from a sender's email domain is never contacted. It is
           filled in for you to check, so it needs no permission at all.</dd>
     </dl>
 
@@ -447,7 +447,7 @@
           <input type="checkbox" id="dbg-host"> Include the CRM address
         </label>
         <p class="muted small indent">
-          Turn these on only when sending the report privately to someone you trust — they
+          Turn these on only when sending the report privately to someone you trust, because they
           make it identifying.
         </p>
       </div>
@@ -478,13 +478,13 @@
   </section>
   <section class="card">
     <h2>About</h2>
-    <div class="kv"><span>Version</span><b id="about-version">—</b></div>
-    <div class="kv"><span>Thunderbird</span><b id="about-host">—</b></div>
+    <div class="kv"><span>Version</span><b id="about-version">, </b></div>
+    <div class="kv"><span>Thunderbird</span><b id="about-host">, </b></div>
     <p class="muted small" id="about-desc"></p>
     <div class="actions">
       <button id="btn-notes" class="btn">What&rsquo;s new</button>
       <button id="btn-home" class="btn">Developer website</button>
-      <button id="btn-support" class="btn">Developer support</button>
+      <button id="btn-support" class="btn">Developer Support</button>
     </div>
     <div id="notes" class="notes" hidden></div>
   </section>

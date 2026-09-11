@@ -8,7 +8,7 @@
  * recipient is already known before the message goes, which is the moment when
  * creating a Lead is cheap and remembering to do it later is not.
  *
- * Runs inside the compose document, so — like the message banner — it namespaces
+ * Runs inside the compose document, so, like the message banner, it namespaces
  * everything, resets its own styles, and builds nodes rather than parsing HTML.
  */
 

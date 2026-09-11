@@ -175,7 +175,7 @@ test("an encoded address in a plain log line is masked at report time", async ()
 // --- the CRM host must not survive its own masking -------------------------
 
 // Found by security review. The granted permission pattern is built without a
-// port on purpose (see originPatternFor), while URL.host carries one — so on a
+// port on purpose (see originPatternFor), while URL.host carries one, so on a
 // CRM at a non-default port neither the base URL nor the host matched the
 // pattern, and the "hosts" line printed the real hostname under a header
 // promising it was masked. The common case, a CRM on 80 or 443, was masked
@@ -226,7 +226,7 @@ test("percent-encoding is decoded however deeply it was applied", async () => {
 
 // Found while documenting what the add-on stores. setEnabled(false) stopped
 // recording but left up to MAX_EVENTS entries in the profile until someone
-// pressed Clear — so the switch implied more than it did. Nothing secret was in
+// pressed Clear, so the switch implied more than it did. Nothing secret was in
 // there (secrets are never recorded), but email addresses and CRM URLs were.
 test("disabling detailed logging clears what was already recorded", async () => {
   setEnabled(true);

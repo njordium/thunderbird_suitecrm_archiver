@@ -134,7 +134,7 @@ test("a consumer domain never becomes a company website", () => {
 test("a consumer domain never becomes a company name", () => {
   const r = parseContact({ author: "Jane Doe <jane.doe@gmail.com>", bodyText: "Hi" });
   assert.equal(r.fields.account_name, undefined);
-  // No sign-off and no delimiter means no signature was found at all — the
+  // No sign-off and no delimiter means no signature was found at all, the
   // parser no longer guesses by taking the last few lines of the message.
   assert.equal(r.source, "headers-only");
 });

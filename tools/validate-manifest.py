@@ -70,7 +70,7 @@ if manifest.get("manifest_version") == 3:
 # (XPIInstall.sys.mjs assigns developer.url to homepageURL, not to the author).
 # The Author line can only become a hyperlink for an add-on installed from
 # addons.thunderbird.net, where the URL is the ATN profile and comes from listing
-# data rather than the manifest — so a self-hosted build always shows it as text.
+# data rather than the manifest, so a self-hosted build always shows it as text.
 dev = manifest.get("developer")
 if not isinstance(dev, dict) or not dev.get("name"):
     errors.append("developer.name is missing, so the Author line falls back to `author`")
@@ -105,25 +105,25 @@ for perm in manifest.get("permissions", []):
         continue   # a host permission, checked elsewhere
     if perm not in KNOWN_PERMISSIONS:
         errors.append(
-            f"'{perm}' is not a permission Thunderbird recognises — "
+            f"'{perm}' is not a permission Thunderbird recognises, "
             f"an unknown permission can stop the add-on loading entirely"
         )
 
 # Keys Thunderbird carried over from Manifest V2 and now ignores. Harmless at
 # runtime, which is the problem: the add-on works, so nothing tells you they are
-# there — and the store's validator rejects the upload over them. "maintoolbar"
+# there, and the store's validator rejects the upload over them. "maintoolbar"
 # is a legal value for browser_action.default_area in MV2 and has no meaning at
 # all under MV3's action, where allowed_spaces replaced it.
 DEPRECATED_KEYS = {
     ("action", "default_area"):
-        "unsupported under Manifest V3 — allowed_spaces replaced it, and the "
+        "unsupported under Manifest V3, allowed_spaces replaced it, and the "
         "store's validator rejects the upload",
     ("browser_action", "default_area"):
         "browser_action is Manifest V2; use action with allowed_spaces",
     ("message_display_action", "default_area"):
-        "unsupported under Manifest V3 — allowed_spaces replaced it",
+        "unsupported under Manifest V3, allowed_spaces replaced it",
     ("compose_action", "default_area"):
-        "unsupported under Manifest V3 — allowed_spaces replaced it",
+        "unsupported under Manifest V3, allowed_spaces replaced it",
 }
 SPACES = {"mail", "addressbook", "calendar", "tasks", "chat", "settings", "default"}
 
@@ -144,7 +144,7 @@ for key in ("action", "message_display_action", "compose_action"):
         if space not in SPACES:
             errors.append(
                 f"{key}.allowed_spaces has '{space}', which is not a Thunderbird "
-                f"space — expected one of {', '.join(sorted(SPACES))}"
+                f"space, expected one of {', '.join(sorted(SPACES))}"
             )
 
 # Cross-check declared locale.
@@ -159,8 +159,7 @@ for js in root.glob("src/**/*.js"):
         check(ref, js.name)
 
 # And the other direction: build.sh packages everything under src/, so a file
-# nothing reaches is dead weight in the .xpi. ATN rejects a release over it —
-# unused files complicate review, can leak build-machine details, and inflate
+# nothing reaches is dead weight in the .xpi. ATN rejects a release over it, # unused files complicate review, can leak build-machine details, and inflate
 # the download. Design sources and build intermediates belong outside src/.
 for path in sorted(root.glob("src/**/*")):
     if not path.is_file():
@@ -168,7 +167,7 @@ for path in sorted(root.glob("src/**/*")):
     rel = path.relative_to(root).as_posix()
     if rel not in referenced:
         errors.append(
-            f"{rel} would be packaged but nothing references it — "
+            f"{rel} would be packaged but nothing references it, "
             f"move it out of src/, or reference it"
         )
 

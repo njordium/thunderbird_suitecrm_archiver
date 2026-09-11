@@ -7,7 +7,7 @@ import globals from "globals";
  * Lint configuration for the add-on.
  *
  * `browser` is Thunderbird's WebExtension namespace, and `messenger` is its
- * alias — both are provided by the host, not imported, so they are declared as
+ * alias, both are provided by the host, not imported, so they are declared as
  * readonly globals rather than being flagged as undefined on every line.
  */
 const webextensionGlobals = {
@@ -29,7 +29,7 @@ export default [
       globals: webextensionGlobals,
     },
     rules: {
-      // Correctness — these catch real bugs.
+      // Correctness, these catch real bugs.
       "no-undef": "error",
       "no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
       "no-const-assign": "error",

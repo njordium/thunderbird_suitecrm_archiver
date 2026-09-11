@@ -52,7 +52,7 @@ test("a pattern is a shape Thunderbird accepts", () => {
 
 // Add-on pages are secure contexts, so a plain http:// fetch from one is blocked
 // as mixed content unless the host is potentially trustworthy. Only localhost
-// and loopback qualify — a LAN address does not.
+// and loopback qualify, a LAN address does not.
 import { isTrustworthyPlaintext, isMixedContentRisk } from "../src/lib/url.js";
 
 test("only localhost and loopback are trustworthy over plain http", () => {

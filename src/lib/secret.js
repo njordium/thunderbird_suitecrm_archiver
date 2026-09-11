@@ -5,14 +5,14 @@
  * Generating an OAuth2 client secret.
  *
  * Why this exists rather than leaving people to invent one: SuiteCRM stores the
- * secret as `hash('sha256', $secret)` — a single round of a fast hash, with no
+ * secret as `hash('sha256', $secret)`, a single round of a fast hash, with no
  * salt and no iterations (modules/OAuth2Clients/OAuth2Clients.php). Against a
  * copy of the database, a human-chosen secret falls to a wordlist immediately,
  * and an unsalted digest is also rainbow-table material. A long random one is
  * immune to both regardless of how it is stored.
  *
  * 32 bytes gives 256 bits, matching the width of the hash it will be reduced to
- * — more would add nothing a SHA-256 digest can carry.
+ *, more would add nothing a SHA-256 digest can carry.
  */
 
 const DEFAULT_BYTES = 32;

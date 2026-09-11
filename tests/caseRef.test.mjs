@@ -125,3 +125,84 @@ test("looksLikeReply recognises the prefixes that actually occur", () => {
   assert.ok(!looksLikeReply("Revenue: x"), "Revenue must not be mistaken for Re:");
   assert.ok(!looksLikeReply(""));
 });
+
+// --- Matching by reference chain -------------------------------------------
+//
+// The subject macro only survives while the subject does. These cover the
+// fallback: the Emails record SuiteCRM stored for its own outbound case mail
+// carries that Message-ID with the Case as its parent, so an ancestor of the
+// reply names the Case even when the subject no longer does.
+import { findCaseByReferences } from "../src/lib/caseRef.js";
+
+/** A CRM whose Emails table is the given {message_id: record} map. */
+function fakeClient(byMessageId, { onQuery = () => {} } = {}) {
+  return {
+    async getRecords(module, query) {
+      assert.equal(module, "Emails");
+      const id = query?.filter?.message_id?.eq;
+      onQuery(id);
+      const rec = byMessageId[id];
+      return rec ? [rec] : [];
+    },
+  };
+}
+
+test("an ancestor filed against a Case resolves to that Case", async () => {
+  const client = fakeClient({ "case-mail@crm": { id: "e1", parent_type: "Cases", parent_id: "c7" } });
+  assert.deepEqual(await findCaseByReferences(client, ["older@x", "case-mail@crm"]),
+    { caseId: "c7", viaMessageId: "case-mail@crm" });
+});
+
+test("the nearest ancestor is preferred over an older one", async () => {
+  const client = fakeClient({
+    "old@crm": { id: "e1", parent_type: "Cases", parent_id: "old-case" },
+    "recent@crm": { id: "e2", parent_type: "Cases", parent_id: "recent-case" },
+  });
+  const found = await findCaseByReferences(client, ["old@crm", "recent@crm"]);
+  assert.equal(found.caseId, "recent-case", "the chain was read oldest-first");
+});
+
+test("an ancestor filed against something other than a Case is not a match", async () => {
+  const client = fakeClient({ "sales@crm": { id: "e1", parent_type: "Accounts", parent_id: "a1" } });
+  assert.equal(await findCaseByReferences(client, ["sales@crm"]), null);
+});
+
+test("an Emails record with no parent is not a match", async () => {
+  const client = fakeClient({ "loose@crm": { id: "e1", parent_type: "Cases", parent_id: "" } });
+  assert.equal(await findCaseByReferences(client, ["loose@crm"]), null);
+});
+
+test("a chain with nothing in the CRM resolves to nothing, not an error", async () => {
+  assert.equal(await findCaseByReferences(fakeClient({}), ["a@x", "b@x"]), null);
+});
+
+test("the chain is bounded, so an old thread cannot fan out into many requests", async () => {
+  const asked = [];
+  const client = fakeClient({}, { onQuery: (id) => asked.push(id) });
+  const chain = Array.from({ length: 30 }, (_, i) => `m${i}@x`);
+  await findCaseByReferences(client, chain, { max: 5 });
+  assert.equal(asked.length, 5, "more ancestors were queried than the bound allows");
+  assert.deepEqual(asked, ["m29@x", "m28@x", "m27@x", "m26@x", "m25@x"]);
+});
+
+test("one unreadable ancestor does not stop the rest of the chain", async () => {
+  let calls = 0;
+  const client = {
+    async getRecords(_m, query) {
+      calls += 1;
+      if (query.filter.message_id.eq === "boom@x") throw new Error("500 upstream");
+      return [{ id: "e1", parent_type: "Cases", parent_id: "c3" }];
+    },
+  };
+  const found = await findCaseByReferences(client, ["good@x", "boom@x"]);
+  assert.equal(found.caseId, "c3");
+  assert.equal(calls, 2);
+});
+
+test("no references at all asks the CRM nothing", async () => {
+  let calls = 0;
+  const client = { async getRecords() { calls += 1; return []; } };
+  assert.equal(await findCaseByReferences(client, []), null);
+  assert.equal(await findCaseByReferences(client, undefined), null);
+  assert.equal(calls, 0);
+});

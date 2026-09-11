@@ -7,7 +7,7 @@
  * A debug report is meant to be pasted into an issue tracker or an email, so the
  * guiding rule is that nothing in it should be harmful if it ends up public.
  * Secrets are never recorded at all rather than recorded and stripped, and the
- * things that are merely sensitive — addresses, the CRM host — are masked by
+ * things that are merely sensitive, addresses, the CRM host, are masked by
  * default with an explicit opt-in to include them.
  *
  * The ring buffer is mirrored into storage.local because an MV3 event page is
@@ -34,7 +34,7 @@ const SECRET_PATTERNS = [
   [/\bBearer\s+[A-Za-z0-9._~+/-]+=*/gi, "Bearer <redacted>"],
   // JWTs, which the CRM issues as access tokens.
   [/\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]+/g, "<jwt redacted>"],
-  // Long opaque hex or base64 blobs — refresh tokens and client secrets.
+  // Long opaque hex or base64 blobs, refresh tokens and client secrets.
   [/\b[A-Fa-f0-9]{40,}\b/g, "<hex redacted>"],
 ];
 
@@ -55,7 +55,7 @@ const EMAIL_RE = /\b([A-Za-z0-9._%+-])[A-Za-z0-9._%+-]*(@)([A-Za-z0-9.-]+\.[A-Za
  * Undo percent-encoding before anything tries to redact.
  *
  * This is not cosmetic. Recorded URLs are built with encodeURIComponent, which
- * turns `@` into `%40` — so an address inside a query string did not match the
+ * turns `@` into `%40`, so an address inside a query string did not match the
  * masking pattern and went into the report verbatim, while the very same
  * address in a plain log line was masked correctly. The report told the user
  * addresses were masked, and for most of its content that was false.
@@ -115,8 +115,8 @@ function scrub(text, { includeEmails, includeHost, baseUrl }) {
       const u = new URL(baseUrl);
       // Host first (it carries the port, so it is the longer match), then the
       // bare hostname. The second is not redundant: the granted permission
-      // pattern is deliberately built without a port — see originPatternFor —
-      // so on a CRM at a non-default port the "hosts" line contained the real
+      // pattern is deliberately built without a port, see originPatternFor, so
+      // on a CRM at a non-default port the "hosts" line contained the real
       // hostname while the report's header claimed the host was masked.
       // Case-insensitively, because a hostname is case-insensitive and the two
       // strings need not have been typed the same way.
@@ -138,7 +138,7 @@ export async function setEnabled(on) {
   if (!enabled) {
     // Turning the switch off has to leave nothing behind. Someone who disables
     // detailed logging reasonably believes the log is gone, and up to
-    // MAX_EVENTS entries — carrying email addresses and CRM URLs — would
+    // MAX_EVENTS entries, carrying email addresses and CRM URLs, would
     // otherwise sit in the profile until they happened to press Clear.
     await clear();
     return;
@@ -177,7 +177,7 @@ export function record(level, args) {
   push({ t: Date.now(), kind: "log", level, text: stripSecrets(text) });
 }
 
-/** Note one CRM request. Bodies are never recorded — only shape and outcome. */
+/** Note one CRM request. Bodies are never recorded, only shape and outcome. */
 export function recordRequest({ method, url, status, ms, error, note }) {
   if (!enabled) return;
   push({
@@ -229,7 +229,7 @@ export function buildReport(ctx, opts = {}) {
   const s = (t) => scrub(t, { ...o, baseUrl });
 
   const L = [];
-  L.push("SuiteCRM Email Archiver — debug report");
+  L.push("SuiteCRM Email Archiver, debug report");
   L.push(`generated  ${ts(Date.now())} (UTC)`);
   L.push("");
   L.push("This report is written to be safe to share. Passwords, client secrets and");
@@ -268,7 +268,7 @@ export function buildReport(ctx, opts = {}) {
     L.push(`username    ${o.includeEmails ? ctx.connection.username : maskEmails(ctx.connection.username || "")}`);
     L.push(`signed in   ${ctx.auth?.state || "?"}`);
     L.push(`access tok  ${ctx.auth?.accessExpiresAt ? `expires ${ts(ctx.auth.accessExpiresAt)}` : "none"}`);
-    L.push(`refresh tok ${ctx.auth?.hasRefreshToken ? `held, obtained ${ts(ctx.auth.refreshObtainedAt)}` : "NONE — this causes hourly sign-outs"}`);
+    L.push(`refresh tok ${ctx.auth?.hasRefreshToken ? `held, obtained ${ts(ctx.auth.refreshObtainedAt)}` : "NONE, this causes hourly sign-outs"}`);
   }
   L.push("");
 
@@ -290,7 +290,7 @@ export function buildReport(ctx, opts = {}) {
 
   L.push(`── Event log (${buffer.length} entries) ─────────────────────────`);
   if (!buffer.length) {
-    L.push("(empty — turn on detailed logging, reproduce the problem, then export)");
+    L.push("(empty, turn on detailed logging, reproduce the problem, then export)");
   } else {
     for (const e of buffer) {
       if (e.kind === "net") {

@@ -241,13 +241,13 @@ body {
 }
 .field input:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: var(--accent); }
 
-/* Fields the parser is unsure about — the user should look before saving. */
+/* Fields the parser is unsure about, the user should look before saving. */
 .field.needs-review input {
   border-color: var(--warn); background: var(--warn-soft);
 }
 /*
  * Fields the parser was unsure about are marked "guessed", not "check".
- * "check" read as a control — an instruction the user could act on — while
+ * "check" read as a control, an instruction the user could act on, while
  * being inert text, and on the website row it sat beside a button that really
  * did say check. This states what the field IS, so nothing looks clickable that
  * is not. Scoped to the first span so a field's status note never gets it too.

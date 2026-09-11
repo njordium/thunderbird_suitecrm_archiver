@@ -46,7 +46,7 @@ for e in errors:
 
 for code, count in sorted(Counter(w["code"] for w in warnings).items()):
     why = INHERENT.get(code)
-    note = f"  — {why}" if why else "  <-- NOT an inherent one; look at this"
+    note = f", {why}" if why else "  <-- NOT an inherent one; look at this"
     print(f"  [warn]  {code} x{count}{note}")
 
 print("  nothing blocking an upload" if not errors else "  UPLOAD WILL BE REJECTED")

@@ -8,7 +8,7 @@ import assert from "node:assert/strict";
  * Site access asked for during a website check is borrowed, not kept.
  *
  * Without releasing it, the Permissions tab collects one standing entry per
- * sender ever checked — a growing permission surface for a one-second fetch
+ * sender ever checked, a growing permission surface for a one-second fetch
  * each. The CRM host is the exception: that one is genuinely ongoing.
  */
 

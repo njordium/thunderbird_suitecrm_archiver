@@ -21,7 +21,7 @@ export const API_SUFFIXES = ["/Api", "/legacy/Api"];
  * What one attempt against a token endpoint tells us.
  *
  * A live endpoint answers an invalid client with a JSON OAuth error. Stock
- * SuiteCRM makes that an HTTP 500 rather than a 401 — untidy of it, but the JSON
+ * SuiteCRM makes that an HTTP 500 rather than a 401, untidy of it, but the JSON
  * body is what proves the V8 stack is loaded and the database reachable, so the
  * status code is not the signal. A wrong path answers with an HTML error page.
  */
@@ -41,7 +41,7 @@ export function classifyAttempt(attempt) {
   if (!body || typeof body !== "object") {
     return {
       live: false,
-      headline: `HTTP ${status} — not the V8 API`,
+      headline: `HTTP ${status}, not the V8 API`,
       detail: "The reply was not JSON, so the V8 API is not at this path.",
     };
   }
@@ -49,7 +49,7 @@ export function classifyAttempt(attempt) {
   if (body.access_token) {
     return {
       live: true,
-      headline: `HTTP ${status} — a token was issued`,
+      headline: `HTTP ${status}, a token was issued`,
       detail: "Unexpected for an invalid client, but it proves the endpoint is live.",
     };
   }
@@ -57,7 +57,7 @@ export function classifyAttempt(attempt) {
   if (body.error) {
     return {
       live: true,
-      headline: `HTTP ${status} — expected`,
+      headline: `HTTP ${status}, expected`,
       detail:
         "The test deliberately sends an invalid client id, and only a working V8 " +
         "token endpoint rejects it with a JSON OAuth error. This reply is the proof " +
@@ -68,7 +68,7 @@ export function classifyAttempt(attempt) {
 
   return {
     live: true,
-    headline: `HTTP ${status} — JSON reply`,
+    headline: `HTTP ${status}, JSON reply`,
     detail: "JSON came back, so the endpoint is live.",
   };
 }
@@ -79,13 +79,13 @@ function apiPathOf(url, base) {
 }
 
 function transportRow(r) {
-  if (!r.insecure) return ["transport", "https — encrypted", "ok"];
+  if (!r.insecure) return ["transport", "https, encrypted", "ok"];
   if (!r.mixedContentRisk) {
-    return ["transport", "http — unencrypted, but localhost, which the platform trusts", "ok"];
+    return ["transport", "http, unencrypted, but localhost, which the platform trusts", "ok"];
   }
   return [
     "transport",
-    "http — unencrypted, so your CRM password crosses the network in the clear each " +
+    "http, unencrypted, so your CRM password crosses the network in the clear each " +
     "time you sign in. Fine for a test system; use https in production.",
     "warn",
   ];
@@ -95,7 +95,7 @@ function transportRow(r) {
  * The whole report: a verdict, the rows beneath it, each attempt explained, and
  * what to do next. `askedNow` says whether this run already prompted for the
  * host permission, which changes the advice from "press Sign in" to "choose
- * Allow" — telling someone to trigger a prompt they just dismissed is no help.
+ * Allow", telling someone to trigger a prompt they just dismissed is no help.
  */
 export function describeProbe(r, { askedNow = false } = {}) {
   const attempts = (r.attempts || []).map((a) => ({ ...a, ...classifyAttempt(a) }));
@@ -111,13 +111,13 @@ export function describeProbe(r, { askedNow = false } = {}) {
   } else if (live) {
     tone = "warn";
     verdict = `SuiteCRM's V8 API answered at ${r.base}${apiPathOf(live.url, r.base)}. ` +
-      `The server is fine — the one step left is granting this add-on access to ` +
+      `The server is fine, the one step left is granting this add-on access to ` +
       `${r.hostname}.`;
     fixes.push(
       askedNow
         ? `Thunderbird's request for access to ${r.hostname} was dismissed. Run the test ` +
           `again and choose Allow, or turn on access under this add-on's Permissions tab.`
-        : `Press Sign in, which asks for that access first — or turn it on under this ` +
+        : `Press Sign in, which asks for that access first, or turn it on under this ` +
           `add-on's Permissions tab.`
     );
     fixes.push(
@@ -128,7 +128,7 @@ export function describeProbe(r, { askedNow = false } = {}) {
   } else if (!r.granted) {
     tone = "bad";
     verdict = `Nothing reached ${r.hostname}, and this add-on has not been granted access ` +
-      `to it — so that is the first thing to rule out.`;
+      `to it, so that is the first thing to rule out.`;
     fixes.push(
       askedNow
         ? `Run the test again and choose Allow when Thunderbird asks for access to ${r.hostname}.`
@@ -138,13 +138,13 @@ export function describeProbe(r, { askedNow = false } = {}) {
   } else {
     // Nothing answered, and access is granted. The plaintext-CSP explanation used
     // to lead here, but that override now ships in the manifest and the build
-    // fails without it — so the network is by far the likelier cause and gets the
+    // fails without it, so the network is by far the likelier cause and gets the
     // verdict. The CSP note stays as a secondary check for anyone on an old build.
     tone = "bad";
     verdict = `Access is granted, but ${r.hostname}:${r.port} did not answer.`;
     fixes.push(
-      `Confirm the CRM is reachable from this machine — opening ${r.base} in a browser is ` +
-      `the quickest check — and that no firewall blocks port ${r.port}.`
+      `Confirm the CRM is reachable from this machine, opening ${r.base} in a browser is ` +
+      `the quickest check, and that no firewall blocks port ${r.port}.`
     );
     fixes.push(
       "If it opens in a browser but not here, check the V8 API is installed: " +
@@ -158,11 +158,11 @@ export function describeProbe(r, { askedNow = false } = {}) {
       );
       fixes.push(
         `A port forward sidesteps every plaintext restriction: ` +
-        `ssh -L ${r.port}:localhost:${r.port} <user>@${r.hostname} — then set the CRM ` +
+        `ssh -L ${r.port}:localhost:${r.port} <user>@${r.hostname}, then set the CRM ` +
         `address to http://localhost:${r.port}`
       );
       fixes.push(
-        "Check Settings → General → Config Editor for dom.security.https_only_mode — if it " +
+        "Check Settings → General → Config Editor for dom.security.https_only_mode, if it " +
         "is true, Thunderbird refuses unencrypted requests."
       );
     }

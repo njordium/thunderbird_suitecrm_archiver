@@ -8,7 +8,7 @@
  * builds expose only `getDisplayedMessages()` (plural) returning a MessageList,
  * while older code and older builds used `getDisplayedMessage()` (singular)
  * returning a lone MessageHeader. The names differ by one character, so a
- * substring check "verifies" the wrong one — hence a pure function with tests.
+ * substring check "verifies" the wrong one, hence a pure function with tests.
  */
 
 /**

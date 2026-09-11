@@ -34,7 +34,7 @@
 
   <div class="addr-bar">
     <div class="addr-current">
-      <span class="label">Archiving for</span>
+      <span class="label">Filing for</span>
       <div class="addr-name" id="addr-name"></div>
       <div class="addr-email" id="addr-email"></div>
     </div>
@@ -61,7 +61,7 @@
   <div id="results" class="results"></div>
 
   <div class="recent-bar">
-    <button id="btn-recent" class="btn btn-quiet btn-xs">Recently archived</button>
+    <button id="btn-recent" class="btn btn-quiet btn-xs">Recently filed</button>
   </div>
   <div id="recent" class="recent" hidden>
     <div id="recent-list"></div>
@@ -85,17 +85,17 @@
         days
       </label>
       <label class="toggle small" id="selection-opt" hidden>
-        <input type="checkbox" id="chk-selection"> Archive all selected messages
+        <input type="checkbox" id="chk-selection"> File all selected messages
         <span id="selection-count" class="muted"></span>
       </label>
       <label class="toggle small" id="thread-opt" hidden>
-        <input type="checkbox" id="chk-thread"> Archive the whole conversation
+        <input type="checkbox" id="chk-thread"> File the whole conversation
         <span id="thread-count" class="muted"></span>
       </label>
     </div>
     <div class="foot-actions">
       <button id="btn-create-record" class="btn" disabled>Create record…</button>
-      <button id="btn-archive" class="btn btn-primary" disabled>Archive</button>
+      <button id="btn-archive" class="btn btn-primary" title="File this message in SuiteCRM" disabled>File</button>
     </div>
   </footer>
 </section>
@@ -228,7 +228,7 @@
   <footer class="foot">
     <div class="muted small" id="review-hint"></div>
     <div class="foot-actions">
-      <button id="btn-create" class="btn btn-primary">Create &amp; archive</button>
+      <button id="btn-create" class="btn btn-primary">Create &amp; file</button>
     </div>
   </footer>
 </section>
@@ -237,7 +237,7 @@
 <section id="view-done" class="view" hidden>
   <div class="empty">
     <div class="tick">✓</div>
-    <h2 id="done-title">Archived</h2>
+    <h2 id="done-title">Filed</h2>
     <p class="muted" id="done-text"></p>
     <ul id="done-warnings" class="warnings"></ul>
     <div class="foot-actions center">

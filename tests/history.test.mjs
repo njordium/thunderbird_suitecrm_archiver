@@ -8,7 +8,7 @@ import assert from "node:assert/strict";
  * The settings page offers to clear what the profile remembers about who you
  * have filed mail from. Two things have to hold for that button to be honest:
  * the count it shows must be the real one, and clearing must take both keys
- * and nothing else — losing the connection or the tokens would sign the user
+ * and nothing else, losing the connection or the tokens would sign the user
  * out of their CRM for pressing a housekeeping button.
  *
  * The background is loaded with a storage that actually stores, so the

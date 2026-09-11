@@ -5,7 +5,7 @@
  * Marking archived mail with a Thunderbird tag.
  *
  * A tag is worth more than a note in our own storage: it colours the row, can be
- * a message-list column, and drives saved searches and filters — so "everything
+ * a message-list column, and drives saved searches and filters, so "everything
  * not yet archived" becomes a folder view without us building one. It also stops
  * two people archiving the same message twice.
  */

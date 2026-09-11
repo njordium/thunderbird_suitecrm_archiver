@@ -6,7 +6,7 @@
  *
  * The same human writing from a second address is how a CRM quietly rots: two
  * Contacts, two histories, and neither tells the whole story. The address lookup
- * cannot see it, because the address is precisely what differs — so before
+ * cannot see it, because the address is precisely what differs, so before
  * creating, compare names.
  */
 

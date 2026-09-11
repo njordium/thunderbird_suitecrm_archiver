@@ -88,7 +88,7 @@ export class CrmClient {
     }
     diag.recordRequest({ method, url, status: res.status, ms: Date.now() - started });
 
-    // Access token rejected mid-flight — refresh once and retry.
+    // Access token rejected mid-flight, refresh once and retry.
     if (res.status === 401 && !_retried) {
       log.info("401 from CRM; forcing token refresh and retrying once.");
       try {
@@ -143,7 +143,7 @@ export class CrmClient {
       // the record look absent, so fall back to the bean's default fields
       // rather than reporting "not in the CRM" for something that is.
       if (fields && e.status === 400 && /is not found/i.test(e.message)) {
-        log.warn(`${module}: ${e.message} — retrying with default fields.`);
+        log.warn(`${module}: ${e.message}, retrying with default fields.`);
         return normaliseList(
           await this.request("GET", `/module/${encodeURIComponent(module)}`, { query: build(false) })
         );
@@ -191,7 +191,7 @@ export class CrmClient {
    * does not, and sending an unknown attribute makes the whole create fail with
    * "Property website in Contact module is invalid". Since our create payloads
    * are assembled from a parsed email signature, we cannot know in advance which
-   * fields a given instance supports — so ask, and drop what it will not take.
+   * fields a given instance supports, so ask, and drop what it will not take.
    */
   async getFieldNames(module) {
     if (!this._fieldCache) this._fieldCache = new Map();
@@ -214,8 +214,8 @@ export class CrmClient {
    * whole write.
    *
    * Crucially this is not "keep only what /meta/fields reports": several fields
-   * are writable without being listed there — the Emails addresses in
-   * particular — and dropping those loses the sender and recipients without any
+   * are writable without being listed there, the Emails addresses in
+   * particular, and dropping those loses the sender and recipients without any
    * error. WRITE_ONLY_FIELDS names them explicitly.
    */
   async filterAttributes(module, attributes) {
@@ -250,7 +250,7 @@ export class CrmClient {
     return normaliseOne(res);
   }
 
-  /** Link two records. Non-fatal by convention — callers may ignore failures. */
+  /** Link two records. Non-fatal by convention, callers may ignore failures. */
   async createRelationship(module, id, relatedType, relatedId) {
     return this.request("POST", `/module/${encodeURIComponent(module)}/${encodeURIComponent(id)}/relationships`, {
       body: { data: { type: relatedType, id: relatedId } },

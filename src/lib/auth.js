@@ -6,7 +6,7 @@
  *
  * WHY PASSWORD GRANT: SuiteCRM registers an AuthCodeGrant on its authorization
  * server (Api/V8/Config/services/middlewares.php) but exposes no /authorize
- * route (Api/V8/Config/routes.php) — there is no endpoint that can issue an
+ * route (Api/V8/Config/routes.php), there is no endpoint that can issue an
  * authorization code. Upstream issue #7854, open since 2019. So a browser
  * redirect flow is impossible against a stock instance.
  *
@@ -49,7 +49,7 @@ async function postToken(apiBase, payload) {
       body: JSON.stringify(payload),
     });
   } catch (e) {
-    // Note the grant type, never the payload — it carries the password.
+    // Note the grant type, never the payload, it carries the password.
     diag.recordRequest({
       method: "POST", url, error: e.message,
       ms: Date.now() - started, note: `grant=${payload.grant_type}`,
@@ -127,13 +127,13 @@ function storeTokens(body) {
 
 /**
  * One-time interactive sign-in. The password is used for this single request
- * and then discarded — it is never persisted.
+ * and then discarded, it is never persisted.
  */
 export async function login({ baseUrl, clientId, clientSecret, username, password }) {
   const base = normaliseBaseUrl(baseUrl);
 
   // Opt-in enforcement. The add-on cannot toggle its own content security policy
-  // at runtime — that key is static — so this is the honest equivalent: refuse
+  // at runtime, that key is static, so this is the honest equivalent: refuse
   // to send the password over a plaintext connection at all.
   // isMixedContentRisk rather than a bare startsWith: http://localhost is
   // trustworthy to the platform, so refusing it would block a local test

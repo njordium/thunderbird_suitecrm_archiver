@@ -1,4 +1,4 @@
-# Server setup — SuiteCRM side
+# Server setup, SuiteCRM side
 
 One-time work by a SuiteCRM administrator. Without it the V8 API cannot issue tokens.
 
@@ -6,12 +6,12 @@ Current status of the test instance at `http://crm.example.com:8484/` (probed 20
 
 | Check | Result |
 | --- | --- |
-| Instance reachable | yes — Apache 2.4.52, SuiteCRM 8 (`SCRMSESSID` + `XSRF-TOKEN` cookies) |
+| Instance reachable | yes, Apache 2.4.52, SuiteCRM 8 (`SCRMSESSID` + `XSRF-TOKEN` cookies) |
 | V8 API present | **yes, at both `/Api/access_token` and `/legacy/Api/access_token`** |
-| OAuth2 RSA keys loading | **yes** — the endpoint got as far as looking up the client id |
-| OAuth2 client created | yes — `Thunderbird`, Password Grant |
-| Password grant | **works** — 3600s access token, refresh token issued |
-| Refresh-token rotation | **confirmed** — each refresh mints a new one |
+| OAuth2 RSA keys loading | **yes**, the endpoint got as far as looking up the client id |
+| OAuth2 client created | yes, `Thunderbird`, Password Grant |
+| Password grant | **works**, 3600s access token, refresh token issued |
+| Refresh-token rotation | **confirmed**, each refresh mints a new one |
 | `email1` join (Contacts/Leads/Accounts/Prospects) | **works, returns real records** |
 | Create Contact / Email / Note-with-attachment | **works**, incl. relationships and delete |
 | Full harness | **23 of 23 checks pass** (2026-09-09) |
@@ -28,14 +28,14 @@ Admin → **OAuth2 Clients and Tokens** → **New Password Client**.
 
 - **Name**: `Thunderbird Archiver`
 - **Secret**: use the **generate** control in the add-on's settings, beside the secret field.
-  **copy**, next to it, puts the value back on the clipboard later — SuiteCRM never will.
+  **copy**, next to it, puts the value back on the clipboard later, SuiteCRM never will.
   It produces a 256-bit random value and copies it, ready to paste into SuiteCRM's
   *Change Secret* field. From a shell, `openssl rand -hex 32` is the same thing.
 
 Copy the **id** and the **secret** as soon as you save. SuiteCRM hashes the secret on save and
 will never show it again.
 
-Use a *Password* client, not a Client Credentials one — only the password grant issues the
+Use a *Password* client, not a Client Credentials one, only the password grant issues the
 refresh token this add-on depends on.
 
 ### Recommendation: generate the secret, do not invent one
@@ -50,7 +50,7 @@ The reason is specific to how SuiteCRM stores it. From
 $this->secret = hash('sha256', (string) $_REQUEST['new_secret']);
 ```
 
-One round of SHA-256, no salt, no iterations — not `password_hash`, not bcrypt. Two
+One round of SHA-256, no salt, no iterations, not `password_hash`, not bcrypt. Two
 consequences:
 
 - **A memorable secret is recoverable.** SHA-256 is fast by design, so anyone holding a copy
@@ -61,18 +61,18 @@ consequences:
 
 Neither matters against 256 random bits: there is nothing to guess and nothing to have
 precomputed. This is why the add-on offers to generate one rather than leaving it to
-judgement — the storage is weak, so the input has to be strong.
+judgement, the storage is weak, so the input has to be strong.
 
 ### Is the client secret a password?
 
 Treat it as one. It is a credential that authenticates the *add-on* rather than you,
 but the handling is the same: generate it randomly, do not reuse it, and rotate it if it
 leaks. SuiteCRM stores only its SHA-256 hash, which is why the edit form says *"take a note
-of the secret as it will not be available after you save"* — nobody can recover it, so
+of the secret as it will not be available after you save"*, nobody can recover it, so
 losing it means setting a new one.
 
 One honest caveat about how much it protects. In OAuth2 terms a *confidential* client is one
-that can genuinely keep a secret — server-side code, where users never see the credentials.
+that can genuinely keep a secret, server-side code, where users never see the credentials.
 A desktop add-on cannot: the secret lives in the Thunderbird profile on disk, so anyone with
 the profile has it. By the specification's own definition this is a **public client**.
 
@@ -88,11 +88,11 @@ else.
 - `ClientRepository::validateClient()` compares `hash('sha256', $clientSecret)` against the
   stored secret with no reference to the flag.
 - SuiteCRM pins `league/oauth2-server ^8.5`, and in 8.5 `AbstractGrant::validateClient()`
-  calls the repository **unconditionally** — there is no `isConfidential()` check in that
+  calls the repository **unconditionally**, there is no `isConfidential()` check in that
   path at all.
 - The flag is read into the client entity (`setIsConfidential`) and exposed through
   League's `ClientTrait`, but the only code that consults it is `AuthCodeGrant`, for
-  deciding whether PKCE is mandatory — and SuiteCRM ships no `/authorize` endpoint, so that
+  deciding whether PKCE is mandatory, and SuiteCRM ships no `/authorize` endpoint, so that
   grant is unreachable.
 
 So leaving it unticked does **not** create a client that can authenticate without a secret.
@@ -115,13 +115,13 @@ public function validateClient($clientIdentifier, $clientSecret, $grantType)
 Two things follow:
 
 1. The secret is checked **unconditionally**. Leaving *Is Confidential* unticked does not make
-   this a public client that can authenticate without one — an empty secret is rejected like
+   this a public client that can authenticate without one, an empty secret is rejected like
    any other wrong value.
 2. `refresh_token` is accepted **whatever** the client's configured grant type is. So a
    Password client can refresh, which is what this add-on relies on.
 
 The secret is stored as a SHA-256 hash and cannot be read back. If it has been lost, open the
-client and set a new one — SuiteCRM re-hashes on save.
+client and set a new one, SuiteCRM re-hashes on save.
 
 ### Telling the two failure modes apart
 
@@ -129,8 +129,8 @@ Probing the token endpoint distinguishes them cleanly:
 
 | Response | Meaning |
 | --- | --- |
-| `unknown_error` — "OAuth2Clients module with id X is not found" (HTTP 500) | the client id is wrong |
-| `invalid_client` — "Client authentication failed" (HTTP 401) | id is right, **secret is wrong** |
+| `unknown_error`, "OAuth2Clients module with id X is not found" (HTTP 500) | the client id is wrong |
+| `invalid_client`, "Client authentication failed" (HTTP 401) | id is right, **secret is wrong** |
 | `invalid_credentials` / `invalid_grant` | client is fine, the **user** credentials are wrong |
 
 ## 2. Confirm the keys and encryption key (probably already done)
@@ -173,12 +173,12 @@ node tools/verify-crm.mjs --email someone@known-customer.com   # test a real loo
 
 The harness exercises every call the add-on makes: discovery, password grant, **refresh-token
 rotation**, `current-user`, `meta/modules`, the `email1` join on each module, the
-`message_id` de-duplication lookup, and — with `--write` — creating a Contact, an Email, and a
+`message_id` de-duplication lookup, and, with `--write`, creating a Contact, an Email, and a
 Note carrying a base64 attachment, then deleting all three.
 
 ## 4. If sign-in fails with "NetworkError"
 
-The request never left Thunderbird. Press **Test connection** in the add-on's settings — it
+The request never left Thunderbird. Press **Test connection** in the add-on's settings, it
 distinguishes the causes rather than leaving you to guess:
 
 | What the test says | Cause | Fix |
@@ -195,7 +195,7 @@ reach nothing until access is granted. That is the usual cause.
 **Diagnosed on Thunderbird 155, 2026-09-09.** Manifest V3 add-ons get a default content
 security policy of `script-src 'self'; upgrade-insecure-requests;`. That last directive
 rewrites every `http://` request to `https://`, so a CRM served over plain http becomes
-unreachable — the request fails in a few milliseconds with a bare `NetworkError`, while host
+unreachable, the request fails in a few milliseconds with a bare `NetworkError`, while host
 permissions are granted and the server is answering CORS preflights correctly.
 
 This add-on overrides the default policy and omits the directive, and
@@ -211,7 +211,7 @@ the CRM password crossing the network in clear text on every sign-in.
 
 Firefox, and therefore Thunderbird, **does not accept a port in a match pattern**
 ([bug 1362809](https://bugzil.la/1362809)). A pattern such as `http://crm.example.com:8484/*` is
-not merely unmatched — it is rejected, and `permissions.request()` and
+not merely unmatched, it is rejected, and `permissions.request()` and
 `permissions.contains()` **throw** rather than returning `false`.
 
 The add-on therefore asks for `scheme://host/*` with no port, which is the narrowest grant
@@ -219,7 +219,7 @@ the platform can express and covers that host on any port. If you see a permissi
 naming a pattern that contains a port, that is the bug: it was fixed in 0.1.0 after the
 first field test.
 
-## 5. CORS — probably not needed
+## 5. CORS, probably not needed
 
 Advice to add `Access-Control-Allow-Origin` to `.htaccess` circulates for this kind of
 integration. It is not needed here: every CRM request is issued from the extension's

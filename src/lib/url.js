@@ -6,8 +6,8 @@
  *
  * Lives apart from auth.js so the options page can normalise a URL *synchronously*.
  * That matters: browser.permissions.request() only works while the user's click is
- * still "active", and any await before it — including a runtime.sendMessage round
- * trip to the background page — spends that activation and makes the call throw
+ * still "active", and any await before it, including a runtime.sendMessage round
+ * trip to the background page, spends that activation and makes the call throw
  * "permissions.request may only be called from a user input handler".
  */
 
@@ -31,8 +31,8 @@ export function normaliseBaseUrl(raw) {
 /**
  * The host permission pattern for a CRM base URL.
  *
- * Deliberately built from protocol + hostname with NO port. Firefox — and so
- * Thunderbird — does not support a port in a match pattern (bug 1362809), and an
+ * Deliberately built from protocol + hostname with NO port. Firefox, and so
+ * Thunderbird, does not support a port in a match pattern (bug 1362809), and an
  * invalid pattern makes permissions.request() and permissions.contains() throw
  * rather than return false. Using `origin` here, which keeps the port, silently
  * broke every request to a CRM served on a non-default port.

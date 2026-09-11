@@ -7,7 +7,7 @@ import { unwrapMessageList } from "../src/lib/tbcompat.js";
 
 // Thunderbird 128+ exposes only getDisplayedMessages() (plural), which returns a
 // MessageList. The singular getDisplayedMessage() does not exist, and calling it
-// throws "is not a function" — the shapes below are what each variant returns.
+// throws "is not a function", the shapes below are what each variant returns.
 
 test("a MessageList yields its first message", () => {
   const list = { id: "list1", messages: [{ id: 7, subject: "a" }, { id: 8, subject: "b" }] };

@@ -7,7 +7,7 @@
  * Typing a name fires a search per keystroke, and each one is several CRM
  * requests. Two observations make almost all of them unnecessary:
  *
- *   1. The same term is asked repeatedly — backspacing and retyping, or two
+ *   1. The same term is asked repeatedly, backspacing and retyping, or two
  *      compose windows. A plain cache handles that.
  *   2. More importantly, results for a longer term are a SUBSET of results for
  *      its prefix. If "Lind" returned every match rather than a truncated page,
@@ -16,7 +16,7 @@
  *
  * The second only holds when the earlier result was complete. A truncated page
  * may have omitted a record the longer term would have found, so a truncated
- * result is never narrowed — that would silently lose matches.
+ * result is never narrowed, that would silently lose matches.
  */
 
 export class SearchCache {

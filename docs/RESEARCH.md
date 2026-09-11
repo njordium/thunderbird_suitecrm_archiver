@@ -1,8 +1,8 @@
-# Research notes — Thunderbird → SuiteCRM archiver
+# Research notes, Thunderbird → SuiteCRM archiver
 
 Date: 2026-09-09
 
-## 1. SuiteCRM V8 API — auth capability check
+## 1. SuiteCRM V8 API, auth capability check
 
 Source read: `salesagility/SuiteCRM` @ `hotfix`.
 
@@ -19,7 +19,7 @@ Source read: `salesagility/SuiteCRM` @ `hotfix`.
 ```php
 $app->post('/access_token', ...)->add(new AuthorizationServerMiddleware(...));
 ```
-There is **no `/authorize` route** — no consent screen, no way to *obtain* an auth code.
+There is **no `/authorize` route**, no consent screen, no way to *obtain* an auth code.
 So `authorization_code` is only half-wired: the token endpoint would exchange a code, but
 nothing can issue one. Upstream issue
 [#7854](https://github.com/salesagility/SuiteCRM/issues/7854) ("Implementation of
@@ -40,7 +40,7 @@ stock SuiteCRM**. The best available design is:
 
 ### Client validation (verified in source + probed live)
 `Api/V8/OAuth2/Repository/ClientRepository.php::validateClient()` compares
-`hash('sha256', $clientSecret)` against the stored secret **unconditionally** — the
+`hash('sha256', $clientSecret)` against the stored secret **unconditionally**, the
 `is_confidential` flag does not exempt a client from presenting one. The same method accepts
 `refresh_token` regardless of the client's `allowed_grant_type`, which is why a Password
 client can refresh.
@@ -48,7 +48,7 @@ client can refresh.
 ### Server-side prerequisites (admin, one time)
 - Generate `Api/V8/OAuth2/private.key` + `public.key` (RSA 2048), `chmod 600`, owned by web user.
 - Set `oauth2_encryption_key` in `config.php` (otherwise it falls back to the literal
-  `'SCRM-DEFK'` and logs a fatal — see middlewares.php).
+  `'SCRM-DEFK'` and logs a fatal, see middlewares.php).
 - Admin → OAuth2 Clients and Tokens → new **Password Client**; record id/secret at creation
   (secret is hashed on save).
 - SuiteCRM 8.x often serves the legacy API under `/legacy/Api/...`; 7.x uses `/Api/...`.
@@ -91,20 +91,20 @@ Confirmed behaviours:
 - An unknown field in `fields[Module]` is a **hard HTTP 400**
   (`"The following field in Account module is not found: first_name"`), not a silent
   omission. Since the resolver fans out with `allSettled`, a stale field list would make a
-  module look empty and a known contact look absent — so `crm.js` retries once without the
+  module look empty and a known contact look absent, so `crm.js` retries once without the
   `fields` parameter, and the verify harness checks every list.
 
 ## 2. Thunderbird platform
 
 - MV3 supported since **128 ESR**, which is now end of life. Current ESR is **140**,
   stable 155, next ESR 153.
-  Target: `manifest_version: 3`, `strict_min_version: 140.0` — the floor is the current
+  Target: `manifest_version: 3`, `strict_min_version: 140.0`, the floor is the current
   ESR, which also makes `data_collection_permissions` declarable (it needs 140+).
 - Thunderbird MV3 background is an **event page** (`background.scripts` + `type: "module"`),
   not a service worker.
 - APIs needed, all present: `messageDisplayAction`, `messages.getFull` (TB66),
   `messages.getRaw` (TB72), `messages.listAttachments` (TB88),
-  `messages.getAttachmentFile` (TB88), `messages.query` (TB69) — all under `messagesRead`.
+  `messages.getAttachmentFile` (TB88), `messages.query` (TB69), all under `messagesRead`.
 - `identity.launchWebAuthFlow` / `getRedirectURL` exist, but are unusable here (see §2).
 - Do **all** CRM fetches from the background event page with `host_permissions`; privileged
   extension contexts are exempt from CORS enforcement, so the `.htaccess`
@@ -122,16 +122,16 @@ Confirmed behaviours:
   `permissions.request()` and `permissions.contains()` **throw** on an invalid pattern
   rather than returning `false`. Build patterns as `${protocol}//${hostname}/*`.
 - `permissions.request()` needs a live user activation, and the activation does **not**
-  survive an `await` — including a `runtime.sendMessage` round trip to the background page.
+  survive an `await`, including a `runtime.sendMessage` round trip to the background page.
   Call it as the first `await` inside the page's own click handler.
 - Requesting a permission already held resolves `true` without prompting, so there is no
-  need to call `permissions.contains()` first — and doing so costs the activation.
+  need to call `permissions.contains()` first, and doing so costs the activation.
 - **The Manifest V3 default CSP breaks plain-http hosts.** MDN: the MV2 default is
   `script-src 'self'; object-src 'self';` while the **MV3** default is
   `script-src 'self'; upgrade-insecure-requests;`. That directive rewrites every `http://`
   request to `https://`. Against a CRM with no TLS listener the connection fails instantly,
   surfacing as `NetworkError` in single-digit milliseconds with host permissions fully
-  granted and the server sending `Access-Control-Allow-Origin: *` — so it looks like a
+  granted and the server sending `Access-Control-Allow-Origin: *`, so it looks like a
   network, CORS or server fault while being none of them.
 
   This is precisely why a Manifest V2 add-on reaches the same URL on the same machine
@@ -167,7 +167,7 @@ no URL. `aboutaddons.js` then does `link.hidden = !addon.creator.url`, so:
 - **The Author line cannot be a hyperlink in a self-hosted add-on.** There is no manifest key
   for it. `developer.url` sets the *Homepage* line, not the author.
 - The Author link seen on add-ons from addons.thunderbird.net comes from
-  `this.creator = repositoryAddon.creator` — ATN listing data, pointing at the ATN author
+  `this.creator = repositoryAddon.creator`, ATN listing data, pointing at the ATN author
   profile. It exists only for add-ons installed from ATN, and publishing there is the only
   way to obtain it.
 
@@ -184,7 +184,7 @@ None of these are documented; each silently corrupts data rather than erroring.
 ### `/meta/fields/<module>` is not the set of writable fields
 
 `Emails` accepts `from_addr`, `from_name`, `to_addrs`, `cc_addrs` and `bcc_addrs` on write,
-but **none of them appear in `/meta/fields/Emails`** — they are bean properties backed by a
+but **none of them appear in `/meta/fields/Emails`**, they are bean properties backed by a
 relationship, not columns. A filter that keeps only what the metadata reports therefore
 discards the sender and every recipient of an archived email, with no error at all.
 `WRITE_ONLY_FIELDS` in `src/lib/modules.js` lists them so they are always kept.
@@ -192,7 +192,7 @@ discards the sender and every recipient of an archived email, with no error at a
 ### `from_addr` is write-only; `from_addr_name` is what reads back
 
 Writing `from_addr: "Anna <anna@example.com>"` and reading the record back gives
-`from_addr` **undefined** and `from_addr_name: "anna@example.com"` — the address alone,
+`from_addr` **undefined** and `from_addr_name: "anna@example.com"`, the address alone,
 display name stripped. Any code comparing a stored email's sender must read
 `from_addr_name`. Reading `from_addr` yields `undefined` and, in a comparison written to
 fail open, silently accepts everything.
@@ -221,7 +221,7 @@ Writing `date_entered: "2026-06-30 20:28:00"` reads back as
 can carry the message's real date, which is what makes the timeline meaningful.
 
 Thunderbird's `MessageHeader.date` is "the date and time when the message was sent,
-according to the Date header". There is **no read timestamp** anywhere in the API — `read`
+according to the Date header". There is **no read timestamp** anywhere in the API, `read`
 is a boolean, so "when it was read" cannot be offered as a choice.
 
 
@@ -246,7 +246,7 @@ check and does not.
   not, which is why an unticked box still demands a correct secret.
 - The only uses of `isConfidential()` anywhere in League 8.5 are in `AuthCodeGrant`
   (lines 105 and 339), for deciding whether PKCE is required. SuiteCRM exposes no
-  `/authorize` route, so that grant cannot be reached — see §2.
+  `/authorize` route, so that grant cannot be reached, see §2.
 
 Conclusion: the flag is inert for every grant SuiteCRM can actually run. Matches the earlier
 live probe, where both an empty and a wrong secret returned `invalid_client`.
