@@ -119,6 +119,7 @@ h2.with-toggle { display: flex; align-items: center; justify-content: space-betw
 .module-list label { display: flex; gap: 5px; align-items: center; color: var(--fg); }
 .module-list .is-extra { color: var(--accent); }
 .module-list .is-refused { color: var(--muted); }
+.module-list .is-refused input { cursor: not-allowed; }
 .module-list .mod-bad {
   color: var(--danger); font-weight: 600; cursor: help;
 }

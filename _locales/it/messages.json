@@ -144,6 +144,6 @@
     "message": "Non è stato possibile cercare in $1. Gli altri moduli sono stati interrogati normalmente."
   },
   "moduleTurnedOff": {
-    "message": "Non è stato possibile cercare in $1, quindi è stato disattivato nelle preferenze, dove è indicato il motivo. Tutto il resto è stato interrogato normalmente."
+    "message": "$1 non è disponibile per il tuo account CRM, quindi non viene cercato. Tutto il resto è stato interrogato normalmente."
   }
 }

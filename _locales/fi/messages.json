@@ -144,6 +144,6 @@
     "message": "Moduulista $1 ei voitu etsiä. Muut moduulit haettiin normaalisti."
   },
   "moduleTurnedOff": {
-    "message": "Moduulista $1 ei voitu etsiä, joten se on poistettu käytöstä asetuksissa, joissa syy näkyy. Kaikki muu haettiin normaalisti."
+    "message": "$1 ei ole CRM-tunnuksesi käytettävissä, joten sitä ei haeta. Kaikki muu haettiin normaalisti."
   }
 }

@@ -5,7 +5,7 @@ import { generateSecret, assessSecret } from "../lib/secret.js";
 import { originPatternFor } from "../lib/url.js";
 import { describeProbe } from "../lib/probe.js";
 import { DEFAULT_CASE_MACRO, caseRefPattern } from "../lib/caseRef.js";
-import { moduleTitle } from "../lib/modules.js";
+import { moduleTitle, moduleAbsent } from "../lib/modules.js";
 import { useLocale, localise, LOCALES, activeLocale } from "../lib/i18n.js";
 
 const $ = (id) => document.getElementById(id);
@@ -680,7 +680,8 @@ function renderModules() {
   const box = $("module-list");
   box.textContent = "";
 
-  const all = [...moduleState.builtIn, ...moduleState.extra];
+  const all = [...moduleState.builtIn, ...moduleState.extra]
+    .filter((name) => !moduleAbsent(moduleState.trouble?.[name]));
   if (!all.length) { box.textContent = "Sign in to choose modules."; return; }
 
   const selected = Array.isArray(moduleState.selected) ? moduleState.selected : moduleState.builtIn;
@@ -706,6 +707,11 @@ function renderModules() {
     // on their own side, not find the module quietly missing.
     const bad = moduleState.trouble?.[name]?.disabled ? moduleState.trouble[name] : null;
     if (bad) {
+      // Listed but inert. Leaving it tickable invited a loop: tick a module the
+      // CRM refuses, have it refused and turned off again on the next message.
+      // Re-scan modules is the way back, once the access is actually fixed.
+      tick.checked = false;
+      tick.disabled = true;
       const mark = document.createElement("span");
       mark.className = "mod-bad";
       mark.textContent = "\u2715";
@@ -751,17 +757,27 @@ async function refreshModules({ discover = false } = {}) {
     };
     renderModules();
 
-    const refused = Object.entries(moduleState.trouble)
-      .filter(([, t]) => t?.disabled)
-      .map(([m]) => moduleTitle(m, moduleState.labels));
+    const named = (list) => list.map((m) => moduleTitle(m, moduleState.labels));
+    const absent = named(Object.entries(moduleState.trouble)
+      .filter(([, t]) => moduleAbsent(t)).map(([m]) => m));
+    const refused = named(Object.entries(moduleState.trouble)
+      .filter(([, t]) => t?.disabled && !moduleAbsent(t)).map(([m]) => m));
+
+    if (absent.length && !refused.length) {
+      // No control to offer, but saying nothing at all leaves someone
+      // wondering why results they used to get have stopped.
+      note.textContent = `${absent.join(", ")} ${absent.length === 1 ? "is" : "are"} not ` +
+        `available on this CRM, so ${absent.length === 1 ? "it is" : "they are"} not listed.`;
+      return;
+    }
     if (refused.length) {
       // "Fix the access in SuiteCRM" assumed the reader administers it. Often
       // the refusal is an ACL on their own account, which is not theirs to
       // change, so the note has to point at the person who can.
-      note.textContent = `${refused.join(", ")} ${refused.length === 1 ? "was" : "were"} ` +
-        `refused by the CRM and turned off. Hover the mark for the reason. If that looks ` +
-        `wrong, ask your SuiteCRM administrator to check your access to ` +
-        `${refused.length === 1 ? "it" : "them"}, then press Re-scan modules.`;
+      note.textContent = `Your CRM account cannot search ${refused.join(", ")}, so ` +
+        `${refused.length === 1 ? "it is" : "they are"} not searched. Hover the mark for what ` +
+        `the CRM said. If you expect access to ${refused.length === 1 ? "it" : "them"}, ask ` +
+        `your SuiteCRM administrator, then press Re-scan modules.`;
       return;
     }
     note.textContent = res.error

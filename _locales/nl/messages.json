@@ -144,6 +144,6 @@
     "message": "Kon niet zoeken in $1. De andere modules zijn normaal doorzocht."
   },
   "moduleTurnedOff": {
-    "message": "Er kon niet worden gezocht in $1, dus is het uitgeschakeld in de voorkeuren, waar de reden staat. Al het andere is normaal doorzocht."
+    "message": "$1 is niet beschikbaar voor uw CRM-account en wordt dus niet doorzocht. Al het andere is normaal doorzocht."
   }
 }

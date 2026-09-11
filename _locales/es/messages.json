@@ -144,6 +144,6 @@
     "message": "No se pudo buscar en $1. Los demás módulos se buscaron con normalidad."
   },
   "moduleTurnedOff": {
-    "message": "No se pudo buscar en $1, por lo que se ha desactivado en las preferencias, donde se indica el motivo. Todo lo demás se buscó con normalidad."
+    "message": "$1 no está disponible para su cuenta de CRM, por lo que no se busca. Todo lo demás se buscó con normalidad."
   }
 }

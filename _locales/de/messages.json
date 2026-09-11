@@ -144,6 +144,6 @@
     "message": "$1 konnte nicht durchsucht werden. Die anderen Module wurden normal durchsucht."
   },
   "moduleTurnedOff": {
-    "message": "$1 konnte nicht durchsucht werden und wurde daher in den Einstellungen ausgeschaltet, wo der Grund steht. Alles andere wurde normal durchsucht."
+    "message": "$1 steht Ihrem CRM-Konto nicht zur Verfügung und wird daher nicht durchsucht. Alles andere wurde normal durchsucht."
   }
 }

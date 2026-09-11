@@ -566,7 +566,7 @@ function renderResults() {
     // The name the settings page uses, not SuiteCRM's internal one: a warning
     // about "Prospects" sends people looking for a module they do not have.
     const names = r.failures.map((f) => f.title || moduleTitle(f.module)).join(", ");
-    const off = r.failures.some((f) => f.disabled);
+    const off = r.failures.some((f) => f.disabled);   // not available to this account
     setStatus($("status"), off
       ? t("moduleTurnedOff", names)
       : t("couldNotSearchModules", names), "warn");

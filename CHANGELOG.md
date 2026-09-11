@@ -2,7 +2,18 @@
 
 ## 0.4.4 (2026-09-11)
 
-- **A module the CRM refuses is now turned off instead of failing on every message.** Filing
+- **A module your CRM cannot search is settled when modules are scanned, not while you are
+  filing mail.** The four built-in modules were assumed to exist, because SuiteCRM's own
+  module list hides Prospects even from an administrator. On an instance where Targets simply
+  is not available, the add-on offered it, searched it, warned, and then said it had been
+  "turned off", as though access had been revoked. Nothing had changed. Each built-in module
+  is now tested once during a module scan and the answer remembered, so one that is not
+  available is never offered, and nothing claims a change that did not happen.
+- **What happens next depends on why.** A module the CRM says is not there (400 or 404) is
+  dropped from the list, since there is nothing anyone can do about it from here. A module
+  refused on access (403) stays listed but inert, greyed and untickable with the CRM's own
+  message on hover, because somebody can grant that access and you need to know to ask.
+- **A module the CRM refuses stops being searched instead of failing on every message.** Filing
   a message warned "Could not search Prospects" over and over, using SuiteCRM's internal name
   for a module the settings call Targets, which read like a complaint about a module you do
   not have. When a search fails the add-on now checks that module once, and if the CRM

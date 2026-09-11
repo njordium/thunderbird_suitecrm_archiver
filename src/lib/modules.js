@@ -70,6 +70,18 @@ export function moduleVerdict({ readSucceeded = false, status = null, strikes = 
     : { action: "strike", strikes: next };
 }
 
+/**
+ * Whether a module the CRM refused should stop being listed at all.
+ *
+ * Two failures, two answers. 400 is SuiteCRM's "Module X does not exist" and
+ * 404 is not found: neither is anything the reader can act on, so a checkbox
+ * for it is noise. A 403 is an ACL on their own account, which stays listed
+ * and inert, because somebody can grant it and they need to know to ask.
+ */
+export function moduleAbsent(trouble) {
+  return Boolean(trouble?.disabled) && (trouble.status === 400 || trouble.status === 404);
+}
+
 export const MODULE_LABEL = {
   Contacts: "Contact",
   Leads: "Lead",

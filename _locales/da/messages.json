@@ -144,6 +144,6 @@
     "message": "Kunne ikke søge i $1. De øvrige moduler blev søgt som normalt."
   },
   "moduleTurnedOff": {
-    "message": "$1 kunne ikke søges og er derfor slået fra under Indstillinger, hvor årsagen vises. Alt andet blev søgt som normalt."
+    "message": "$1 er ikke tilgængelig for din CRM-konto og søges derfor ikke. Alt andet blev søgt som normalt."
   }
 }

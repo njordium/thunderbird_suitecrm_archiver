@@ -18,7 +18,7 @@ import { CrmClient, CrmError } from "../lib/crm.js";
 import { buildCandidates, allAddresses, parseMailbox, domainOf, isConsumerDomain } from "../lib/addresses.js";
 import { originPatternFor, isMixedContentRisk } from "../lib/url.js";
 import { API_SUFFIXES, classifyAttempt } from "../lib/probe.js";
-import { accountAllowed, MODULE_LABEL, recordLabel, MODULE_FIELDS, DIRECT_MODULES, CASE_FIELDS, moduleTitle, moduleVerdict } from "../lib/modules.js";
+import { accountAllowed, MODULE_LABEL, recordLabel, MODULE_FIELDS, DIRECT_MODULES, CASE_FIELDS, moduleTitle, moduleVerdict, failureIsPermanent } from "../lib/modules.js";
 import { resolveAddress, findAccountsByDomain, expandRelated, searchRecords } from "../lib/resolver.js";
 import { parseContact } from "../lib/signature.js";
 import { readMessage, archiveMessage } from "../lib/archive.js";
@@ -361,6 +361,27 @@ const handlers = {
       trouble = still;
       await store.set("moduleTrouble", trouble);
     }
+
+    // The built-in four are assumed to exist because SuiteCRM's own module list
+    // hides Prospects even from an administrator. "Assumed" was doing too much
+    // work: on an instance where Targets is simply not available, the add-on
+    // offered it, searched it, and then announced that it had been "turned
+    // off", as though access had been revoked. Nothing had changed. So each one
+    // is tested once here, at scan time, and the answer is remembered. A module
+    // that is not available is never offered in the first place.
+    for (const name of DIRECT_MODULES) {
+      if (trouble[name] && !recheck) continue;
+      const read = await verifyModule(client, name);
+      if (read.readSucceeded) {
+        delete trouble[name];
+      } else if (failureIsPermanent(read)) {
+        trouble[name] = {
+          error: read.error, status: read.status, at: Date.now(),
+          disabled: true, neverAvailable: true,
+        };
+      }
+    }
+    await store.set("moduleTrouble", trouble);
 
     const base = { builtIn: DIRECT_MODULES, extra: [], labels: {}, selected: chosen, trouble };
 

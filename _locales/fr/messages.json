@@ -144,6 +144,6 @@
     "message": "Impossible de chercher dans $1. Les autres modules ont été interrogés normalement."
   },
   "moduleTurnedOff": {
-    "message": "Impossible de chercher dans $1, qui a donc été désactivé dans les préférences, où la raison est indiquée. Tout le reste a été interrogé normalement."
+    "message": "$1 n'est pas accessible à votre compte CRM et n'est donc pas interrogé. Tout le reste a été interrogé normalement."
   }
 }
