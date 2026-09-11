@@ -10,7 +10,11 @@
   is now tested once during a module scan and the answer remembered, so one that is not
   available is never offered, and nothing claims a change that did not happen.
 - **What happens next depends on why.** A module the CRM says is not there (400 or 404) is
-  dropped from the list, since there is nothing anyone can do about it from here. A module
+  dropped from the list without comment, since naming it tells someone who never expected it
+  nothing at all, and someone who did expect it already knows what it is called. The group
+  now carries one standing line instead: only modules your own account can read are listed,
+  so if one you expect is missing, ask your SuiteCRM administrator whether your account can
+  see it. A module
   refused on access (403) stays listed but inert, greyed and untickable with the CRM's own
   message on hover, because somebody can grant that access and you need to know to ask.
 - **A module the CRM refuses stops being searched instead of failing on every message.** Filing

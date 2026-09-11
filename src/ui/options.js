@@ -757,19 +757,14 @@ async function refreshModules({ discover = false } = {}) {
     };
     renderModules();
 
-    const named = (list) => list.map((m) => moduleTitle(m, moduleState.labels));
-    const absent = named(Object.entries(moduleState.trouble)
-      .filter(([, t]) => moduleAbsent(t)).map(([m]) => m));
-    const refused = named(Object.entries(moduleState.trouble)
-      .filter(([, t]) => t?.disabled && !moduleAbsent(t)).map(([m]) => m));
+    // A module the CRM does not have is not worth a sentence of its own: naming
+    // it tells someone who never expected it nothing, and someone who did
+    // expect it already knows what it is called. The standing line above the
+    // list covers both, by pointing at the person who can answer.
+    const refused = Object.entries(moduleState.trouble)
+      .filter(([, t]) => t?.disabled && !moduleAbsent(t))
+      .map(([m]) => moduleTitle(m, moduleState.labels));
 
-    if (absent.length && !refused.length) {
-      // No control to offer, but saying nothing at all leaves someone
-      // wondering why results they used to get have stopped.
-      note.textContent = `${absent.join(", ")} ${absent.length === 1 ? "is" : "are"} not ` +
-        `available on this CRM, so ${absent.length === 1 ? "it is" : "they are"} not listed.`;
-      return;
-    }
     if (refused.length) {
       // "Fix the access in SuiteCRM" assumed the reader administers it. Often
       // the refusal is an ACL on their own account, which is not theirs to
