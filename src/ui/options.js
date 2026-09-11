@@ -755,9 +755,13 @@ async function refreshModules({ discover = false } = {}) {
       .filter(([, t]) => t?.disabled)
       .map(([m]) => moduleTitle(m, moduleState.labels));
     if (refused.length) {
+      // "Fix the access in SuiteCRM" assumed the reader administers it. Often
+      // the refusal is an ACL on their own account, which is not theirs to
+      // change, so the note has to point at the person who can.
       note.textContent = `${refused.join(", ")} ${refused.length === 1 ? "was" : "were"} ` +
-        `refused by the CRM and turned off. Hover the mark for the reason. ` +
-        `Fix the access in SuiteCRM, then press Re-scan modules to re-test.`;
+        `refused by the CRM and turned off. Hover the mark for the reason. If that looks ` +
+        `wrong, ask your SuiteCRM administrator to check your access to ` +
+        `${refused.length === 1 ? "it" : "them"}, then press Re-scan modules.`;
       return;
     }
     note.textContent = res.error
