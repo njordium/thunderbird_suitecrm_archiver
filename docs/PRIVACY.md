@@ -1,6 +1,6 @@
 # Privacy
 
-Last reviewed: 2026-09-11, against version 0.4.4.
+Last reviewed: 2026-10-07, against version 0.4.5.
 
 This add-on has no server of its own. It talks to one place: the SuiteCRM instance whose
 address you enter yourself. Njordium operates no service behind it, receives nothing from
@@ -27,7 +27,8 @@ Only to your CRM, and only when you ask for it:
   company and website that were parsed locally, as you confirmed or corrected them.
 - **When the add-on looks something up**, the email address being searched for, so the CRM
   can answer whether it knows that person. This happens when you open the archiving window,
-  and, if you enable those features, while you read a message or address a new one. Also the
+  and, if you enable those features, while you read a message or address a new one, only in
+  the mail accounts you have allowed the add-on to act in. Also the
   case number, when a subject carries one and case matching is on, and any text you type into
   the add-on's own search box.
 - **When a reply has lost its case number** and case matching is on, the `Message-ID` of up

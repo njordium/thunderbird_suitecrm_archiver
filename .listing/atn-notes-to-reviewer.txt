@@ -1,28 +1,21 @@
-THE TWO FILES FLAGGED IN 0.2.2
+0.4.5 REPLACES 0.4.4
 
-Both are gone from the package, and both findings were correct.
+A two-fix release. No new permissions, no change to the host permissions, the
+declared data collection or the CSP, and no new remote host is contacted. The
+package is the same 57 files as 0.4.4; none were added or removed.
 
-src/icons/icon.svg was the drawing the icon generator was written from, not an
-input it reads: tools/make-icons.py renders the PNGs analytically in pure
-Python and never opens the SVG. It now lives in img/, outside the packaged
-directory.
+What changed:
 
-src/ui/release-notes.html was a build intermediate. It stopped being loaded
-when the settings page moved to reading src/ui/release-notes.json instead of
-assigning HTML, and it is no longer generated at all. The standalone page that
-update_info_url serves is written to dist/, which is not packaged.
-
-The packaging step includes everything under src/, which is how both travelled.
-tools/validate-manifest.py now walks the reference graph in reverse and fails
-the build on any file under src/ that is unreachable from the manifest, an
-import, an HTML reference or a getURL() path. Putting the two files back
-reproduces exactly the two lines of your report and stops the build. 43 files
-ship now, down from 45.
-
-Thank you for the pointer to --llm-review. We were already running
-webext-linter, but our script filtered its output down to failures, which
-discarded the two [unsure] escalations this finding came from. It now prints
-the extended manual review section too.
+- The compose-window strip, which shows whether a recipient is in the CRM, was
+  sent as part of the message. A compose script draws inside the editor, so the
+  strip was in the body Thunderbird serialises. compose.onBeforeSend now asks
+  the compose script to remove it, and strips the element from the outgoing
+  HTML if it is still there. compose.onAfterSend restores it if the send
+  failed. The strip is also contenteditable=false.
+- The strip ignored the account filter in Preferences and appeared in every
+  compose window. It now maps the From identity to its account with
+  accounts.list and applies the same check the rest of the add-on uses, so no
+  recipient lookup is made for an account the user has switched off.
 
 TESTING REQUIRES A SUITECRM INSTANCE
 
@@ -63,7 +56,7 @@ there.
 
 VERIFICATION
 
-- 301 unit tests, and 51 end-to-end steps across two scripts run against a live
+- 408 unit tests, and 61 end-to-end steps across two scripts run against a live
   SuiteCRM instance.
 - Zero eslint errors. The build fails on a deprecated manifest key, an unknown
   permission, a CSP regression, or an unreferenced file under src/.
@@ -78,22 +71,42 @@ exfiltration, naming four fetch() sites. Three are the CRM requests themselves
 host the user enters in Preferences, only after that user signs in there, and
 that is what the two declared data_collection_permissions describe.
 
-The fourth, src/lib/i18n.js, sends nothing anywhere. It reads a packaged file:
-the URL comes from browser.runtime.getURL("_locales/<code>/messages.json"), so
-it is a moz-extension:// request for the add-on's own catalogue. It is fetch
-rather than browser.i18n because browser.i18n resolves only against
-Thunderbird's UI locale and offers no way to ask for another one, and the
-settings page lets the user choose a language. The manifest still declares
-default_locale and the catalogues are in the standard _locales layout, which
-Thunderbird uses for the manifest strings.
+The fourth, src/lib/i18n.js, is new in 0.4.4 and sends nothing anywhere. It
+reads a packaged file: the URL comes from
+browser.runtime.getURL("_locales/<code>/messages.json"), so it is a
+moz-extension:// request for the add-on's own catalogue. It is fetch rather
+than browser.i18n because browser.i18n resolves only against Thunderbird's UI
+locale and offers no way to ask for another one, and the settings page lets the
+user choose a language. The manifest still declares default_locale and the
+catalogues are in the standard _locales layout, which Thunderbird uses for the
+manifest strings.
 
-DATA HANDLING
+THE TWO FILES FLAGGED IN 0.2.2, FOR CONTEXT
 
-The add-on talks only to the CRM address the user configures, and holds one
-optional host permission for that host alone. No third-party site is contacted,
-there is no telemetry, and no remote code is loaded. The user's CRM password is
-exchanged once for tokens and never stored. A full account, verifiable against
-the source, is in docs/PRIVACY.md.
+Both findings were correct and both files have been gone since 0.4.3.
+
+src/icons/icon.svg was the drawing the icon generator was written from, not an
+input it reads: tools/make-icons.py renders the PNGs analytically in pure
+Python and never opens the SVG. It now lives in img/, outside the packaged
+directory.
+
+src/ui/release-notes.html was a build intermediate. It stopped being loaded
+when the settings page moved to reading src/ui/release-notes.json instead of
+assigning HTML, and it is no longer generated at all. The standalone page that
+update_info_url serves is written to dist/, which is not packaged.
+
+The packaging step includes everything under src/, which is how both travelled.
+tools/validate-manifest.py now walks the reference graph in reverse and fails
+the build on any file under src/ that is unreachable from the manifest, an
+import, an HTML reference or a getURL() path. Putting the two files back
+reproduces exactly the two lines of that report and stops the build. The count
+went from 45 files to 43 at the time, and is 57 now only because of the
+language catalogues.
+
+Thank you for the pointer to --llm-review. We were already running
+webext-linter, but our script filtered its output down to failures, which
+discarded the two [unsure] escalations this finding came from. It now prints
+the extended manual review section too.
 
 CONTACT
 
