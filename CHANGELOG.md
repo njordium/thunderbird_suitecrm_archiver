@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.4.4 (2026-09-11)
+## 0.4.5 (2026-10-07)
 
 - **The compose strip no longer goes out with the mail.** The line saying whether a
   recipient is in SuiteCRM sits inside the message editor, because that is where Thunderbird
@@ -13,6 +13,9 @@
   including ones sending from accounts you had switched the add-on off for. It now follows
   the same setting as everything else, by the account behind the From identity, and changing
   the From line shows or hides it accordingly.
+
+## 0.4.4 (2026-09-11)
+
 - **A module your CRM cannot search is settled when modules are scanned, not while you are
   filing mail.** The four built-in modules were assumed to exist, because SuiteCRM's own
   module list hides Prospects even from an administrator. On an instance where Targets simply
