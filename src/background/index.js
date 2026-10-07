@@ -18,7 +18,7 @@ import { CrmClient, CrmError } from "../lib/crm.js";
 import { buildCandidates, allAddresses, parseMailbox, domainOf, isConsumerDomain } from "../lib/addresses.js";
 import { originPatternFor, isMixedContentRisk } from "../lib/url.js";
 import { API_SUFFIXES, classifyAttempt } from "../lib/probe.js";
-import { accountAllowed, MODULE_LABEL, recordLabel, MODULE_FIELDS, DIRECT_MODULES, CASE_FIELDS, moduleTitle, moduleVerdict, failureIsPermanent } from "../lib/modules.js";
+import { accountAllowed, accountIdForIdentity, MODULE_LABEL, recordLabel, MODULE_FIELDS, DIRECT_MODULES, CASE_FIELDS, moduleTitle, moduleVerdict, failureIsPermanent } from "../lib/modules.js";
 import { resolveAddress, findAccountsByDomain, expandRelated, searchRecords } from "../lib/resolver.js";
 import { parseContact } from "../lib/signature.js";
 import { readMessage, archiveMessage } from "../lib/archive.js";
@@ -917,6 +917,19 @@ const handlers = {
       return { hidden: true };
     }
 
+    // Same account filter as everything else. Checked on every poll, so
+    // switching the From identity shows or hides the strip.
+    const { enabledAccounts } = prefs;
+    if (Array.isArray(enabledAccounts)) {
+      let accountId;
+      try {
+        accountId = accountIdForIdentity(await browser.accounts.list(false), details.identityId);
+      } catch (e) {
+        log.debug("compose: could not list accounts:", e.message);
+      }
+      if (!accountAllowed(enabledAccounts, accountId).allowed) return { hidden: true };
+    }
+
     const own = new Set(await getOwnAddresses());
     const recipients = [...(details.to || []), ...(details.cc || [])]
       .map((r) => parseFrom(typeof r === "string" ? r : r?.address || ""))
@@ -1389,6 +1402,8 @@ const handlers = {
 
 const BANNER_SCRIPT_ID = "suitecrm-banner";
 const COMPOSE_SCRIPT_ID = "suitecrm-compose";
+// Must match ROOT_ID in src/compose/composeStatus.js.
+const COMPOSE_ROOT_ID = "suitecrm-compose-status";
 
 /**
  * Register the message-display script at runtime rather than through the
@@ -1803,6 +1818,41 @@ optional("compose.onAfterSend", () =>
     // Never let this surface as an error during sending, the mail has gone.
     log.warn("archive-on-send failed:", e.message);
   }
+  }));
+
+/**
+ * Keep the compose strip out of the message it sits on.
+ *
+ * A compose script runs inside the editor, so the strip lives in the body that
+ * gets sent. Without this, recipients received "x is not in SuiteCRM" at the
+ * top of the mail. The script is asked to take the strip down first; if it
+ * cannot answer, the strip is cut from the outgoing HTML instead.
+ */
+optional("compose.onBeforeSend", () =>
+  browser.compose?.onBeforeSend?.addListener(async (tab) => {
+  try {
+    await browser.tabs.sendMessage(tab.id, { type: "composeStatusDetach" });
+  } catch (e) {
+    log.debug("compose strip did not answer before send:", e.message);
+  }
+
+  try {
+    const details = await browser.compose.getComposeDetails(tab.id);
+    if (details.isPlainText || !details.body?.includes(COMPOSE_ROOT_ID)) return {};
+    const doc = new DOMParser().parseFromString(details.body, "text/html");
+    doc.getElementById(COMPOSE_ROOT_ID)?.remove();
+    return { details: { body: doc.documentElement.outerHTML } };
+  } catch (e) {
+    log.warn("Could not check the outgoing body for the compose strip:", e.message);
+    return {};
+  }
+  }));
+
+// A failed send leaves the window open, so the strip should come back.
+optional("compose.onAfterSend (strip)", () =>
+  browser.compose?.onAfterSend?.addListener((tab, sendInfo) => {
+  if (!sendInfo?.error) return;
+  browser.tabs.sendMessage(tab.id, { type: "composeStatusResume" }).catch(() => {});
   }));
 
 /**

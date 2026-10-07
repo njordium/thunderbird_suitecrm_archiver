@@ -3,7 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 import test from "node:test";
 import assert from "node:assert/strict";
-import { accountAllowed } from "../src/lib/modules.js";
+import { accountAllowed, accountIdForIdentity } from "../src/lib/modules.js";
 
 // null means "every account, including ones added later"; an array is the exact
 // list, and an empty array means none. If "all" were also [], unticking every
@@ -37,4 +37,27 @@ test("a non-matching account is not reported as 'none enabled'", () => {
 test("an unknown account is allowed rather than silently blocked", () => {
   assert.equal(accountAllowed(["account3"], undefined).allowed, true);
   assert.equal(accountAllowed(["account3"], "").allowed, true);
+});
+
+test("a compose identity resolves to the account that owns it", () => {
+  const accounts = [
+    { id: "account1", identities: [{ id: "id1" }, { id: "id2" }] },
+    { id: "account2", identities: [{ id: "id3" }] },
+    { id: "account3" },
+  ];
+  assert.equal(accountIdForIdentity(accounts, "id2"), "account1");
+  assert.equal(accountIdForIdentity(accounts, "id3"), "account2");
+  assert.equal(accountIdForIdentity(accounts, "id9"), undefined);
+  assert.equal(accountIdForIdentity(accounts, undefined), undefined);
+  assert.equal(accountIdForIdentity(null, "id1"), undefined);
+});
+
+test("compose for an identity in a switched-off account is not allowed", () => {
+  const accounts = [
+    { id: "work", identities: [{ id: "id-work" }] },
+    { id: "private", identities: [{ id: "id-private" }] },
+  ];
+  const enabled = ["work"];
+  assert.equal(accountAllowed(enabled, accountIdForIdentity(accounts, "id-work")).allowed, true);
+  assert.equal(accountAllowed(enabled, accountIdForIdentity(accounts, "id-private")).allowed, false);
 });

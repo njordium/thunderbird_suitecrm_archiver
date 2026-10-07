@@ -2,6 +2,17 @@
 
 ## 0.4.4 (2026-09-11)
 
+- **The compose strip no longer goes out with the mail.** The line saying whether a
+  recipient is in SuiteCRM sits inside the message editor, because that is where Thunderbird
+  lets an add-on draw in a compose window, and so it was sent as the first line of the
+  message: recipients read "bostad@example.com is not in SuiteCRM" above your greeting. The
+  strip now steps out of the body just before sending, and is cut from the outgoing HTML if
+  it has not. If sending fails it comes back. It also no longer accepts the cursor, so
+  nothing you type can end up inside it.
+- **The compose strip respects the account filter.** It appeared in every compose window,
+  including ones sending from accounts you had switched the add-on off for. It now follows
+  the same setting as everything else, by the account behind the From identity, and changing
+  the From line shows or hides it accordingly.
 - **A module your CRM cannot search is settled when modules are scanned, not while you are
   filing mail.** The four built-in modules were assumed to exist, because SuiteCRM's own
   module list hides Prospects even from an administrator. On an instance where Targets simply

@@ -202,6 +202,22 @@ export const UPLOAD_FIELDS = ["filename", "filecontents"];
 
 
 /**
+ * Which account a sending identity belongs to.
+ *
+ * A compose window knows its identity, not its account, and the account filter
+ * is kept by account. Undefined when the identity is not found, which
+ * accountAllowed treats as allowed, the same as any message it cannot place.
+ *
+ * @param {{id: string, identities?: {id: string}[]}[]} accounts
+ * @param {string|undefined} identityId
+ */
+export function accountIdForIdentity(accounts, identityId) {
+  if (!identityId) return undefined;
+  return (accounts || []).find((a) =>
+    (a.identities || []).some((i) => i.id === identityId))?.id;
+}
+
+/**
  * Should the add-on act on a message in this account?
  *
  * The encoding matters: `null` means every account, including ones added later,

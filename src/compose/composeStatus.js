@@ -59,6 +59,8 @@ function render(state) {
 
   const root = el("div");
   root.id = ROOT_ID;
+  // The strip sits in the editable body; keep the caret, and typing, out of it.
+  root.contentEditable = "false";
   root.appendChild(styles());
 
   const row = el("div", "scc-row");
@@ -85,14 +87,19 @@ function render(state) {
 }
 
 let lastKey = "";
+// Set while a send is in progress, so polling cannot put the strip back into
+// the body Thunderbird is about to serialise.
+let detached = false;
 
 async function refresh() {
+  if (detached) return;
   try {
     const res = await browser.runtime.sendMessage({ type: "composeStatus" });
     if (!res?.ok || !res.result || res.result.hidden) {
       lastKey = "";
       return render(null);
     }
+    if (detached) return;
     const s = res.result;
     // Re-rendering on every keystroke would fight the user's focus.
     const key = JSON.stringify([s.tone, s.text, s.detail]);
@@ -103,6 +110,22 @@ async function refresh() {
     render(null);
   }
 }
+
+// The strip is part of the message body, so it has to leave before sending.
+browser.runtime.onMessage.addListener((m) => {
+  if (m?.type === "composeStatusDetach") {
+    detached = true;
+    lastKey = "";
+    render(null);
+    return Promise.resolve(true);
+  }
+  if (m?.type === "composeStatusResume") {
+    detached = false;
+    refresh();
+    return Promise.resolve(true);
+  }
+  return false;
+});
 
 // Recipients change as the user types, so poll gently rather than on every event.
 refresh();
